@@ -128,6 +128,7 @@ func (h *WatchHistoryHandler) CreateOrUpdateWatchHistory(w http.ResponseWriter, 
 
 	// Check if watch history already exists
 	existingHistory, err := h.watchHistoryRepo.GetByUserAndVideo(ctx, userID, req.VideoID)
+	log.Print("Existing history", existingHistory)
 	if err != nil {
 		// Watch history doesn't exist, create new one
 		watchHistory, err := req.ToWatchHistory(userID)

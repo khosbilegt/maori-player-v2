@@ -4,10 +4,8 @@ import type { VideoData } from "../components/VideoCard";
 
 // API Client utility for making HTTP requests
 export class ApiClient {
-  private baseUrl: string;
-
   constructor() {
-    this.baseUrl = environment.apiBaseUrl;
+    // baseUrl is available via environment.apiBaseUrl
   }
 
   // Generic fetch method with error handling
@@ -52,7 +50,7 @@ export class ApiClient {
   // POST request
   async post<T>(
     endpoint: string,
-    data?: Record<string, string>,
+    data?: Record<string, any>,
     headers?: Record<string, string>
   ): Promise<T> {
     const response = await this.fetchWithErrorHandling(endpoint, {
@@ -66,7 +64,7 @@ export class ApiClient {
   // PUT request
   async put<T>(
     endpoint: string,
-    data?: Record<string, string>,
+    data?: Record<string, any>,
     headers?: Record<string, string>
   ): Promise<T> {
     const response = await this.fetchWithErrorHandling(endpoint, {
@@ -179,6 +177,65 @@ export class ApiClient {
         environment.apiBaseUrl
       }/api/v1/vocabulary/search?q=${encodeURIComponent(query)}`
     );
+  }
+
+  // Watch history methods
+  async getWatchHistory(token: string): Promise<any[]> {
+    return this.get(API_ENDPOINTS.WATCH_HISTORY.BASE, {
+      Authorization: `Bearer ${token}`,
+    });
+  }
+
+  async getWatchHistoryByVideo(token: string, videoId: string): Promise<any> {
+    return this.get(
+      `${API_ENDPOINTS.WATCH_HISTORY.BY_VIDEO}?video_id=${encodeURIComponent(
+        videoId
+      )}`,
+      {
+        Authorization: `Bearer ${token}`,
+      }
+    );
+  }
+
+  async createOrUpdateWatchHistory(
+    token: string,
+    watchHistoryData: {
+      video_id: string;
+      progress: number;
+      current_time: number;
+      duration: number;
+      completed: boolean;
+    }
+  ): Promise<any> {
+    return this.post(API_ENDPOINTS.WATCH_HISTORY.BASE, watchHistoryData, {
+      Authorization: `Bearer ${token}`,
+    });
+  }
+
+  async deleteWatchHistory(token: string, videoId: string): Promise<void> {
+    return this.delete(
+      `${API_ENDPOINTS.WATCH_HISTORY.BASE}?video_id=${encodeURIComponent(
+        videoId
+      )}`,
+      {
+        Authorization: `Bearer ${token}`,
+      }
+    );
+  }
+
+  async getRecentWatched(token: string, limit?: number): Promise<any[]> {
+    const url = limit
+      ? `${API_ENDPOINTS.WATCH_HISTORY.RECENT}?limit=${limit}`
+      : API_ENDPOINTS.WATCH_HISTORY.RECENT;
+    return this.get(url, {
+      Authorization: `Bearer ${token}`,
+    });
+  }
+
+  async getCompletedVideos(token: string): Promise<any[]> {
+    return this.get(API_ENDPOINTS.WATCH_HISTORY.COMPLETED, {
+      Authorization: `Bearer ${token}`,
+    });
   }
 
   // Health check
