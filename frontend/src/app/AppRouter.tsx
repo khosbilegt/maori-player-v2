@@ -3,6 +3,7 @@ import { AuthProvider } from "../contexts/AuthContext";
 import VideoPage from "../pages/VideoPage";
 import HomePage from "../pages/HomePage";
 import LibraryPage from "../pages/LibraryPage";
+import HistoryPage from "../pages/HistoryPage";
 import LoginPage from "../pages/LoginPage";
 import RegisterPage from "../pages/RegisterPage";
 import ProtectedRoute from "../components/ProtectedRoute";
@@ -32,6 +33,14 @@ function AppRouter() {
             element={
               <ProtectedRoute>
                 <LibraryPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/history"
+            element={
+              <ProtectedRoute>
+                <HistoryPage />
               </ProtectedRoute>
             }
           />

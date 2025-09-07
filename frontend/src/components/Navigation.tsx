@@ -27,9 +27,14 @@ const Navigation: React.FC = () => {
             Library
           </Link>
           {isAuthenticated && (
-            <Link to="/admin" className="nav-link">
-              Admin
-            </Link>
+            <>
+              <Link to="/history" className="nav-link">
+                History
+              </Link>
+              <Link to="/admin" className="nav-link">
+                Admin
+              </Link>
+            </>
           )}
         </div>
 

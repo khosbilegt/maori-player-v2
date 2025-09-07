@@ -38,7 +38,7 @@ export const API_ENDPOINTS = {
     BASE: `${environment.apiBaseUrl}/api/v1/watch-history`,
     BY_VIDEO: `${environment.apiBaseUrl}/api/v1/watch-history/video`,
     RECENT: `${environment.apiBaseUrl}/api/v1/watch-history/recent`,
-    COMPLETED: `${environment.apiBaseUrl}/api/v1/watch-history/completed`,
+    COMPLETED: `${environment.apiBaseUrl}/api/v1/watch-history`,
   },
 
   // Health check

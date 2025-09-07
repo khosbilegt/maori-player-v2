@@ -180,13 +180,16 @@ export class ApiClient {
   }
 
   // Watch history methods
-  async getWatchHistory(token: string): Promise<any[]> {
+  async getWatchHistory(token: string): Promise<{ data: any[] }> {
     return this.get(API_ENDPOINTS.WATCH_HISTORY.BASE, {
       Authorization: `Bearer ${token}`,
     });
   }
 
-  async getWatchHistoryByVideo(token: string, videoId: string): Promise<any> {
+  async getWatchHistoryByVideo(
+    token: string,
+    videoId: string
+  ): Promise<{ data: any }> {
     return this.get(
       `${API_ENDPOINTS.WATCH_HISTORY.BY_VIDEO}?video_id=${encodeURIComponent(
         videoId
@@ -206,7 +209,7 @@ export class ApiClient {
       duration: number;
       completed: boolean;
     }
-  ): Promise<any> {
+  ): Promise<{ data: any }> {
     return this.post(API_ENDPOINTS.WATCH_HISTORY.BASE, watchHistoryData, {
       Authorization: `Bearer ${token}`,
     });
@@ -223,7 +226,10 @@ export class ApiClient {
     );
   }
 
-  async getRecentWatched(token: string, limit?: number): Promise<any[]> {
+  async getRecentWatched(
+    token: string,
+    limit?: number
+  ): Promise<{ data: any[] }> {
     const url = limit
       ? `${API_ENDPOINTS.WATCH_HISTORY.RECENT}?limit=${limit}`
       : API_ENDPOINTS.WATCH_HISTORY.RECENT;
@@ -232,7 +238,7 @@ export class ApiClient {
     });
   }
 
-  async getCompletedVideos(token: string): Promise<any[]> {
+  async getCompletedVideos(token: string): Promise<{ data: any[] }> {
     return this.get(API_ENDPOINTS.WATCH_HISTORY.COMPLETED, {
       Authorization: `Bearer ${token}`,
     });

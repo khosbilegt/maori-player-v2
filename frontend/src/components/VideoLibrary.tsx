@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from "react";
 import VideoCard, { type VideoData } from "./VideoCard";
 import SearchBar from "./SearchBar";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 interface VideoLibraryProps {
   videos: VideoData[];
@@ -34,6 +34,11 @@ const VideoLibrary: React.FC<VideoLibraryProps> = ({ videos }) => {
           <p className="library-subtitle">
             Discover and learn with our collection of Māori language videos
           </p>
+          <div className="library-actions">
+            <Link to="/history" className="history-link">
+              📺 View Watch History
+            </Link>
+          </div>
         </div>
         <div className="library-search">
           <SearchBar onSearch={handleSearch} />
