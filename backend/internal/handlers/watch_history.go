@@ -2,10 +2,9 @@ package handlers
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"strconv"
-
-	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"video-player-backend/internal/database"
 	"video-player-backend/internal/errors"
@@ -40,14 +39,21 @@ func (h *WatchHistoryHandler) GetWatchHistory(w http.ResponseWriter, r *http.Req
 		return
 	}
 
+	log.Print("User ID", userID)
+
 	watchHistories, err := h.watchHistoryRepo.GetByUserID(ctx, userID)
 	if err != nil {
 		errors.WriteErrorResponse(w, errors.WrapError(err, errors.ErrDatabase))
 		return
 	}
 
+	// Ensure we always have a slice, even if empty
+	if watchHistories == nil {
+		watchHistories = []*models.WatchHistory{}
+	}
+
 	// Convert to response format
-	var responses []*models.WatchHistoryResponse
+	responses := make([]*models.WatchHistoryResponse, 0, len(watchHistories))
 	for _, wh := range watchHistories {
 		responses = append(responses, wh.ToResponse())
 	}
@@ -124,13 +130,7 @@ func (h *WatchHistoryHandler) CreateOrUpdateWatchHistory(w http.ResponseWriter, 
 	existingHistory, err := h.watchHistoryRepo.GetByUserAndVideo(ctx, userID, req.VideoID)
 	if err != nil {
 		// Watch history doesn't exist, create new one
-		userObjID, err := primitive.ObjectIDFromHex(userID)
-		if err != nil {
-			errors.WriteErrorResponse(w, errors.ErrInvalidRequest)
-			return
-		}
-
-		watchHistory, err := req.ToWatchHistory(userObjID)
+		watchHistory, err := req.ToWatchHistory(userID)
 		if err != nil {
 			errors.WriteErrorResponse(w, errors.ErrInvalidRequest)
 			return

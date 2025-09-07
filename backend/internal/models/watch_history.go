@@ -9,8 +9,8 @@ import (
 // WatchHistory represents a user's watch history entry
 type WatchHistory struct {
 	ID          primitive.ObjectID `json:"id" bson:"_id,omitempty"`
-	UserID      primitive.ObjectID `json:"user_id" bson:"user_id"`
-	VideoID     primitive.ObjectID `json:"video_id" bson:"video_id"`
+	UserID      string             `json:"user_id" bson:"user_id"`
+	VideoID     string             `json:"video_id" bson:"video_id"`
 	Progress    float64            `json:"progress" bson:"progress"`         // Progress as percentage (0.0 to 1.0)
 	CurrentTime float64            `json:"current_time" bson:"current_time"` // Current time in seconds
 	Duration    float64            `json:"duration" bson:"duration"`         // Total video duration in seconds
@@ -44,16 +44,11 @@ type WatchHistoryResponse struct {
 }
 
 // ToWatchHistory converts a WatchHistoryRequest to WatchHistory
-func (req *WatchHistoryRequest) ToWatchHistory(userID primitive.ObjectID) (*WatchHistory, error) {
-	videoID, err := primitive.ObjectIDFromHex(req.VideoID)
-	if err != nil {
-		return nil, err
-	}
-
+func (req *WatchHistoryRequest) ToWatchHistory(userID string) (*WatchHistory, error) {
 	now := time.Now()
 	watchHistory := &WatchHistory{
 		UserID:      userID,
-		VideoID:     videoID,
+		VideoID:     req.VideoID,
 		Progress:    req.Progress,
 		CurrentTime: req.CurrentTime,
 		Duration:    req.Duration,
@@ -75,8 +70,8 @@ func (req *WatchHistoryRequest) ToWatchHistory(userID primitive.ObjectID) (*Watc
 func (wh *WatchHistory) ToResponse() *WatchHistoryResponse {
 	return &WatchHistoryResponse{
 		ID:          wh.ID.Hex(),
-		UserID:      wh.UserID.Hex(),
-		VideoID:     wh.VideoID.Hex(),
+		UserID:      wh.UserID,
+		VideoID:     wh.VideoID,
 		Progress:    wh.Progress,
 		CurrentTime: wh.CurrentTime,
 		Duration:    wh.Duration,

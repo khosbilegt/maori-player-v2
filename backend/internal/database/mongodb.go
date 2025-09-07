@@ -8,6 +8,7 @@ import (
 	"video-player-backend/internal/models"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -304,7 +305,6 @@ func (r *vocabularyRepository) Create(ctx context.Context, vocabulary *models.Vo
 
 // Update updates an existing vocabulary item
 func (r *vocabularyRepository) Update(ctx context.Context, id string, vocabulary *models.Vocabulary) error {
-	vocabulary.ID = id
 	_, err := r.collection.ReplaceOne(ctx, bson.M{"_id": id}, vocabulary)
 	return err
 }
@@ -415,6 +415,11 @@ func (r *watchHistoryRepository) Create(ctx context.Context, watchHistory *model
 
 // Update updates an existing watch history entry
 func (r *watchHistoryRepository) Update(ctx context.Context, id string, watchHistory *models.WatchHistory) error {
+	objectID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return err
+	}
+
 	update := bson.M{
 		"$set": bson.M{
 			"progress":     watchHistory.Progress,
@@ -426,7 +431,7 @@ func (r *watchHistoryRepository) Update(ctx context.Context, id string, watchHis
 		},
 	}
 
-	result, err := r.collection.UpdateOne(ctx, bson.M{"_id": id}, update)
+	result, err := r.collection.UpdateOne(ctx, bson.M{"_id": objectID}, update)
 	if err != nil {
 		return err
 	}
@@ -440,7 +445,12 @@ func (r *watchHistoryRepository) Update(ctx context.Context, id string, watchHis
 
 // Delete deletes a watch history entry by ID
 func (r *watchHistoryRepository) Delete(ctx context.Context, id string) error {
-	result, err := r.collection.DeleteOne(ctx, bson.M{"_id": id})
+	objectID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return err
+	}
+
+	result, err := r.collection.DeleteOne(ctx, bson.M{"_id": objectID})
 	if err != nil {
 		return err
 	}
