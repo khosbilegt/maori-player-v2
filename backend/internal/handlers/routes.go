@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"video-player-backend/internal/database"
@@ -13,6 +14,8 @@ import (
 // SetupRoutes configures all routes for the application
 func SetupRoutes(repo database.VideoRepository) *mux.Router {
 	r := mux.NewRouter()
+
+	log.Println("Setting up routes")
 
 	// Apply middleware
 	r.Use(middleware.Logging)

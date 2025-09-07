@@ -7,7 +7,9 @@ import (
 	"time"
 
 	"video-player-backend/internal/database"
+	"video-player-backend/internal/errors"
 	"video-player-backend/internal/models"
+	"video-player-backend/internal/validation"
 
 	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -32,8 +34,12 @@ func (h *VideoHandler) GetVideos(w http.ResponseWriter, r *http.Request) {
 
 	videos, err := h.repo.GetAll(ctx)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errors.WriteErrorResponse(w, errors.WrapError(err, errors.ErrDatabase))
 		return
+	}
+
+	if videos == nil {
+		videos = []*models.Video{}
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -48,13 +54,19 @@ func (h *VideoHandler) GetVideo(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	id := params["id"]
 
+	// Validate video ID
+	if ve := validation.ValidateVideoID(id); ve.HasErrors() {
+		errors.WriteValidationError(w, ve)
+		return
+	}
+
 	video, err := h.repo.GetByID(ctx, id)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			http.Error(w, "Video not found", http.StatusNotFound)
+			errors.WriteErrorResponse(w, errors.ErrVideoNotFound)
 			return
 		}
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errors.WriteErrorResponse(w, errors.WrapError(err, errors.ErrDatabase))
 		return
 	}
 
@@ -69,7 +81,17 @@ func (h *VideoHandler) CreateVideo(w http.ResponseWriter, r *http.Request) {
 
 	var videoReq models.VideoRequest
 	if err := json.NewDecoder(r.Body).Decode(&videoReq); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		errors.WriteErrorResponse(w, errors.NewAPIErrorWithDetails(
+			errors.ErrInvalidRequest.Code,
+			"Invalid JSON format",
+			err.Error(),
+		))
+		return
+	}
+
+	// Validate video request
+	if ve := validation.ValidateVideoRequest(&videoReq); ve.HasErrors() {
+		errors.WriteValidationError(w, ve)
 		return
 	}
 
@@ -77,7 +99,7 @@ func (h *VideoHandler) CreateVideo(w http.ResponseWriter, r *http.Request) {
 	video.GenerateID()
 
 	if err := h.repo.Create(ctx, video); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errors.WriteErrorResponse(w, errors.WrapError(err, errors.ErrDatabase))
 		return
 	}
 
@@ -94,9 +116,25 @@ func (h *VideoHandler) UpdateVideo(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	id := params["id"]
 
+	// Validate video ID
+	if ve := validation.ValidateVideoID(id); ve.HasErrors() {
+		errors.WriteValidationError(w, ve)
+		return
+	}
+
 	var videoReq models.VideoRequest
 	if err := json.NewDecoder(r.Body).Decode(&videoReq); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		errors.WriteErrorResponse(w, errors.NewAPIErrorWithDetails(
+			errors.ErrInvalidRequest.Code,
+			"Invalid JSON format",
+			err.Error(),
+		))
+		return
+	}
+
+	// Validate video request
+	if ve := validation.ValidateVideoRequest(&videoReq); ve.HasErrors() {
+		errors.WriteValidationError(w, ve)
 		return
 	}
 
@@ -105,10 +143,10 @@ func (h *VideoHandler) UpdateVideo(w http.ResponseWriter, r *http.Request) {
 
 	if err := h.repo.Update(ctx, id, video); err != nil {
 		if err == mongo.ErrNoDocuments {
-			http.Error(w, "Video not found", http.StatusNotFound)
+			errors.WriteErrorResponse(w, errors.ErrVideoNotFound)
 			return
 		}
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errors.WriteErrorResponse(w, errors.WrapError(err, errors.ErrDatabase))
 		return
 	}
 
@@ -124,12 +162,18 @@ func (h *VideoHandler) DeleteVideo(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	id := params["id"]
 
+	// Validate video ID
+	if ve := validation.ValidateVideoID(id); ve.HasErrors() {
+		errors.WriteValidationError(w, ve)
+		return
+	}
+
 	if err := h.repo.Delete(ctx, id); err != nil {
 		if err == mongo.ErrNoDocuments {
-			http.Error(w, "Video not found", http.StatusNotFound)
+			errors.WriteErrorResponse(w, errors.ErrVideoNotFound)
 			return
 		}
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errors.WriteErrorResponse(w, errors.WrapError(err, errors.ErrDatabase))
 		return
 	}
 
