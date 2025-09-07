@@ -30,6 +30,7 @@ func SetupRoutes(cfg *config.Config, videoRepo database.VideoRepository, userRep
 	authHandler := NewAuthHandler(userRepo, jwtManager)
 	vocabularyHandler := NewVocabularyHandler(vocabRepo)
 	watchHistoryHandler := NewWatchHistoryHandler(watchHistoryRepo, videoRepo)
+	vttHandler := NewVTTUploadHandler("./uploads/vtt")
 
 	// API routes
 	api := r.PathPrefix("/api/v1").Subrouter()
@@ -68,6 +69,14 @@ func SetupRoutes(cfg *config.Config, videoRepo database.VideoRepository, userRep
 	protected.HandleFunc("/watch-history", watchHistoryHandler.DeleteWatchHistory).Methods("DELETE")
 	protected.HandleFunc("/watch-history/recent", watchHistoryHandler.GetRecentWatched).Methods("GET")
 	protected.HandleFunc("/watch-history/completed", watchHistoryHandler.GetCompletedVideos).Methods("GET")
+
+	// VTT file routes (protected - require authentication)
+	protected.HandleFunc("/vtt/upload", vttHandler.UploadVTT).Methods("POST")
+	protected.HandleFunc("/vtt/list", vttHandler.ListVTTFiles).Methods("GET")
+	protected.HandleFunc("/vtt/delete", vttHandler.DeleteVTTFile).Methods("DELETE")
+
+	// Static file serving for uploaded VTT files
+	r.PathPrefix("/uploads/vtt/").Handler(http.StripPrefix("/uploads/vtt/", http.FileServer(http.Dir("./uploads/vtt/"))))
 
 	// Health check endpoint
 	r.HandleFunc("/health", healthCheck).Methods("GET")

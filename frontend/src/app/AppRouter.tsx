@@ -12,6 +12,7 @@ import AdminLayout from "../components/admin/AdminLayout";
 import AdminDashboard from "../pages/admin/AdminDashboard";
 import AdminVideos from "../pages/admin/AdminVideos";
 import AdminVocabulary from "../pages/admin/AdminVocabulary";
+import AdminVTT from "../pages/admin/AdminVTT";
 
 function AppRouter() {
   // Set basename for GitHub Pages deployment
@@ -79,6 +80,16 @@ function AppRouter() {
               <ProtectedRoute>
                 <AdminLayout>
                   <AdminVocabulary />
+                </AdminLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/vtt"
+            element={
+              <ProtectedRoute>
+                <AdminLayout>
+                  <AdminVTT />
                 </AdminLayout>
               </ProtectedRoute>
             }

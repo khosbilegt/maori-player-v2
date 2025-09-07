@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
+import { useAuth } from "../../contexts/AuthContext";
+import { apiClient } from "../../utils/apiClient";
 import type { VideoData } from "../VideoCard";
 import type { VideoFormData } from "../../types/admin";
 import "./AdminForm.css";
@@ -9,7 +11,15 @@ interface VideoFormProps {
   onCancel: () => void;
 }
 
+interface VTTFile {
+  filename: string;
+  size: number;
+  modified_at: string;
+  url: string;
+}
+
 const VideoForm: React.FC<VideoFormProps> = ({ video, onSubmit, onCancel }) => {
+  const { token } = useAuth();
   const [formData, setFormData] = useState<VideoFormData>({
     title: "",
     description: "",
@@ -18,6 +28,8 @@ const VideoForm: React.FC<VideoFormProps> = ({ video, onSubmit, onCancel }) => {
     duration: "",
     subtitle: "",
   });
+  const [vttFiles, setVttFiles] = useState<VTTFile[]>([]);
+  const [loadingVTT, setLoadingVTT] = useState(false);
 
   // Helper functions to convert between seconds and MM:SS format
   const secondsToMMSS = (seconds: number | string): string => {
@@ -38,6 +50,22 @@ const VideoForm: React.FC<VideoFormProps> = ({ video, onSubmit, onCancel }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Load VTT files
+  const loadVTTFiles = useCallback(async () => {
+    if (!token) return;
+
+    try {
+      setLoadingVTT(true);
+      const response = await apiClient.getVTTFiles(token);
+      setVttFiles(response.data || []);
+    } catch (err) {
+      console.error("Failed to load VTT files:", err);
+      // Don't show error to user as this is not critical
+    } finally {
+      setLoadingVTT(false);
+    }
+  }, [token]);
+
   useEffect(() => {
     if (video) {
       // Handle duration - convert from seconds to MM:SS if needed
@@ -57,6 +85,11 @@ const VideoForm: React.FC<VideoFormProps> = ({ video, onSubmit, onCancel }) => {
       });
     }
   }, [video]);
+
+  // Load VTT files when component mounts
+  useEffect(() => {
+    loadVTTFiles();
+  }, [loadVTTFiles]);
 
   const handleInputChange = (
     e: React.ChangeEvent<
@@ -178,15 +211,42 @@ const VideoForm: React.FC<VideoFormProps> = ({ video, onSubmit, onCancel }) => {
 
           <div className="form-row">
             <div className="form-group">
-              <label htmlFor="subtitles_url">Transcript URL</label>
-              <input
-                type="url"
-                id="subtitle"
-                name="subtitle"
-                value={formData.subtitle}
-                onChange={handleInputChange}
-                placeholder="https://example.com/subtitles.vtt"
-              />
+              <label htmlFor="subtitle">Transcript URL</label>
+              <div className="vtt-select-container">
+                <select
+                  id="subtitle"
+                  name="subtitle"
+                  value={formData.subtitle}
+                  onChange={handleInputChange}
+                  className="vtt-select"
+                  disabled={loadingVTT}
+                >
+                  <option value="">
+                    Select a VTT file or enter custom URL
+                  </option>
+                  {vttFiles.map((file) => (
+                    <option key={file.filename} value={file.url}>
+                      📄 {file.filename}
+                    </option>
+                  ))}
+                </select>
+                <input
+                  name="subtitle"
+                  value={formData.subtitle}
+                  onChange={handleInputChange}
+                  placeholder="Or enter custom VTT URL"
+                  className="vtt-url-input"
+                />
+                {loadingVTT && (
+                  <div className="vtt-loading">
+                    <div className="loading-spinner small"></div>
+                    Loading VTT files...
+                  </div>
+                )}
+              </div>
+              <div className="form-help">
+                Choose from uploaded VTT files or enter a custom URL
+              </div>
             </div>
           </div>
 

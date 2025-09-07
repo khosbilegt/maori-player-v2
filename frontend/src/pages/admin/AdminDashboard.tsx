@@ -137,6 +137,9 @@ const AdminDashboard: React.FC = () => {
             <a href="/admin/vocabulary" className="btn btn-primary">
               ◊ Manage Vocabulary
             </a>
+            <a href="/admin/vtt" className="btn btn-primary">
+              📄 Manage VTT Files
+            </a>
           </div>
         </div>
 

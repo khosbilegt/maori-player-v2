@@ -44,8 +44,6 @@ func ValidateVideoRequest(req *models.VideoRequest) *errors.ValidationErrors {
 	// Validate subtitle path (optional but if provided, should start with /)
 	if strings.TrimSpace(req.Subtitle) == "" {
 		ve.Add("subtitle", "Subtitle URL is required")
-	} else if !isValidURL(req.Subtitle) {
-		ve.Add("subtitle", "Subtitle URL must be a valid URL")
 	}
 
 	return ve

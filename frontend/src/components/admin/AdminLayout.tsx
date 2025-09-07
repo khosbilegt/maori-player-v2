@@ -14,6 +14,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     { name: "Dashboard", href: "/admin", icon: "⚡" },
     { name: "Videos", href: "/admin/videos", icon: "▶" },
     { name: "Vocabulary", href: "/admin/vocabulary", icon: "◊" },
+    { name: "VTT Files", href: "/admin/vtt", icon: "📄" },
   ];
 
   const isActive = (href: string) => {

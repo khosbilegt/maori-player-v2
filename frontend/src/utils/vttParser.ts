@@ -1,4 +1,5 @@
 import type { TranscriptItem } from "../components/TranscriptViewer";
+import { environment } from "../config/environment";
 
 interface VTTCue {
   id: string;
@@ -82,7 +83,7 @@ export async function loadVTTTranscript(
   vttUrl: string
 ): Promise<TranscriptItem[]> {
   try {
-    const response = await fetch(vttUrl);
+    const response = await fetch(environment.apiBaseUrl + vttUrl);
     if (!response.ok) {
       throw new Error(`Failed to fetch VTT file: ${response.statusText}`);
     }

@@ -244,6 +244,56 @@ export class ApiClient {
     });
   }
 
+  // VTT file management
+  async uploadVTTFile(token: string, file: File): Promise<{ data: any }> {
+    const formData = new FormData();
+    formData.append("vtt_file", file);
+
+    const response = await fetch(
+      `${environment.apiBaseUrl}/api/v1/vtt/upload`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Failed to upload VTT file");
+    }
+
+    return response.json();
+  }
+
+  async getVTTFiles(token: string): Promise<{ data: any[] }> {
+    return this.get(`${environment.apiBaseUrl}/api/v1/vtt/list`, {
+      Authorization: `Bearer ${token}`,
+    });
+  }
+
+  async deleteVTTFile(token: string, filename: string): Promise<void> {
+    const response = await fetch(
+      `${
+        environment.apiBaseUrl
+      }/api/v1/vtt/delete?filename=${encodeURIComponent(filename)}`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Failed to delete VTT file");
+    }
+  }
+
   // Health check
   async healthCheck(): Promise<{ status: string; service: string }> {
     return this.get(API_ENDPOINTS.HEALTH);
