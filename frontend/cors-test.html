@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CORS Test</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #f5f5f5;
+      }
+      .container {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+      }
+      button {
+        background-color: #007bff;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-right: 10px;
+      }
+      button:hover {
+        background-color: #0056b3;
+      }
+      .result {
+        margin-top: 15px;
+        padding: 10px;
+        border-radius: 4px;
+        white-space: pre-wrap;
+        font-family: monospace;
+      }
+      .success {
+        background-color: #d4edda;
+        border: 1px solid #c3e6cb;
+        color: #155724;
+      }
+      .error {
+        background-color: #f8d7da;
+        border: 1px solid #f5c6cb;
+        color: #721c24;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>CORS Debug Test</h1>
+
+    <div class="container">
+      <h2>Test 1: Health Check (GET)</h2>
+      <button onclick="testHealthCheck()">Test Health Check</button>
+      <div id="healthResult" class="result" style="display: none"></div>
+    </div>
+
+    <div class="container">
+      <h2>Test 2: Register User (POST)</h2>
+      <button onclick="testRegister()">Test Register</button>
+      <div id="registerResult" class="result" style="display: none"></div>
+    </div>
+
+    <div class="container">
+      <h2>Test 3: Login User (POST)</h2>
+      <button onclick="testLogin()">Test Login</button>
+      <div id="loginResult" class="result" style="display: none"></div>
+    </div>
+
+    <div class="container">
+      <h2>Test 4: OPTIONS Request (Preflight)</h2>
+      <button onclick="testOptions()">Test OPTIONS</button>
+      <div id="optionsResult" class="result" style="display: none"></div>
+    </div>
+
+    <script>
+      const API_BASE = "http://localhost:8080/api/v1";
+
+      async function testHealthCheck() {
+        const resultDiv = document.getElementById("healthResult");
+        resultDiv.style.display = "block";
+        resultDiv.className = "result";
+        resultDiv.textContent = "Testing...";
+
+        try {
+          console.log("Testing health check...");
+          const response = await fetch("http://localhost:8080/health", {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
+
+          console.log("Response status:", response.status);
+          console.log("Response headers:", [...response.headers.entries()]);
+
+          const data = await response.text();
+          console.log("Response data:", data);
+
+          if (response.ok) {
+            resultDiv.className = "result success";
+            resultDiv.textContent = `Health check successful!\nStatus: ${response.status}\nData: ${data}`;
+          } else {
+            resultDiv.className = "result error";
+            resultDiv.textContent = `Health check failed!\nStatus: ${response.status}\nData: ${data}`;
+          }
+        } catch (error) {
+          console.error("Health check error:", error);
+          resultDiv.className = "result error";
+          resultDiv.textContent = `Error: ${error.message}\nType: ${error.name}`;
+        }
+      }
+
+      async function testRegister() {
+        const resultDiv = document.getElementById("registerResult");
+        resultDiv.style.display = "block";
+        resultDiv.className = "result";
+        resultDiv.textContent = "Testing...";
+
+        try {
+          console.log("Testing register...");
+          const response = await fetch(`${API_BASE}/auth/register`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              email: "test@example.com",
+              username: "testuser",
+              password: "password123",
+            }),
+          });
+
+          console.log("Response status:", response.status);
+          console.log("Response headers:", [...response.headers.entries()]);
+
+          const data = await response.text();
+          console.log("Response data:", data);
+
+          if (response.ok) {
+            resultDiv.className = "result success";
+            resultDiv.textContent = `Register successful!\nStatus: ${response.status}\nData: ${data}`;
+          } else {
+            resultDiv.className = "result error";
+            resultDiv.textContent = `Register failed!\nStatus: ${response.status}\nData: ${data}`;
+          }
+        } catch (error) {
+          console.error("Register error:", error);
+          resultDiv.className = "result error";
+          resultDiv.textContent = `Error: ${error.message}\nType: ${error.name}`;
+        }
+      }
+
+      async function testLogin() {
+        const resultDiv = document.getElementById("loginResult");
+        resultDiv.style.display = "block";
+        resultDiv.className = "result";
+        resultDiv.textContent = "Testing...";
+
+        try {
+          console.log("Testing login...");
+          const response = await fetch(`${API_BASE}/auth/login`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              email: "test@example.com",
+              password: "password123",
+            }),
+          });
+
+          console.log("Response status:", response.status);
+          console.log("Response headers:", [...response.headers.entries()]);
+
+          const data = await response.text();
+          console.log("Response data:", data);
+
+          if (response.ok) {
+            resultDiv.className = "result success";
+            resultDiv.textContent = `Login successful!\nStatus: ${response.status}\nData: ${data}`;
+          } else {
+            resultDiv.className = "result error";
+            resultDiv.textContent = `Login failed!\nStatus: ${response.status}\nData: ${data}`;
+          }
+        } catch (error) {
+          console.error("Login error:", error);
+          resultDiv.className = "result error";
+          resultDiv.textContent = `Error: ${error.message}\nType: ${error.name}`;
+        }
+      }
+
+      async function testOptions() {
+        const resultDiv = document.getElementById("optionsResult");
+        resultDiv.style.display = "block";
+        resultDiv.className = "result";
+        resultDiv.textContent = "Testing...";
+
+        try {
+          console.log("Testing OPTIONS...");
+          const response = await fetch(`${API_BASE}/auth/register`, {
+            method: "OPTIONS",
+            headers: {
+              "Content-Type": "application/json",
+              "Access-Control-Request-Method": "POST",
+              "Access-Control-Request-Headers": "Content-Type",
+            },
+          });
+
+          console.log("Response status:", response.status);
+          console.log("Response headers:", [...response.headers.entries()]);
+
+          const data = await response.text();
+          console.log("Response data:", data);
+
+          if (response.ok) {
+            resultDiv.className = "result success";
+            resultDiv.textContent = `OPTIONS successful!\nStatus: ${response.status}\nData: ${data}`;
+          } else {
+            resultDiv.className = "result error";
+            resultDiv.textContent = `OPTIONS failed!\nStatus: ${response.status}\nData: ${data}`;
+          }
+        } catch (error) {
+          console.error("OPTIONS error:", error);
+          resultDiv.className = "result error";
+          resultDiv.textContent = `Error: ${error.message}\nType: ${error.name}`;
+        }
+      }
+    </script>
+  </body>
+</html>

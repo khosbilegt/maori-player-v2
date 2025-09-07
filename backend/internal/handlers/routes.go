@@ -35,7 +35,9 @@ func SetupRoutes(cfg *config.Config, videoRepo database.VideoRepository, userRep
 
 	// Public authentication routes
 	api.HandleFunc("/auth/register", authHandler.Register).Methods("POST")
+	api.HandleFunc("/auth/register", handleOptions).Methods("OPTIONS")
 	api.HandleFunc("/auth/login", authHandler.Login).Methods("POST")
+	api.HandleFunc("/auth/login", handleOptions).Methods("OPTIONS")
 
 	// Protected routes (require authentication)
 	protected := api.PathPrefix("").Subrouter()
@@ -66,4 +68,9 @@ func healthCheck(w http.ResponseWriter, r *http.Request) {
 		"status":  "healthy",
 		"service": "video-player-backend",
 	})
+}
+
+// handleOptions handles OPTIONS requests for CORS preflight
+func handleOptions(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
 }
