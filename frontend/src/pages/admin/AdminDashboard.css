@@ -9,15 +9,16 @@
 }
 
 .dashboard-header h1 {
-  font-size: 2rem;
+  font-size: 1.875rem;
   font-weight: 700;
-  color: #333;
+  color: #f1f5f9;
   margin: 0 0 0.5rem 0;
+  letter-spacing: -0.025em;
 }
 
 .dashboard-header p {
-  color: #666;
-  font-size: 1.1rem;
+  color: #94a3b8;
+  font-size: 1rem;
   margin: 0;
 }
 
@@ -29,10 +30,11 @@
 }
 
 .stat-card {
-  background: white;
+  background: #1e293b;
   border-radius: 8px;
   padding: 1.5rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
+  border: 1px solid #334155;
   display: flex;
   align-items: center;
   gap: 1rem;
@@ -40,39 +42,41 @@
 }
 
 .stat-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
 }
 
 .stat-icon {
-  font-size: 2.5rem;
-  width: 60px;
-  height: 60px;
+  font-size: 1.5rem;
+  width: 48px;
+  height: 48px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 12px;
+  background: #334155;
+  border-radius: 8px;
   flex-shrink: 0;
+  color: #94a3b8;
 }
 
 .stat-content h3 {
-  font-size: 2rem;
+  font-size: 1.875rem;
   font-weight: 700;
-  color: #333;
+  color: #f1f5f9;
   margin: 0 0 0.25rem 0;
+  letter-spacing: -0.025em;
 }
 
 .stat-content p {
-  font-size: 1rem;
+  font-size: 0.875rem;
   font-weight: 500;
-  color: #666;
+  color: #e2e8f0;
   margin: 0 0 0.25rem 0;
 }
 
 .stat-content small {
-  font-size: 0.875rem;
-  color: #999;
+  font-size: 0.75rem;
+  color: #94a3b8;
 }
 
 .dashboard-actions {
@@ -82,17 +86,19 @@
 }
 
 .action-card {
-  background: white;
+  background: #1e293b;
   border-radius: 8px;
   padding: 1.5rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
+  border: 1px solid #334155;
 }
 
 .action-card h3 {
-  font-size: 1.25rem;
+  font-size: 1.125rem;
   font-weight: 600;
-  color: #333;
+  color: #f1f5f9;
   margin: 0 0 1rem 0;
+  letter-spacing: -0.025em;
 }
 
 .action-buttons {
@@ -128,15 +134,15 @@
 }
 
 .status-indicator.success {
-  background-color: #28a745;
+  background-color: #10b981;
 }
 
 .status-indicator.warning {
-  background-color: #ffc107;
+  background-color: #f59e0b;
 }
 
 .status-indicator.error {
-  background-color: #dc3545;
+  background-color: #ef4444;
 }
 
 /* Responsive */

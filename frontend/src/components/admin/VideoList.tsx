@@ -115,7 +115,7 @@ const VideoList: React.FC<VideoListProps> = ({ onDelete }) => {
       <div className="admin-table-header">
         <h2>Videos ({videos.length})</h2>
         <button onClick={handleCreate} className="btn btn-primary">
-          ➕ Add Video
+          + Add Video
         </button>
       </div>
 
@@ -123,7 +123,7 @@ const VideoList: React.FC<VideoListProps> = ({ onDelete }) => {
         <div className="admin-empty-state">
           <p>No videos found. Create your first video to get started.</p>
           <button onClick={handleCreate} className="btn btn-primary">
-            Add Video
+            + Add Video
           </button>
         </div>
       ) : (
@@ -189,14 +189,14 @@ const VideoList: React.FC<VideoListProps> = ({ onDelete }) => {
                         className="btn btn-sm btn-secondary"
                         title="Edit"
                       >
-                        ✏️
+                        ✎
                       </button>
                       <button
                         onClick={() => handleDelete(video.id)}
                         className="btn btn-sm btn-danger"
                         title="Delete"
                       >
-                        🗑️
+                        ×
                       </button>
                     </div>
                   </td>

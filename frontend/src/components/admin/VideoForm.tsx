@@ -118,7 +118,7 @@ const VideoForm: React.FC<VideoFormProps> = ({ video, onSubmit, onCancel }) => {
         <div className="admin-modal-header">
           <h3>{video ? "Edit Video" : "Create New Video"}</h3>
           <button onClick={onCancel} className="modal-close">
-            ✕
+            ×
           </button>
         </div>
 
@@ -260,7 +260,7 @@ const VideoForm: React.FC<VideoFormProps> = ({ video, onSubmit, onCancel }) => {
                       onClick={() => handleTagRemove(tag)}
                       className="tag-remove"
                     >
-                      ✕
+                      ×
                     </button>
                   </span>
                 ))}

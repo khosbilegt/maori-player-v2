@@ -160,11 +160,11 @@ const VocabularyList: React.FC<VocabularyListProps> = ({
               className="search-input"
             />
             <button onClick={handleSearch} className="btn btn-secondary">
-              🔍
+              ⌕
             </button>
           </div>
           <button onClick={handleCreate} className="btn btn-primary">
-            ➕ Add Vocabulary
+            + Add Vocabulary
           </button>
         </div>
       </div>
@@ -176,7 +176,7 @@ const VocabularyList: React.FC<VocabularyListProps> = ({
             started.
           </p>
           <button onClick={handleCreate} className="btn btn-primary">
-            Add Vocabulary
+            + Add Vocabulary
           </button>
         </div>
       ) : (
@@ -222,14 +222,14 @@ const VocabularyList: React.FC<VocabularyListProps> = ({
                         className="btn btn-sm btn-secondary"
                         title="Edit"
                       >
-                        ✏️
+                        ✎
                       </button>
                       <button
                         onClick={() => handleDelete(vocab.id)}
                         className="btn btn-sm btn-danger"
                         title="Delete"
                       >
-                        🗑️
+                        ×
                       </button>
                     </div>
                   </td>

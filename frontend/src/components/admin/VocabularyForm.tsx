@@ -76,7 +76,7 @@ const VocabularyForm: React.FC<VocabularyFormProps> = ({
         <div className="admin-modal-header">
           <h3>{vocabulary ? "Edit Vocabulary" : "Create New Vocabulary"}</h3>
           <button onClick={onCancel} className="modal-close">
-            ✕
+            ×
           </button>
         </div>
 

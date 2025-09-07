@@ -11,9 +11,9 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const location = useLocation();
 
   const navigation = [
-    { name: "Dashboard", href: "/admin", icon: "📊" },
-    { name: "Videos", href: "/admin/videos", icon: "🎥" },
-    { name: "Vocabulary", href: "/admin/vocabulary", icon: "📚" },
+    { name: "Dashboard", href: "/admin", icon: "⚡" },
+    { name: "Videos", href: "/admin/videos", icon: "▶" },
+    { name: "Vocabulary", href: "/admin/vocabulary", icon: "◊" },
   ];
 
   const isActive = (href: string) => {
@@ -32,7 +32,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
             className="sidebar-toggle"
             onClick={() => setSidebarOpen(!sidebarOpen)}
           >
-            ✕
+            ×
           </button>
         </div>
 
@@ -60,7 +60,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
             className="mobile-menu-toggle"
             onClick={() => setSidebarOpen(!sidebarOpen)}
           >
-            ☰
+            ≡
           </button>
           <h1>Admin Panel</h1>
           <div className="admin-header-actions">

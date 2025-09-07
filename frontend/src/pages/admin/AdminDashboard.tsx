@@ -91,7 +91,7 @@ const AdminDashboard: React.FC = () => {
 
       <div className="stats-grid">
         <div className="stat-card">
-          <div className="stat-icon">🎥</div>
+          <div className="stat-icon">▶</div>
           <div className="stat-content">
             <h3>{stats.totalVideos}</h3>
             <p>Total Videos</p>
@@ -100,7 +100,7 @@ const AdminDashboard: React.FC = () => {
         </div>
 
         <div className="stat-card">
-          <div className="stat-icon">📚</div>
+          <div className="stat-icon">◊</div>
           <div className="stat-content">
             <h3>{stats.totalVocabulary}</h3>
             <p>Vocabulary Items</p>
@@ -109,7 +109,7 @@ const AdminDashboard: React.FC = () => {
         </div>
 
         <div className="stat-card">
-          <div className="stat-icon">📊</div>
+          <div className="stat-icon">⚡</div>
           <div className="stat-content">
             <h3>{stats.totalVideos + stats.totalVocabulary}</h3>
             <p>Total Content</p>
@@ -118,7 +118,7 @@ const AdminDashboard: React.FC = () => {
         </div>
 
         <div className="stat-card">
-          <div className="stat-icon">⚡</div>
+          <div className="stat-icon">◈</div>
           <div className="stat-content">
             <h3>{stats.recentVideos + stats.recentVocabulary}</h3>
             <p>Recent Activity</p>
@@ -132,10 +132,10 @@ const AdminDashboard: React.FC = () => {
           <h3>Quick Actions</h3>
           <div className="action-buttons">
             <a href="/admin/videos" className="btn btn-primary">
-              🎥 Manage Videos
+              ▶ Manage Videos
             </a>
             <a href="/admin/vocabulary" className="btn btn-primary">
-              📚 Manage Vocabulary
+              ◊ Manage Vocabulary
             </a>
           </div>
         </div>

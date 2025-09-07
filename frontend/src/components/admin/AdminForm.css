@@ -14,9 +14,11 @@
 }
 
 .admin-modal {
-  background: white;
+  background: #1e293b;
   border-radius: 8px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3),
+    0 10px 10px -5px rgba(0, 0, 0, 0.1);
+  border: 1px solid #334155;
   max-width: 600px;
   width: 100%;
   max-height: 90vh;
@@ -25,7 +27,7 @@
 
 .admin-modal-header {
   padding: 1.5rem;
-  border-bottom: 1px solid #e9ecef;
+  border-bottom: 1px solid #334155;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -33,25 +35,26 @@
 
 .admin-modal-header h3 {
   margin: 0;
-  font-size: 1.25rem;
+  font-size: 1.125rem;
   font-weight: 600;
-  color: #333;
+  color: #f1f5f9;
+  letter-spacing: -0.025em;
 }
 
 .modal-close {
   background: none;
   border: none;
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   cursor: pointer;
-  padding: 0.25rem;
-  border-radius: 4px;
-  color: #666;
+  padding: 0.5rem;
+  border-radius: 6px;
+  color: #94a3b8;
   transition: all 0.2s;
 }
 
 .modal-close:hover {
-  background-color: #f8f9fa;
-  color: #333;
+  background-color: #334155;
+  color: #e2e8f0;
 }
 
 .admin-form {
@@ -59,12 +62,12 @@
 }
 
 .form-error {
-  background-color: #f8d7da;
-  color: #721c24;
+  background-color: #7f1d1d;
+  color: #fca5a5;
   padding: 0.75rem;
-  border-radius: 4px;
+  border-radius: 6px;
   margin-bottom: 1rem;
-  border: 1px solid #f5c6cb;
+  border: 1px solid #991b1b;
 }
 
 .form-group {
@@ -81,7 +84,8 @@
   display: block;
   margin-bottom: 0.5rem;
   font-weight: 500;
-  color: #333;
+  color: #e2e8f0;
+  font-size: 0.875rem;
 }
 
 .form-group input,
@@ -89,18 +93,25 @@
 .form-group select {
   width: 100%;
   padding: 0.75rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  border: 1px solid #475569;
+  border-radius: 6px;
   font-size: 0.875rem;
   transition: border-color 0.2s, box-shadow 0.2s;
+  background-color: #334155;
+  color: #e2e8f0;
 }
 
 .form-group input:focus,
 .form-group textarea:focus,
 .form-group select:focus {
   outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+  color: #94a3b8;
 }
 
 .form-group textarea {
@@ -112,15 +123,15 @@
   display: block;
   margin-top: 0.25rem;
   font-size: 0.75rem;
-  color: #6c757d;
+  color: #94a3b8;
 }
 
 /* Tags input */
 .tags-input {
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  border: 1px solid #475569;
+  border-radius: 6px;
   padding: 0.5rem;
-  background: white;
+  background: #334155;
 }
 
 .tags-list {
@@ -133,8 +144,8 @@
 .tag {
   display: inline-flex;
   align-items: center;
-  background-color: #e9ecef;
-  color: #495057;
+  background-color: #475569;
+  color: #e2e8f0;
   padding: 0.25rem 0.5rem;
   border-radius: 4px;
   font-size: 0.75rem;
@@ -144,7 +155,7 @@
 .tag-remove {
   background: none;
   border: none;
-  color: #6c757d;
+  color: #94a3b8;
   cursor: pointer;
   padding: 0;
   font-size: 0.75rem;
@@ -152,7 +163,7 @@
 }
 
 .tag-remove:hover {
-  color: #dc3545;
+  color: #fca5a5;
 }
 
 .tag-input-group {
@@ -165,6 +176,12 @@
   border: none;
   padding: 0.5rem;
   font-size: 0.875rem;
+  background-color: transparent;
+  color: #e2e8f0;
+}
+
+.tag-input-group input::placeholder {
+  color: #94a3b8;
 }
 
 .tag-input-group input:focus {
@@ -178,7 +195,7 @@
   justify-content: flex-end;
   gap: 1rem;
   padding-top: 1rem;
-  border-top: 1px solid #e9ecef;
+  border-top: 1px solid #334155;
   margin-top: 1rem;
 }
 
