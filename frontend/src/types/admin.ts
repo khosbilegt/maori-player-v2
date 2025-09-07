@@ -6,11 +6,6 @@ export interface VideoFormData {
   url: string;
   thumbnail_url: string;
   duration: number;
-  category: string;
-  tags: string[];
-  language: string;
-  difficulty_level: string;
-  transcript_url?: string;
   subtitles_url?: string;
 }
 
