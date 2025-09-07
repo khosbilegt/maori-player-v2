@@ -1,0 +1,49 @@
+{
+    "videos": [
+        {
+            "id": "tetepus10e6",
+            "title": "Te Tēpu: Season 10 Episode 6",
+            "description": "Interactive Māori language learning video with synchronized transcripts and hover translations.",
+            "thumbnail": "https://www.dropbox.com/scl/fi/eji6eappnmm25kkq45r0x/tetepus10e6.jpg?rlkey=va30la6fq31i2y03mr0ykhj6v&st=oznsw98x&raw=1",
+            "video": "https://www.dropbox.com/scl/fi/r4nmatwmpqobjsi0gtaks/tetepus10e6.mp4?rlkey=kwrf1igeud9lz8l65mfg25qth&st=s2gzu1k1&raw=1",
+            "subtitle": "/tetepus10e6.vtt",
+            "duration": "2:34"
+        },
+        {
+            "id": "pixie-williams",
+            "title": "Tu Maori Ki Te Ao Pixie Williams (Te Reo Māori).mp4",
+            "description": "Interactive Māori language learning video with synchronized transcripts and hover translations.",
+            "thumbnail": "https://i.ytimg.com/vi/2uON12nR25E/maxresdefault.jpg?sqp=-oaymwEmCIAKENAF8quKqQMa8AEB-AH-CYAC0AWKAgwIABABGGUgWihRMA8=&rs=AOn4CLA0MzfdFCTJpYlCyjHF4dtbLcJOkg",
+            "video": "https://www.dropbox.com/scl/fi/b713sznbtn3c64c5xuq63/pixie_williams.mp4?rlkey=eaj8tntadvvfcp5ybd4zuwyd0&st=jfx4wavp&raw=1",
+            "subtitle": "/pixie_williams.vtt",
+            "duration": "2:11"
+        },
+        {
+            "id": "rahera_shortland",
+            "title": "Rahera Shortland strengthening and promoting the Maori language (Te Waka Toi Awards 2015)",
+            "description": "Interactive Māori language learning video with synchronized transcripts and hover translations.",
+            "thumbnail": "https://i.ytimg.com/vi/TXMiuUbptSk/maxresdefault.jpg",
+            "video": "https://www.dropbox.com/scl/fi/abkr9353oajvvx4psx9qu/rahera_shortland.mp4?rlkey=375u515xmshf57m9ofrepjoeq&st=1zlyf18z&raw=1",
+            "subtitle": "/rahera_shortland.vtt",
+            "duration": "2:54"
+        },
+        {
+            "id": "maori-music",
+            "title": "Te Tepu Season 10：Episode 23 - Māori Music",
+            "description": "this is the description",
+            "thumbnail": "https://i.ytimg.com/vi/2uON12nR25E/maxresdefault.jpg?sqp=-oaymwEmCIAKENAF8quKqQMa8AEB-AH-CYAC0AWKAgwIABABGGUgWihRMA8=&rs=AOn4CLA0MzfdFCTJpYlCyjHF4dtbLcJOkg",
+            "video": "https://khosbilegt.github.io/maori-player/tetepus10e23.mp4",
+            "subtitle": "/tetepus10e23.vtt",
+            "duration": "3:42"
+        },
+        {
+            "id": "tetepus9e3",
+            "title": "Te Tepu Season 9：Episode 3 - Te Arawa",
+            "description": "this is the description",
+            "thumbnail": "https://i.ytimg.com/vi/2uON12nR25E/maxresdefault.jpg?sqp=-oaymwEmCIAKENAF8quKqQMa8AEB-AH-CYAC0AWKAgwIABABGGUgWihRMA8=&rs=AOn4CLA0MzfdFCTJpYlCyjHF4dtbLcJOkg",
+            "video": "tetepus9e3.mp4",
+            "subtitle": "/tetepus9e3.vtt",
+            "duration": "4:29"
+        }
+    ]
+}

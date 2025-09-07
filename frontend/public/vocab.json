@@ -1,0 +1,73 @@
+[
+     {
+         "id": "kia-ora",
+         "maori": "Kia ora",
+         "english": "Hello",
+         "pronunciation": "KEY-a O-ra",
+         "description": "A common greeting meaning hello."
+     },
+     {
+         "id": "nau-mai",
+         "maori": "Nau mai",
+         "english": "Welcome",
+         "pronunciation": "NOW-my",
+         "description": "Used to welcome someone."
+     },
+     {
+         "id": "whakaaturanga",
+         "maori": "whakaaturanga",
+         "english": "show/presentation",
+         "pronunciation": "fah-kah-ah-TOO-rah-ngah",
+         "description": "Refers to a show, presentation, or display."
+     },
+     {
+         "id": "ipurangi",
+         "maori": "ipurangi",
+         "english": "online/internet",
+         "pronunciation": "EE-poo-rah-ng-ee",
+         "description": "Refers to things happening on the internet."
+     },
+     {
+         "id": "reo",
+         "maori": "reo",
+         "english": "language",
+         "pronunciation": "REH-oh",
+         "description": "Used to refer to a language, e.g., te reo Māori."
+     },
+     {
+         "id": "rangatira",
+         "maori": "rangatira",
+         "english": "chief/leader",
+         "pronunciation": "RAH-ngah-tee-rah",
+         "description": "A respected leader or person of status."
+     },
+     {
+         "id": "kai-pāpāho",
+         "maori": "kaikōrero he kaipāpāho",
+         "english": "presenters and broadcasters",
+         "pronunciation": "kai-COH-reh-roh he kai-PAH-pah-ho",
+         "description": "Refers to people who speak or broadcast media content."
+     },
+     {
+         "id": "tēnā-koutou",
+         "maori": "tēnā koutou",
+         "english": "Hello to you all",
+         "pronunciation": "TEH-nah KOH-too",
+         "description": "A greeting used for multiple people."
+     },
+     {
+         "id": "pīki-teka",
+         "maori": "pīki teka",
+         "english": "right and wrong",
+         "pronunciation": "PEE-kee TEH-kah",
+         "description": "Refers to correct or incorrect actions or ideas."
+     },
+     {
+         "id": "manawanui",
+         "maori": "manawanui",
+         "english": "patience/perseverance",
+         "pronunciation": "MAH-nah-wah-NOO-ee",
+         "description": "Refers to enduring with patience or steadfastness."
+     }
+ ]
+ 

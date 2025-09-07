@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/maori.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Primary Meta Tags -->
+    <title>Māori Language Player</title>
+    <meta name="title" content="Māori Language Player" />
+    <meta
+      name="description"
+      content="Interactive video player for learning Te Reo Māori with synchronized transcripts, hover translations, and subtitle controls."
+    />
+    <meta
+      name="keywords"
+      content="Māori, Te Reo Māori, language learning, video player, subtitles, transcript, interactive"
+    />
+    <meta name="author" content="Māori Language Player" />
+    <meta name="robots" content="index, follow" />
+    <meta name="language" content="English" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" id="og-url" content="" />
+    <meta property="og:title" content="Māori Language Player" />
+    <meta
+      property="og:description"
+      content="Interactive video player for learning Te Reo Māori with synchronized transcripts, hover translations, and subtitle controls."
+    />
+    <meta property="og:image" id="og-image" content="/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:site_name" content="Māori Language Player" />
+    <meta property="og:locale" content="en_US" />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" id="twitter-url" content="" />
+    <meta property="twitter:title" content="Māori Language Player" />
+    <meta
+      property="twitter:description"
+      content="Interactive video player for learning Te Reo Māori with synchronized transcripts, hover translations, and subtitle controls."
+    />
+    <meta property="twitter:image" id="twitter-image" content="" />
+    <meta
+      property="twitter:image:alt"
+      content="Māori Language Player - Interactive video learning interface"
+    />
+
+    <!-- Additional Meta Tags -->
+    <meta name="theme-color" content="#4f46e5" />
+    <meta name="msapplication-TileColor" content="#4f46e5" />
+    <link rel="canonical" id="canonical-url" href="" />
+
+    <!-- Dynamic URL and Image Setting -->
+    <script>
+      (function () {
+        // Get the current URL
+        const currentUrl = window.location.origin + window.location.pathname;
+        const imageUrl =
+          currentUrl + (currentUrl.endsWith("/") ? "" : "/") + "og-image.svg";
+
+        // Update meta tags
+        document.getElementById("og-url").setAttribute("content", currentUrl);
+        document.getElementById("og-image").setAttribute("content", imageUrl);
+        document
+          .getElementById("twitter-url")
+          .setAttribute("content", currentUrl);
+        document
+          .getElementById("twitter-image")
+          .setAttribute("content", imageUrl);
+        document
+          .getElementById("canonical-url")
+          .setAttribute("href", currentUrl);
+
+        // Update structured data
+        const structuredData = {
+          "@context": "https://schema.org",
+          "@type": "WebApplication",
+          name: "Māori Language Player",
+          description:
+            "Interactive video player for learning Te Reo Māori with synchronized transcripts, hover translations, and subtitle controls.",
+          url: currentUrl,
+          applicationCategory: "EducationalApplication",
+          operatingSystem: "Web Browser",
+          offers: {
+            "@type": "Offer",
+            price: "0",
+            priceCurrency: "USD",
+          },
+          author: {
+            "@type": "Organization",
+            name: "Māori Language Player",
+          },
+        };
+
+        const script = document.createElement("script");
+        script.type = "application/ld+json";
+        script.textContent = JSON.stringify(structuredData, null, 2);
+        document.head.appendChild(script);
+      })();
+    </script>
+    <script>
+      // GitHub Pages SPA routing fix
+      (function (l) {
+        if (l.search[1] === "/") {
+          var decoded = l.search
+            .slice(1)
+            .split("&")
+            .map(function (s) {
+              return s.replace(/~and~/g, "&");
+            })
+            .join("?");
+          window.history.replaceState(
+            null,
+            null,
+            l.pathname.slice(0, -1) + decoded + l.hash
+          );
+        }
+      })(window.location);
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
