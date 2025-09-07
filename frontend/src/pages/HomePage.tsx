@@ -1,11 +1,13 @@
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { useAuth } from "../contexts/AuthContext";
 import { getLibraryData } from "../utils/libraryLoader";
 import "./HomePage.css";
 
 function HomePage() {
   const [videoCount, setVideoCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
     getLibraryData()
@@ -40,16 +42,29 @@ function HomePage() {
             </div>
           </div>
           <div className="hero-actions">
-            <Link to="/library" className="cta-button primary">
-              Explore Library
-            </Link>
-            <Link
-              to="/video"
-              className="cta-button secondary"
-              style={{ pointerEvents: "none" }}
-            >
-              Start Learning
-            </Link>
+            {isAuthenticated ? (
+              <>
+                <Link to="/library" className="cta-button primary">
+                  Explore Library
+                </Link>
+                <Link
+                  to="/video"
+                  className="cta-button secondary"
+                  style={{ pointerEvents: "none" }}
+                >
+                  Start Learning
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link to="/register" className="cta-button primary">
+                  Get Started
+                </Link>
+                <Link to="/login" className="cta-button secondary">
+                  Sign In
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </div>
