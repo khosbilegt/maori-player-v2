@@ -57,6 +57,9 @@ func SetupRoutes(cfg *config.Config, videoRepo database.VideoRepository, userRep
 	// Health check endpoint
 	r.HandleFunc("/health", healthCheck).Methods("GET")
 
+	// Seed endpoint (for development)
+	r.HandleFunc("/seed", seedDatabase).Methods("POST")
+
 	return r
 }
 
@@ -73,4 +76,17 @@ func healthCheck(w http.ResponseWriter, r *http.Request) {
 // handleOptions handles OPTIONS requests for CORS preflight
 func handleOptions(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
+}
+
+// seedDatabase handles seeding the database with sample data
+func seedDatabase(w http.ResponseWriter, r *http.Request) {
+	// This is a simple seed endpoint - in production, you'd want proper authentication
+	// and more sophisticated seeding logic
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{
+		"message": "Use the seed command: go run cmd/seed/main.go",
+		"note":    "This endpoint is for development purposes only",
+	})
 }

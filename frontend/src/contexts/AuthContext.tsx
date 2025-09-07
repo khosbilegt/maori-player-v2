@@ -5,6 +5,7 @@ import React, {
   useEffect,
   type ReactNode,
 } from "react";
+import { apiClient } from "../utils/apiClient";
 
 export interface User {
   id: string;
@@ -40,13 +41,14 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const useAuth = () => {
+// eslint-disable-next-line react-refresh/only-export-components
+export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
     throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
-};
+}
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -79,20 +81,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       console.log("trying to login");
       console.log(JSON.stringify({ email, password }));
-      const response = await fetch("http://localhost:8080/api/v1/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Login failed");
-      }
-
-      const data: AuthResponse = await response.json();
+      const data: AuthResponse = await apiClient.login(email, password);
 
       setUser(data.user);
       setToken(data.token);
@@ -110,23 +99,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     password: string
   ): Promise<void> => {
     try {
-      const response = await fetch(
-        "http://localhost:8080/api/v1/auth/register",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ email, username, password }),
-        }
+      const data: AuthResponse = await apiClient.register(
+        email,
+        username,
+        password
       );
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Registration failed");
-      }
-
-      const data: AuthResponse = await response.json();
 
       setUser(data.user);
       setToken(data.token);
@@ -155,29 +132,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
 
     try {
-      const body: any = { email, username };
-      if (password) {
-        body.password = password;
-      }
-
-      const response = await fetch(
-        "http://localhost:8080/api/v1/auth/profile",
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(body),
-        }
+      const updatedUser: User = await apiClient.updateProfile(
+        token,
+        email,
+        username,
+        password
       );
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Profile update failed");
-      }
-
-      const updatedUser: User = await response.json();
       setUser(updatedUser);
       localStorage.setItem("auth_user", JSON.stringify(updatedUser));
     } catch (error) {

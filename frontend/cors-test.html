@@ -78,7 +78,9 @@
     </div>
 
     <script>
-      const API_BASE = "http://localhost:8080/api/v1";
+      // You can modify these values for testing different environments
+      const API_BASE_URL = "http://localhost:8080";
+      const API_BASE = `${API_BASE_URL}/api/v1`;
 
       async function testHealthCheck() {
         const resultDiv = document.getElementById("healthResult");
@@ -88,7 +90,7 @@
 
         try {
           console.log("Testing health check...");
-          const response = await fetch("http://localhost:8080/health", {
+          const response = await fetch(`${API_BASE_URL}/health`, {
             method: "GET",
             headers: {
               "Content-Type": "application/json",
