@@ -391,6 +391,42 @@
   font-weight: 500;
 }
 
+/* Text Selection Styles */
+.transcript-text {
+  user-select: text;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+}
+
+.transcript-text::selection {
+  background: rgba(59, 130, 246, 0.3);
+  color: #ffffff;
+}
+
+.transcript-text::-moz-selection {
+  background: rgba(59, 130, 246, 0.3);
+  color: #ffffff;
+}
+
+/* Improve text selection on hoverable words */
+.hoverable-word {
+  user-select: text;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+}
+
+.hoverable-word::selection {
+  background: rgba(16, 185, 129, 0.3);
+  color: #ffffff;
+}
+
+.hoverable-word::-moz-selection {
+  background: rgba(16, 185, 129, 0.3);
+  color: #ffffff;
+}
+
 /* Responsive Design */
 @media (max-width: 1024px) {
   .app-main {

@@ -14,7 +14,7 @@ import (
 )
 
 // SetupRoutes configures all routes for the application
-func SetupRoutes(cfg *config.Config, videoRepo database.VideoRepository, userRepo database.UserRepository, vocabRepo database.VocabularyRepository, watchHistoryRepo database.WatchHistoryRepository) *mux.Router {
+func SetupRoutes(cfg *config.Config, db *database.MongoDB, videoRepo database.VideoRepository, userRepo database.UserRepository, vocabRepo database.VocabularyRepository, watchHistoryRepo database.WatchHistoryRepository) *mux.Router {
 	r := mux.NewRouter()
 
 	log.Println("Setting up routes")
@@ -31,6 +31,7 @@ func SetupRoutes(cfg *config.Config, videoRepo database.VideoRepository, userRep
 	vocabularyHandler := NewVocabularyHandler(vocabRepo)
 	watchHistoryHandler := NewWatchHistoryHandler(watchHistoryRepo, videoRepo)
 	vttHandler := NewVTTUploadHandler("./uploads/vtt")
+	learningListHandler := NewLearningListHandler(db)
 
 	// API routes
 	api := r.PathPrefix("/api/v1").Subrouter()
@@ -73,6 +74,14 @@ func SetupRoutes(cfg *config.Config, videoRepo database.VideoRepository, userRep
 	protected.HandleFunc("/watch-history", watchHistoryHandler.DeleteWatchHistory).Methods("DELETE")
 	protected.HandleFunc("/watch-history/recent", watchHistoryHandler.GetRecentWatched).Methods("GET")
 	protected.HandleFunc("/watch-history/completed", watchHistoryHandler.GetCompletedVideos).Methods("GET")
+
+	// Learning list routes (authenticated users - no admin required)
+	protected.HandleFunc("/learning-list", learningListHandler.GetLearningList).Methods("GET")
+	protected.HandleFunc("/learning-list", learningListHandler.CreateLearningListItem).Methods("POST")
+	protected.HandleFunc("/learning-list/stats", learningListHandler.GetLearningListStats).Methods("GET")
+	protected.HandleFunc("/learning-list/{id}", learningListHandler.GetLearningListItem).Methods("GET")
+	protected.HandleFunc("/learning-list/{id}", learningListHandler.UpdateLearningListItem).Methods("PUT")
+	protected.HandleFunc("/learning-list/{id}", learningListHandler.DeleteLearningListItem).Methods("DELETE")
 
 	// VTT file routes (admin-only)
 	admin.HandleFunc("/vtt/upload", vttHandler.UploadVTT).Methods("POST")

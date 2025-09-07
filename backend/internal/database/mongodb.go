@@ -21,6 +21,7 @@ type MongoDB struct {
 	UserCollection         *mongo.Collection
 	VocabularyCollection   *mongo.Collection
 	WatchHistoryCollection *mongo.Collection
+	LearningListCollection *mongo.Collection
 }
 
 // NewMongoDB creates a new MongoDB connection
@@ -43,6 +44,7 @@ func NewMongoDB(cfg *config.Config) (*MongoDB, error) {
 	userCollection := database.Collection("users")
 	vocabularyCollection := database.Collection("vocabulary")
 	watchHistoryCollection := database.Collection("watch_history")
+	learningListCollection := database.Collection("learning_list")
 
 	return &MongoDB{
 		Client:                 client,
@@ -51,6 +53,7 @@ func NewMongoDB(cfg *config.Config) (*MongoDB, error) {
 		UserCollection:         userCollection,
 		VocabularyCollection:   vocabularyCollection,
 		WatchHistoryCollection: watchHistoryCollection,
+		LearningListCollection: learningListCollection,
 	}, nil
 }
 
@@ -388,6 +391,94 @@ func (r *watchHistoryRepository) GetByUserID(ctx context.Context, userID string)
 	}
 
 	return watchHistories, nil
+}
+
+// Learning List Repository Methods
+
+// CreateLearningListItem creates a new learning list item
+func (m *MongoDB) CreateLearningListItem(ctx context.Context, item *models.LearningList) error {
+	_, err := m.LearningListCollection.InsertOne(ctx, item)
+	return err
+}
+
+// GetLearningListByUserID retrieves all learning list items for a user
+func (m *MongoDB) GetLearningListByUserID(ctx context.Context, userID primitive.ObjectID) ([]*models.LearningList, error) {
+	cursor, err := m.LearningListCollection.Find(ctx, bson.M{"user_id": userID}, options.Find().SetSort(bson.M{"timestamp": -1}))
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var items []*models.LearningList
+	if err := cursor.All(ctx, &items); err != nil {
+		return nil, err
+	}
+
+	return items, nil
+}
+
+// GetLearningListItemByID retrieves a specific learning list item by ID
+func (m *MongoDB) GetLearningListItemByID(ctx context.Context, id primitive.ObjectID) (*models.LearningList, error) {
+	var item models.LearningList
+	err := m.LearningListCollection.FindOne(ctx, bson.M{"_id": id}).Decode(&item)
+	if err != nil {
+		return nil, err
+	}
+	return &item, nil
+}
+
+// UpdateLearningListItem updates a learning list item
+func (m *MongoDB) UpdateLearningListItem(ctx context.Context, id primitive.ObjectID, update bson.M) error {
+	_, err := m.LearningListCollection.UpdateOne(ctx, bson.M{"_id": id}, bson.M{"$set": update})
+	return err
+}
+
+// DeleteLearningListItem deletes a learning list item
+func (m *MongoDB) DeleteLearningListItem(ctx context.Context, id primitive.ObjectID) error {
+	_, err := m.LearningListCollection.DeleteOne(ctx, bson.M{"_id": id})
+	return err
+}
+
+// GetLearningListByStatus retrieves learning list items by status for a user
+func (m *MongoDB) GetLearningListByStatus(ctx context.Context, userID primitive.ObjectID, status string) ([]*models.LearningList, error) {
+	filter := bson.M{
+		"user_id": userID,
+		"status":  status,
+	}
+
+	cursor, err := m.LearningListCollection.Find(ctx, filter, options.Find().SetSort(bson.M{"timestamp": -1}))
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var items []*models.LearningList
+	if err := cursor.All(ctx, &items); err != nil {
+		return nil, err
+	}
+
+	return items, nil
+}
+
+// GetLearningListByVideoID retrieves learning list items for a specific video
+func (m *MongoDB) GetLearningListByVideoID(ctx context.Context, userID primitive.ObjectID, videoID string) ([]*models.LearningList, error) {
+	filter := bson.M{
+		"user_id":  userID,
+		"video_id": videoID,
+	}
+
+	cursor, err := m.LearningListCollection.Find(ctx, filter, options.Find().SetSort(bson.M{"timestamp": -1}))
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var items []*models.LearningList
+	if err := cursor.All(ctx, &items); err != nil {
+		return nil, err
+	}
+
+	return items, nil
 }
 
 // GetByUserAndVideo retrieves watch history for a specific user and video

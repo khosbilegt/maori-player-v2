@@ -93,6 +93,24 @@ var (
 		Code:    "INSUFFICIENT_PERMISSIONS",
 		Message: "Insufficient permissions",
 	}
+
+	// Invalid ID
+	ErrInvalidID = &APIError{
+		Code:    "INVALID_ID",
+		Message: "Invalid ID format",
+	}
+
+	// Not found
+	ErrNotFound = &APIError{
+		Code:    "NOT_FOUND",
+		Message: "Resource not found",
+	}
+
+	// Forbidden
+	ErrForbidden = &APIError{
+		Code:    "FORBIDDEN",
+		Message: "Access forbidden",
+	}
 )
 
 // NewAPIError creates a new API error with custom message

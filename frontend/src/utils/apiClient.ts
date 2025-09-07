@@ -294,6 +294,76 @@ export class ApiClient {
     }
   }
 
+  // Learning List Methods
+  async getLearningList(
+    token: string,
+    params?: { status?: string; video_id?: string }
+  ): Promise<{ data: any[] }> {
+    const queryParams = new URLSearchParams();
+    if (params?.status) queryParams.append("status", params.status);
+    if (params?.video_id) queryParams.append("video_id", params.video_id);
+
+    const url = `${environment.apiBaseUrl}/api/v1/learning-list${
+      queryParams.toString() ? `?${queryParams.toString()}` : ""
+    }`;
+    return this.get(url, {
+      Authorization: `Bearer ${token}`,
+    });
+  }
+
+  async createLearningListItem(
+    token: string,
+    data: { text: string; video_id?: string; notes?: string }
+  ): Promise<{ data: any }> {
+    console.log(token);
+    return this.post(`${environment.apiBaseUrl}/api/v1/learning-list`, data, {
+      Authorization: `Bearer ${token}`,
+    });
+  }
+
+  async getLearningListItem(token: string, id: string): Promise<{ data: any }> {
+    return this.get(`${environment.apiBaseUrl}/api/v1/learning-list/${id}`, {
+      Authorization: `Bearer ${token}`,
+    });
+  }
+
+  async updateLearningListItem(
+    token: string,
+    id: string,
+    data: { text?: string; status?: string; notes?: string }
+  ): Promise<{ data: any }> {
+    return this.put(
+      `${environment.apiBaseUrl}/api/v1/learning-list/${id}`,
+      data,
+      {
+        Authorization: `Bearer ${token}`,
+      }
+    );
+  }
+
+  async deleteLearningListItem(
+    token: string,
+    id: string
+  ): Promise<{ message: string }> {
+    return this.delete(`${environment.apiBaseUrl}/api/v1/learning-list/${id}`, {
+      Authorization: `Bearer ${token}`,
+    });
+  }
+
+  async getLearningListStats(token: string): Promise<{
+    data: {
+      total: number;
+      new: number;
+      learning: number;
+      learned: number;
+      this_week: number;
+    };
+  }> {
+    return this.get(`${environment.apiBaseUrl}/api/v1/learning-list/stats`, {
+      Authorization: `Bearer ${token}`,
+    });
+  }
+
   // Health check
   async healthCheck(): Promise<{ status: string; service: string }> {
     return this.get(API_ENDPOINTS.HEALTH);

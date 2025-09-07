@@ -34,7 +34,7 @@ func main() {
 	watchHistoryRepo := database.NewWatchHistoryRepository(db)
 
 	// Setup routes
-	router := handlers.SetupRoutes(cfg, videoRepo, userRepo, vocabRepo, watchHistoryRepo)
+	router := handlers.SetupRoutes(cfg, db, videoRepo, userRepo, vocabRepo, watchHistoryRepo)
 
 	// Create server
 	server := &http.Server{
