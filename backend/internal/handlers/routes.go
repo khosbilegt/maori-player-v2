@@ -21,7 +21,6 @@ func SetupRoutes(cfg *config.Config, videoRepo database.VideoRepository, userRep
 
 	// Apply middleware
 	r.Use(middleware.Logging)
-	r.Use(middleware.CORS)
 
 	// Create JWT manager
 	jwtManager := jwtutils.NewJWTManager(&cfg.JWT)
@@ -35,9 +34,7 @@ func SetupRoutes(cfg *config.Config, videoRepo database.VideoRepository, userRep
 
 	// Public authentication routes
 	api.HandleFunc("/auth/register", authHandler.Register).Methods("POST")
-	api.HandleFunc("/auth/register", handleOptions).Methods("OPTIONS")
 	api.HandleFunc("/auth/login", authHandler.Login).Methods("POST")
-	api.HandleFunc("/auth/login", handleOptions).Methods("OPTIONS")
 
 	// Protected routes (require authentication)
 	protected := api.PathPrefix("").Subrouter()

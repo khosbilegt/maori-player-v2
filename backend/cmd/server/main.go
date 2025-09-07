@@ -13,6 +13,7 @@ import (
 	"video-player-backend/internal/config"
 	"video-player-backend/internal/database"
 	"video-player-backend/internal/handlers"
+	"video-player-backend/internal/middleware"
 )
 
 func main() {
@@ -36,7 +37,7 @@ func main() {
 	// Create server
 	server := &http.Server{
 		Addr:    fmt.Sprintf("%s:%s", cfg.Server.Host, cfg.Server.Port),
-		Handler: router,
+		Handler: middleware.EnableCORS(router),
 	}
 
 	// Start server in a goroutine
