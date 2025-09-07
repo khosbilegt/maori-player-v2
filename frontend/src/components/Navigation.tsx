@@ -4,7 +4,7 @@ import { useAuth } from "../contexts/AuthContext";
 import "./Navigation.css";
 
 const Navigation: React.FC = () => {
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, isAdmin, logout } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -31,9 +31,11 @@ const Navigation: React.FC = () => {
               <Link to="/history" className="nav-link">
                 History
               </Link>
-              <Link to="/admin" className="nav-link">
-                Admin
-              </Link>
+              {isAdmin && (
+                <Link to="/admin" className="nav-link">
+                  Admin
+                </Link>
+              )}
             </>
           )}
         </div>

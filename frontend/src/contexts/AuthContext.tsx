@@ -11,6 +11,7 @@ export interface User {
   id: string;
   email: string;
   username: string;
+  role: string;
   created_at: string;
   updated_at: string;
 }
@@ -24,6 +25,7 @@ interface AuthContextType {
   user: User | null;
   token: string | null;
   isAuthenticated: boolean;
+  isAdmin: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (
@@ -150,6 +152,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     user,
     token,
     isAuthenticated: !!user && !!token,
+    isAdmin: user?.role === "admin",
     isLoading,
     login,
     register,
