@@ -5,14 +5,16 @@ import (
 	"log"
 	"net/http"
 
+	"video-player-backend/internal/config"
 	"video-player-backend/internal/database"
 	"video-player-backend/internal/middleware"
+	jwtutils "video-player-backend/internal/utils"
 
 	"github.com/gorilla/mux"
 )
 
 // SetupRoutes configures all routes for the application
-func SetupRoutes(repo database.VideoRepository) *mux.Router {
+func SetupRoutes(cfg *config.Config, videoRepo database.VideoRepository, userRepo database.UserRepository) *mux.Router {
 	r := mux.NewRouter()
 
 	log.Println("Setting up routes")
@@ -21,13 +23,29 @@ func SetupRoutes(repo database.VideoRepository) *mux.Router {
 	r.Use(middleware.Logging)
 	r.Use(middleware.CORS)
 
+	// Create JWT manager
+	jwtManager := jwtutils.NewJWTManager(&cfg.JWT)
+
 	// Create handlers
-	videoHandler := NewVideoHandler(repo)
+	videoHandler := NewVideoHandler(videoRepo)
+	authHandler := NewAuthHandler(userRepo, jwtManager)
 
 	// API routes
 	api := r.PathPrefix("/api/v1").Subrouter()
 
-	// Video routes
+	// Public authentication routes
+	api.HandleFunc("/auth/register", authHandler.Register).Methods("POST")
+	api.HandleFunc("/auth/login", authHandler.Login).Methods("POST")
+
+	// Protected routes (require authentication)
+	protected := api.PathPrefix("").Subrouter()
+	protected.Use(middleware.AuthMiddleware(jwtManager))
+
+	// User profile routes
+	protected.HandleFunc("/auth/profile", authHandler.GetProfile).Methods("GET")
+	protected.HandleFunc("/auth/profile", authHandler.UpdateProfile).Methods("PUT")
+
+	// Video routes (public for now, but can be made protected if needed)
 	api.HandleFunc("/videos", videoHandler.GetVideos).Methods("GET")
 	api.HandleFunc("/videos/{id}", videoHandler.GetVideo).Methods("GET")
 	api.HandleFunc("/videos", videoHandler.CreateVideo).Methods("POST")

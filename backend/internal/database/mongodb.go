@@ -14,9 +14,10 @@ import (
 
 // MongoDB represents the MongoDB connection and collection
 type MongoDB struct {
-	Client     *mongo.Client
-	Database   *mongo.Database
-	Collection *mongo.Collection
+	Client         *mongo.Client
+	Database       *mongo.Database
+	Collection     *mongo.Collection
+	UserCollection *mongo.Collection
 }
 
 // NewMongoDB creates a new MongoDB connection
@@ -36,11 +37,13 @@ func NewMongoDB(cfg *config.Config) (*MongoDB, error) {
 
 	database := client.Database(cfg.Database.Database)
 	collection := database.Collection("videos")
+	userCollection := database.Collection("users")
 
 	return &MongoDB{
-		Client:     client,
-		Database:   database,
-		Collection: collection,
+		Client:         client,
+		Database:       database,
+		Collection:     collection,
+		UserCollection: userCollection,
 	}, nil
 }
 
@@ -130,6 +133,101 @@ func (r *videoRepository) Update(ctx context.Context, id string, video *models.V
 
 // Delete deletes a video by ID
 func (r *videoRepository) Delete(ctx context.Context, id string) error {
+	result, err := r.collection.DeleteOne(ctx, bson.M{"_id": id})
+	if err != nil {
+		return err
+	}
+
+	if result.DeletedCount == 0 {
+		return mongo.ErrNoDocuments
+	}
+
+	return nil
+}
+
+// UserRepository interface for user operations
+type UserRepository interface {
+	GetByEmail(ctx context.Context, email string) (*models.User, error)
+	GetByUsername(ctx context.Context, username string) (*models.User, error)
+	GetByID(ctx context.Context, id string) (*models.User, error)
+	Create(ctx context.Context, user *models.User) error
+	Update(ctx context.Context, id string, user *models.User) error
+	Delete(ctx context.Context, id string) error
+}
+
+// userRepository implements UserRepository
+type userRepository struct {
+	collection *mongo.Collection
+}
+
+// NewUserRepository creates a new user repository
+func NewUserRepository(db *MongoDB) UserRepository {
+	return &userRepository{
+		collection: db.UserCollection,
+	}
+}
+
+// GetByEmail retrieves a user by email
+func (r *userRepository) GetByEmail(ctx context.Context, email string) (*models.User, error) {
+	var user models.User
+	err := r.collection.FindOne(ctx, bson.M{"email": email}).Decode(&user)
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
+// GetByUsername retrieves a user by username
+func (r *userRepository) GetByUsername(ctx context.Context, username string) (*models.User, error) {
+	var user models.User
+	err := r.collection.FindOne(ctx, bson.M{"username": username}).Decode(&user)
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
+// GetByID retrieves a user by ID
+func (r *userRepository) GetByID(ctx context.Context, id string) (*models.User, error) {
+	var user models.User
+	err := r.collection.FindOne(ctx, bson.M{"_id": id}).Decode(&user)
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
+// Create creates a new user
+func (r *userRepository) Create(ctx context.Context, user *models.User) error {
+	_, err := r.collection.InsertOne(ctx, user)
+	return err
+}
+
+// Update updates an existing user
+func (r *userRepository) Update(ctx context.Context, id string, user *models.User) error {
+	update := bson.M{
+		"$set": bson.M{
+			"email":      user.Email,
+			"username":   user.Username,
+			"password":   user.Password,
+			"updated_at": user.UpdatedAt,
+		},
+	}
+
+	result, err := r.collection.UpdateOne(ctx, bson.M{"_id": id}, update)
+	if err != nil {
+		return err
+	}
+
+	if result.MatchedCount == 0 {
+		return mongo.ErrNoDocuments
+	}
+
+	return nil
+}
+
+// Delete deletes a user by ID
+func (r *userRepository) Delete(ctx context.Context, id string) error {
 	result, err := r.collection.DeleteOne(ctx, bson.M{"_id": id})
 	if err != nil {
 		return err

@@ -1,6 +1,7 @@
 package validation
 
 import (
+	"regexp"
 	"strings"
 
 	"video-player-backend/internal/errors"
@@ -88,4 +89,69 @@ func isValidDuration(duration string) bool {
 	}
 
 	return true
+}
+
+// ValidateUserRequest validates a user registration request
+func ValidateUserRequest(req *models.UserRequest) *errors.ValidationErrors {
+	ve := &errors.ValidationErrors{}
+
+	// Validate email
+	if strings.TrimSpace(req.Email) == "" {
+		ve.Add("email", "Email is required")
+	} else if !isValidEmail(req.Email) {
+		ve.Add("email", "Email must be a valid email address")
+	}
+
+	// Validate username
+	if strings.TrimSpace(req.Username) == "" {
+		ve.Add("username", "Username is required")
+	} else if len(req.Username) < 3 {
+		ve.Add("username", "Username must be at least 3 characters")
+	} else if len(req.Username) > 20 {
+		ve.Add("username", "Username must be less than 20 characters")
+	} else if !isValidUsername(req.Username) {
+		ve.Add("username", "Username can only contain letters, numbers, and underscores")
+	}
+
+	// Validate password
+	if strings.TrimSpace(req.Password) == "" {
+		ve.Add("password", "Password is required")
+	} else if len(req.Password) < 6 {
+		ve.Add("password", "Password must be at least 6 characters")
+	} else if len(req.Password) > 100 {
+		ve.Add("password", "Password must be less than 100 characters")
+	}
+
+	return ve
+}
+
+// ValidateLoginRequest validates a login request
+func ValidateLoginRequest(req *models.LoginRequest) *errors.ValidationErrors {
+	ve := &errors.ValidationErrors{}
+
+	// Validate email
+	if strings.TrimSpace(req.Email) == "" {
+		ve.Add("email", "Email is required")
+	} else if !isValidEmail(req.Email) {
+		ve.Add("email", "Email must be a valid email address")
+	}
+
+	// Validate password
+	if strings.TrimSpace(req.Password) == "" {
+		ve.Add("password", "Password is required")
+	}
+
+	return ve
+}
+
+// isValidEmail performs basic email validation
+func isValidEmail(email string) bool {
+	emailRegex := regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
+	return emailRegex.MatchString(email)
+}
+
+// isValidUsername validates username format (alphanumeric and underscores only)
+func isValidUsername(username string) bool {
+	usernameRegex := regexp.MustCompile(`^[a-zA-Z0-9_]+$`)
+	return usernameRegex.MatchString(username)
 }

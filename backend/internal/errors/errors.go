@@ -49,6 +49,32 @@ var (
 		Code:    "VALIDATION_ERROR",
 		Message: "Validation failed",
 	}
+
+	// Authentication errors
+	ErrUnauthorized = &APIError{
+		Code:    "UNAUTHORIZED",
+		Message: "Unauthorized access",
+	}
+
+	ErrInvalidCredentials = &APIError{
+		Code:    "INVALID_CREDENTIALS",
+		Message: "Invalid email or password",
+	}
+
+	ErrUserAlreadyExists = &APIError{
+		Code:    "USER_ALREADY_EXISTS",
+		Message: "User with this email or username already exists",
+	}
+
+	ErrUserNotFound = &APIError{
+		Code:    "USER_NOT_FOUND",
+		Message: "User not found",
+	}
+
+	ErrInvalidToken = &APIError{
+		Code:    "INVALID_TOKEN",
+		Message: "Invalid or expired token",
+	}
 )
 
 // NewAPIError creates a new API error with custom message
@@ -95,10 +121,16 @@ func WriteErrorResponse(w http.ResponseWriter, err error) {
 // getStatusCodeFromError maps error codes to HTTP status codes
 func getStatusCodeFromError(err *APIError) int {
 	switch err.Code {
-	case "VIDEO_NOT_FOUND":
+	case "VIDEO_NOT_FOUND", "USER_NOT_FOUND":
 		return http.StatusNotFound
 	case "INVALID_REQUEST", "VALIDATION_ERROR":
 		return http.StatusBadRequest
+	case "UNAUTHORIZED", "INVALID_TOKEN":
+		return http.StatusUnauthorized
+	case "INVALID_CREDENTIALS":
+		return http.StatusUnauthorized
+	case "USER_ALREADY_EXISTS":
+		return http.StatusConflict
 	case "DATABASE_ERROR", "INTERNAL_SERVER_ERROR":
 		return http.StatusInternalServerError
 	default:
