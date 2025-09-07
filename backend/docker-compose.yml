@@ -27,6 +27,8 @@ services:
       MONGODB_DATABASE: video_player
       SERVER_PORT: 8080
       SERVER_HOST: 0.0.0.0
+    volumes:
+      - vtt_uploads:/app/uploads/vtt
     depends_on:
       - mongodb
     networks:
@@ -34,6 +36,7 @@ services:
 
 volumes:
   mongodb_data:
+  vtt_uploads:
 
 networks:
   video-player-network:

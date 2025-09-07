@@ -1,3 +1,4 @@
+import { environment } from "../config/environment";
 import { getAssetPath } from "./assetPaths";
 
 export interface VocabEntry {
@@ -12,44 +13,28 @@ export interface VocabData {
   [key: string]: VocabEntry;
 }
 
-let cachedVocabData: VocabData | null = null;
-
 /**
  * Load and process vocabulary data from vocab.json
  * Returns a normalized lookup object where keys are lowercase Māori words
  */
 export const loadVocabData = async (): Promise<VocabData> => {
-  if (cachedVocabData) {
-    return cachedVocabData;
-  }
-
   try {
-    // First try to get from environment variable (for GitHub Actions deployment)
-    const envVocabData = import.meta.env.VITE_VOCAB_DATA;
-
-    let vocabEntries: VocabEntry[];
-
-    if (envVocabData) {
-      vocabEntries = JSON.parse(envVocabData);
-    } else {
-      // Fallback to local vocab.json file
-      const response = await fetch(getAssetPath("/vocab.json"));
-      if (!response.ok) {
-        throw new Error(`Failed to load vocab data: ${response.statusText}`);
-      }
-      vocabEntries = await response.json();
+    // Fallback to local vocab.json file
+    const response = await fetch(environment.apiBaseUrl + "/api/v1/vocabulary");
+    if (!response.ok) {
+      throw new Error(`Failed to load vocab data: ${response.statusText}`);
     }
+    const vocabEntries = await response.json();
 
     // Process into lookup object with normalized keys
     const vocabData: VocabData = {};
 
-    vocabEntries.forEach((entry) => {
+    vocabEntries.forEach((entry: VocabEntry) => {
       // Use lowercase Māori word as key for case-insensitive lookup
       const normalizedKey = entry.maori.toLowerCase().trim();
       vocabData[normalizedKey] = entry;
     });
 
-    cachedVocabData = vocabData;
     return vocabData;
   } catch (error) {
     console.error("Error loading vocabulary data:", error);

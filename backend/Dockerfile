@@ -4,8 +4,8 @@ FROM golang:1.21-alpine AS builder
 # Set working directory
 WORKDIR /app
 
-# Install git (needed for go mod download)
-RUN apk add --no-cache git
+# Install git and ca-certificates (needed for go mod download and HTTPS)
+RUN apk add --no-cache git ca-certificates tzdata
 
 # Copy go mod files
 COPY go.mod go.sum ./
@@ -22,14 +22,17 @@ RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main ./cmd/server
 # Final stage
 FROM alpine:latest
 
-# Install ca-certificates for HTTPS requests
-RUN apk --no-cache add ca-certificates
+# Install ca-certificates, timezone data, and wget for HTTPS requests, proper time handling, and health checks
+RUN apk --no-cache add ca-certificates tzdata wget
 
 # Create non-root user
 RUN adduser -D -s /bin/sh appuser
 
+# Create uploads directory for VTT files
+RUN mkdir -p /app/uploads/vtt && chown -R appuser:appuser /app
+
 # Set working directory
-WORKDIR /root/
+WORKDIR /app
 
 # Copy the binary from builder stage
 COPY --from=builder /app/main .
@@ -42,6 +45,10 @@ USER appuser
 
 # Expose port
 EXPOSE 8080
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:8080/health || exit 1
 
 # Run the application
 CMD ["./main"]
