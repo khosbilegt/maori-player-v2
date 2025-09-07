@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { apiClient } from "../../utils/apiClient";
+import { useAuth } from "../../contexts/AuthContext";
 import type { VideoData } from "../VideoCard";
 import type { VideoFormData } from "../../types/admin";
 import VideoForm from "./VideoForm";
@@ -12,6 +13,7 @@ interface VideoListProps {
 
 const VideoList: React.FC<VideoListProps> = ({ onDelete }) => {
   const [videos, setVideos] = useState<VideoData[]>([]);
+  const { token } = useAuth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
@@ -46,10 +48,11 @@ const VideoList: React.FC<VideoListProps> = ({ onDelete }) => {
 
   const handleFormSubmit = async (formData: VideoFormData) => {
     try {
+      if (!token) throw new Error("Not authenticated");
       if (editingVideo) {
-        await apiClient.updateVideo(editingVideo.id, formData);
+        await apiClient.updateVideo(token, editingVideo.id, formData);
       } else {
-        await apiClient.createVideo(formData);
+        await apiClient.createVideo(token, formData);
       }
       setShowForm(false);
       setEditingVideo(null);
@@ -68,7 +71,8 @@ const VideoList: React.FC<VideoListProps> = ({ onDelete }) => {
   const handleDelete = async (id: string) => {
     if (window.confirm("Are you sure you want to delete this video?")) {
       try {
-        await apiClient.deleteVideo(id);
+        if (!token) throw new Error("Not authenticated");
+        await apiClient.deleteVideo(token, id);
         await loadVideos();
         onDelete?.(id);
       } catch (err) {

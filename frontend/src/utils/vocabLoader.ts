@@ -1,7 +1,6 @@
 import { environment } from "../config/environment";
 
 export interface VocabEntry {
-  id: string;
   maori: string;
   english: string;
   pronunciation: string;
@@ -29,8 +28,8 @@ export const loadVocabData = async (): Promise<VocabData> => {
     const vocabData: VocabData = {};
 
     vocabEntries.forEach((entry: VocabEntry) => {
-      // Use lowercase Māori word as key for case-insensitive lookup
-      const normalizedKey = entry.maori.toLowerCase().trim();
+      // Use NFC-normalized, lowercase Māori as key for case-insensitive lookup
+      const normalizedKey = entry.maori.normalize("NFC").toLowerCase().trim();
       vocabData[normalizedKey] = entry;
     });
 
@@ -88,7 +87,6 @@ export const findLongestVocabMatch = (
   entry: VocabEntry;
   wordCount: number;
   matchedText: string;
-  vocabId: string;
 } | null => {
   // Try phrases of decreasing length, starting from the maximum possible
   const maxPhraseLength = Math.min(5, words.length - startIndex); // Limit to 5 words max
@@ -99,15 +97,18 @@ export const findLongestVocabMatch = (
     const matchedText = phraseWords.join(" ");
 
     // Create normalized key for lookup (lowercase, trimmed)
-    const normalizedPhrase = matchedText.toLowerCase().trim();
+    const normalizedPhrase = matchedText.normalize("NFC").toLowerCase().trim();
 
-    const vocabEntry = vocabData[normalizedPhrase];
+    // Also try hyphenated form to support phrases stored hyphenated in data
+    const hyphenated = normalizedPhrase.replace(/\s+/g, "-");
+
+    const vocabEntry = vocabData[normalizedPhrase] || vocabData[hyphenated];
+
     if (vocabEntry) {
       return {
         entry: vocabEntry,
         wordCount: phraseLength,
         matchedText: matchedText,
-        vocabId: vocabEntry.id,
       };
     }
   }
@@ -130,27 +131,37 @@ export const parseTextForVocabMatches = (
   wordCount: number;
   entry: VocabEntry;
   matchedText: string;
-  vocabId: string;
 }> => {
   // Split text into words while preserving positions
-  const words = text.split(/(\s+)/);
+  const words = text
+    .replace(/[\u2010\u2011\u2012\u2013\u2014\u2212]/g, "-") // normalize hyphen-like chars
+    .normalize("NFC")
+    .split(/(\s+)/);
   const matches: Array<{
     startIndex: number;
     endIndex: number;
     wordCount: number;
     entry: VocabEntry;
     matchedText: string;
-    vocabId: string;
   }> = [];
 
-  // Get only the actual words (not whitespace)
+  // Get only the actual words (not whitespace), stripping punctuation so matches aren't missed
   const actualWords: string[] = [];
   const wordToSegmentMap: number[] = []; // Maps word index to segment index
 
   words.forEach((segment, segmentIndex) => {
     if (!segment.match(/^\s+$/)) {
-      actualWords.push(segment);
-      wordToSegmentMap.push(segmentIndex);
+      // Strip leading/trailing punctuation for matching purposes, keep hyphens and letters/numbers
+      const wordOnly = (segment || "")
+        .normalize("NFC")
+        .toLowerCase()
+        .replace(/^[^\p{Letter}0-9-]+/gu, "")
+        .replace(/[^\p{Letter}0-9-]+$/gu, "");
+
+      if (wordOnly.length > 0) {
+        actualWords.push(wordOnly);
+        wordToSegmentMap.push(segmentIndex);
+      }
     }
   });
 
@@ -168,7 +179,6 @@ export const parseTextForVocabMatches = (
         wordCount: match.wordCount,
         entry: match.entry,
         matchedText: match.matchedText,
-        vocabId: match.vocabId,
       });
 
       // Skip past the matched words

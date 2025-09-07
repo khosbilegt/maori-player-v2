@@ -31,6 +31,15 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
   className = "",
   videoId,
 }) => {
+  const slugifyMaori = (text: string): string => {
+    const normalized = text.normalize("NFC").toLowerCase().trim();
+    const hyphenated = normalized.replace(/\s+/g, "-");
+    const cleaned = hyphenated
+      .replace(/[^\p{Letter}0-9-]/gu, "-")
+      .replace(/-+/g, "-")
+      .replace(/^-|-$|_/g, "");
+    return cleaned;
+  };
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeItemId, setActiveItemId] = useState<string | null>(null);
   const [vocabData, setVocabData] = useState<VocabData>({});
@@ -41,6 +50,9 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
   }>({ x: 0, y: 0 });
   const [showPopover, setShowPopover] = useState<boolean>(false);
   const selectionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [transcriptTexts, setTranscriptTexts] = useState<
+    Record<string, React.ReactNode[]>
+  >({});
 
   // Load vocabulary data on component mount
   useEffect(() => {
@@ -268,7 +280,10 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
   // Function to render text with hoverable words/phrases (only for entries in vocab.json)
   const renderTextWithTooltips = (text: string) => {
     // Find all vocabulary matches in the text (longest first)
-    const vocabMatches = parseTextForVocabMatches(text, vocabData);
+    const vocabMatches = parseTextForVocabMatches(
+      text.toLowerCase(),
+      vocabData
+    );
 
     // Split text into segments while preserving whitespace
     const segments = text.split(/(\s+)/);
@@ -279,7 +294,6 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
       {
         entry: VocabEntry;
         matchedText: string;
-        vocabId: string;
         isStart: boolean;
         isEnd: boolean;
       }
@@ -291,7 +305,6 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
         segmentVocabMap.set(i, {
           entry: match.entry,
           matchedText: match.matchedText,
-          vocabId: match.vocabId,
           isStart: i === match.startIndex,
           isEnd: i === match.endIndex,
         });
@@ -324,12 +337,14 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
         const matchedText = matchSegments.join("");
 
         // Create tooltip for the entire phrase
+        // Use Maori text slug so it aligns with CSS selectors and is stable
+        const slug = slugifyMaori(vocabInfo.entry.maori);
         renderedSegments.push(
           <WordTooltip key={`vocab-${index}`} vocabEntry={vocabInfo.entry}>
             <span
               className="hoverable-word"
-              data-vocab-id={vocabInfo.vocabId}
-              id={`vocab-span-${vocabInfo.vocabId}-${index}`}
+              data-vocab-id={vocabInfo.entry.maori}
+              id={`vocab-span-${slug}-${index}`}
             >
               {matchedText}
             </span>
@@ -367,6 +382,14 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
     return renderedSegments;
   };
 
+  useEffect(() => {
+    const texts: Record<string, React.ReactNode[]> = {};
+    transcript.forEach((item) => {
+      texts[item.id] = renderTextWithTooltips(item.text);
+    });
+    setTranscriptTexts(texts);
+  }, [transcript, vocabData]);
+
   return (
     <>
       <div className={`transcript-viewer ${className}`} ref={containerRef}>
@@ -385,7 +408,7 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
                 {formatTime(item.startTime)}
               </span>
               <span className="transcript-text">
-                {renderTextWithTooltips(item.text)}
+                {transcriptTexts[item.id]}
               </span>
             </div>
           ))}

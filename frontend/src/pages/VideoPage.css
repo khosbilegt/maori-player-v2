@@ -596,6 +596,8 @@
 /* Vocabulary-specific styling using data attributes */
 .hoverable-word[data-vocab-id] {
   position: relative;
+  /* Default highlight for any matched vocabulary */
+  border-bottom: 2px solid #ffd700;
 }
 
 /* Example: Style specific vocabulary items */

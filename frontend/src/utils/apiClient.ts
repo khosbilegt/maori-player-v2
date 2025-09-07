@@ -135,16 +135,26 @@ export class ApiClient {
   }
 
   // Admin Video methods
-  async createVideo(videoData: any): Promise<VideoData> {
-    return this.post(API_ENDPOINTS.VIDEOS.BASE, videoData);
+  async createVideo(token: string, videoData: any): Promise<VideoData> {
+    return this.post(API_ENDPOINTS.VIDEOS.BASE, videoData, {
+      Authorization: `Bearer ${token}`,
+    });
   }
 
-  async updateVideo(id: string, videoData: any): Promise<VideoData> {
-    return this.put(API_ENDPOINTS.VIDEOS.BY_ID(id), videoData);
+  async updateVideo(
+    token: string,
+    id: string,
+    videoData: any
+  ): Promise<VideoData> {
+    return this.put(API_ENDPOINTS.VIDEOS.BY_ID(id), videoData, {
+      Authorization: `Bearer ${token}`,
+    });
   }
 
-  async deleteVideo(id: string): Promise<void> {
-    return this.delete(API_ENDPOINTS.VIDEOS.BY_ID(id));
+  async deleteVideo(token: string, id: string): Promise<void> {
+    return this.delete(API_ENDPOINTS.VIDEOS.BY_ID(id), {
+      Authorization: `Bearer ${token}`,
+    });
   }
 
   // Vocabulary methods
@@ -156,19 +166,28 @@ export class ApiClient {
     return this.get(`${environment.apiBaseUrl}/api/v1/vocabulary/${id}`);
   }
 
-  async createVocabulary(vocabData: any): Promise<any> {
-    return this.post(`${environment.apiBaseUrl}/api/v1/vocabulary`, vocabData);
+  async createVocabulary(token: string, vocabData: any): Promise<any> {
+    return this.post(`${environment.apiBaseUrl}/api/v1/vocabulary`, vocabData, {
+      Authorization: `Bearer ${token}`,
+    });
   }
 
-  async updateVocabulary(id: string, vocabData: any): Promise<any> {
+  async updateVocabulary(
+    token: string,
+    id: string,
+    vocabData: any
+  ): Promise<any> {
     return this.put(
       `${environment.apiBaseUrl}/api/v1/vocabulary/${id}`,
-      vocabData
+      vocabData,
+      { Authorization: `Bearer ${token}` }
     );
   }
 
-  async deleteVocabulary(id: string): Promise<void> {
-    return this.delete(`${environment.apiBaseUrl}/api/v1/vocabulary/${id}`);
+  async deleteVocabulary(token: string, id: string): Promise<void> {
+    return this.delete(`${environment.apiBaseUrl}/api/v1/vocabulary/${id}`, {
+      Authorization: `Bearer ${token}`,
+    });
   }
 
   async searchVocabularies(query: string): Promise<any[]> {
@@ -315,7 +334,6 @@ export class ApiClient {
     token: string,
     data: { text: string; video_id?: string; notes?: string }
   ): Promise<{ data: any }> {
-    console.log(token);
     return this.post(`${environment.apiBaseUrl}/api/v1/learning-list`, data, {
       Authorization: `Bearer ${token}`,
     });

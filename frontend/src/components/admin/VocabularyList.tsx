@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { apiClient } from "../../utils/apiClient";
+import { useAuth } from "../../contexts/AuthContext";
 import type { VocabularyFormData } from "../../types/admin";
 import "./AdminTable.css";
 import VocabularyForm from "./VocabularyForm";
@@ -20,6 +21,7 @@ interface VocabularyListProps {
 
 const VocabularyList: React.FC<VocabularyListProps> = ({ onDelete }) => {
   const [vocabularies, setVocabularies] = useState<Vocabulary[]>([]);
+  const { token } = useAuth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
@@ -79,10 +81,11 @@ const VocabularyList: React.FC<VocabularyListProps> = ({ onDelete }) => {
 
   const handleFormSubmit = async (formData: VocabularyFormData) => {
     try {
+      if (!token) throw new Error("Not authenticated");
       if (editingVocabulary) {
-        await apiClient.updateVocabulary(editingVocabulary.id, formData);
+        await apiClient.updateVocabulary(token, editingVocabulary.id, formData);
       } else {
-        await apiClient.createVocabulary(formData);
+        await apiClient.createVocabulary(token, formData);
       }
       setShowForm(false);
       setEditingVocabulary(null);
@@ -103,7 +106,8 @@ const VocabularyList: React.FC<VocabularyListProps> = ({ onDelete }) => {
       window.confirm("Are you sure you want to delete this vocabulary item?")
     ) {
       try {
-        await apiClient.deleteVocabulary(id);
+        if (!token) throw new Error("Not authenticated");
+        await apiClient.deleteVocabulary(token, id);
         await loadVocabularies();
         onDelete(id);
       } catch (err) {
