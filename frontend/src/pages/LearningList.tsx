@@ -18,6 +18,7 @@ const LearningList: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>("");
   const pendingNotesUpdates = useRef<Record<string, number>>({});
+  const [activeRequests, setActiveRequests] = useState<number>(0);
 
   const token = useMemo(() => localStorage.getItem("auth_token") || "", []);
 
@@ -45,6 +46,7 @@ const LearningList: React.FC = () => {
   const markLearned = async (item: LearningItem) => {
     if (item.status === "learned") return;
     try {
+      setActiveRequests((n) => n + 1);
       const res = await apiClient.updateLearningListItem(token, item.id, {
         status: "learned",
       });
@@ -56,15 +58,20 @@ const LearningList: React.FC = () => {
       );
     } catch (e: any) {
       setError(e?.message || "Failed to update status");
+    } finally {
+      setActiveRequests((n) => Math.max(0, n - 1));
     }
   };
 
   const deleteItem = async (id: string) => {
     try {
+      setActiveRequests((n) => n + 1);
       await apiClient.deleteLearningListItem(token, id);
       setItems((prev) => prev.filter((i) => i.id !== id));
     } catch (e: any) {
       setError(e?.message || "Failed to delete item");
+    } finally {
+      setActiveRequests((n) => Math.max(0, n - 1));
     }
   };
 
@@ -73,9 +80,12 @@ const LearningList: React.FC = () => {
     const existing = pendingNotesUpdates.current[id];
     if (existing) {
       window.clearTimeout(existing);
+      // Remove the pending marker for accurate sync state until we reschedule below
+      delete pendingNotesUpdates.current[id];
     }
     const handle = window.setTimeout(async () => {
       try {
+        setActiveRequests((n) => n + 1);
         const res = await apiClient.updateLearningListItem(token, id, {
           notes,
         });
@@ -85,10 +95,19 @@ const LearningList: React.FC = () => {
         );
       } catch (e: any) {
         setError(e?.message || "Failed to save notes");
+      } finally {
+        setActiveRequests((n) => Math.max(0, n - 1));
+        // This debounce cycle is done; remove pending marker
+        delete pendingNotesUpdates.current[id];
       }
     }, 500);
     pendingNotesUpdates.current[id] = handle as unknown as number;
   };
+
+  const hasPendingTimers = () =>
+    Object.keys(pendingNotesUpdates.current).length > 0;
+  const isSynced =
+    !loading && !error && activeRequests === 0 && !hasPendingTimers();
 
   if (!isAuthenticated) {
     return (
@@ -216,6 +235,23 @@ const LearningList: React.FC = () => {
             </div>
           </div>
         ))}
+      </div>
+      {/* Sync indicator */}
+      <div
+        style={{
+          position: "fixed",
+          right: 16,
+          bottom: 16,
+          padding: "6px 10px",
+          borderRadius: 999,
+          border: "1px solid #2a2a2a",
+          background: "#0b0b0b",
+          color: isSynced ? "#34d399" : "#fbbf24",
+          fontSize: 12,
+        }}
+        title={isSynced ? "All changes saved" : "Saving…"}
+      >
+        {isSynced ? "Synced" : "Not synced"}
       </div>
     </div>
   );
