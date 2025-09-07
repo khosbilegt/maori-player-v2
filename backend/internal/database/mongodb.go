@@ -14,11 +14,12 @@ import (
 
 // MongoDB represents the MongoDB connection and collection
 type MongoDB struct {
-	Client               *mongo.Client
-	Database             *mongo.Database
-	Collection           *mongo.Collection
-	UserCollection       *mongo.Collection
-	VocabularyCollection *mongo.Collection
+	Client                 *mongo.Client
+	Database               *mongo.Database
+	Collection             *mongo.Collection
+	UserCollection         *mongo.Collection
+	VocabularyCollection   *mongo.Collection
+	WatchHistoryCollection *mongo.Collection
 }
 
 // NewMongoDB creates a new MongoDB connection
@@ -40,13 +41,15 @@ func NewMongoDB(cfg *config.Config) (*MongoDB, error) {
 	collection := database.Collection("videos")
 	userCollection := database.Collection("users")
 	vocabularyCollection := database.Collection("vocabulary")
+	watchHistoryCollection := database.Collection("watch_history")
 
 	return &MongoDB{
-		Client:               client,
-		Database:             database,
-		Collection:           collection,
-		UserCollection:       userCollection,
-		VocabularyCollection: vocabularyCollection,
+		Client:                 client,
+		Database:               database,
+		Collection:             collection,
+		UserCollection:         userCollection,
+		VocabularyCollection:   vocabularyCollection,
+		WatchHistoryCollection: watchHistoryCollection,
 	}, nil
 }
 
@@ -342,4 +345,171 @@ func (r *vocabularyRepository) Search(ctx context.Context, query string) ([]*mod
 	}
 
 	return vocabularies, nil
+}
+
+// WatchHistoryRepository interface for watch history operations
+type WatchHistoryRepository interface {
+	GetByUserID(ctx context.Context, userID string) ([]*models.WatchHistory, error)
+	GetByUserAndVideo(ctx context.Context, userID, videoID string) (*models.WatchHistory, error)
+	Create(ctx context.Context, watchHistory *models.WatchHistory) error
+	Update(ctx context.Context, id string, watchHistory *models.WatchHistory) error
+	Delete(ctx context.Context, id string) error
+	DeleteByUserAndVideo(ctx context.Context, userID, videoID string) error
+	GetRecentWatched(ctx context.Context, userID string, limit int) ([]*models.WatchHistory, error)
+	GetCompletedVideos(ctx context.Context, userID string) ([]*models.WatchHistory, error)
+}
+
+// watchHistoryRepository implements WatchHistoryRepository
+type watchHistoryRepository struct {
+	collection *mongo.Collection
+}
+
+// NewWatchHistoryRepository creates a new watch history repository
+func NewWatchHistoryRepository(db *MongoDB) WatchHistoryRepository {
+	return &watchHistoryRepository{
+		collection: db.WatchHistoryCollection,
+	}
+}
+
+// GetByUserID retrieves all watch history for a user
+func (r *watchHistoryRepository) GetByUserID(ctx context.Context, userID string) ([]*models.WatchHistory, error) {
+	filter := bson.M{"user_id": userID}
+	opts := options.Find().SetSort(bson.D{{Key: "last_watched", Value: -1}})
+
+	cursor, err := r.collection.Find(ctx, filter, opts)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var watchHistories []*models.WatchHistory
+	if err := cursor.All(ctx, &watchHistories); err != nil {
+		return nil, err
+	}
+
+	return watchHistories, nil
+}
+
+// GetByUserAndVideo retrieves watch history for a specific user and video
+func (r *watchHistoryRepository) GetByUserAndVideo(ctx context.Context, userID, videoID string) (*models.WatchHistory, error) {
+	filter := bson.M{
+		"user_id":  userID,
+		"video_id": videoID,
+	}
+
+	var watchHistory models.WatchHistory
+	err := r.collection.FindOne(ctx, filter).Decode(&watchHistory)
+	if err != nil {
+		return nil, err
+	}
+
+	return &watchHistory, nil
+}
+
+// Create creates a new watch history entry
+func (r *watchHistoryRepository) Create(ctx context.Context, watchHistory *models.WatchHistory) error {
+	watchHistory.GenerateID()
+	_, err := r.collection.InsertOne(ctx, watchHistory)
+	return err
+}
+
+// Update updates an existing watch history entry
+func (r *watchHistoryRepository) Update(ctx context.Context, id string, watchHistory *models.WatchHistory) error {
+	update := bson.M{
+		"$set": bson.M{
+			"progress":     watchHistory.Progress,
+			"current_time": watchHistory.CurrentTime,
+			"duration":     watchHistory.Duration,
+			"completed":    watchHistory.Completed,
+			"last_watched": watchHistory.LastWatched,
+			"updated_at":   watchHistory.UpdatedAt,
+		},
+	}
+
+	result, err := r.collection.UpdateOne(ctx, bson.M{"_id": id}, update)
+	if err != nil {
+		return err
+	}
+
+	if result.MatchedCount == 0 {
+		return mongo.ErrNoDocuments
+	}
+
+	return nil
+}
+
+// Delete deletes a watch history entry by ID
+func (r *watchHistoryRepository) Delete(ctx context.Context, id string) error {
+	result, err := r.collection.DeleteOne(ctx, bson.M{"_id": id})
+	if err != nil {
+		return err
+	}
+
+	if result.DeletedCount == 0 {
+		return mongo.ErrNoDocuments
+	}
+
+	return nil
+}
+
+// DeleteByUserAndVideo deletes watch history for a specific user and video
+func (r *watchHistoryRepository) DeleteByUserAndVideo(ctx context.Context, userID, videoID string) error {
+	filter := bson.M{
+		"user_id":  userID,
+		"video_id": videoID,
+	}
+
+	result, err := r.collection.DeleteOne(ctx, filter)
+	if err != nil {
+		return err
+	}
+
+	if result.DeletedCount == 0 {
+		return mongo.ErrNoDocuments
+	}
+
+	return nil
+}
+
+// GetRecentWatched retrieves recently watched videos for a user
+func (r *watchHistoryRepository) GetRecentWatched(ctx context.Context, userID string, limit int) ([]*models.WatchHistory, error) {
+	filter := bson.M{"user_id": userID}
+	opts := options.Find().
+		SetSort(bson.D{{Key: "last_watched", Value: -1}}).
+		SetLimit(int64(limit))
+
+	cursor, err := r.collection.Find(ctx, filter, opts)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var watchHistories []*models.WatchHistory
+	if err := cursor.All(ctx, &watchHistories); err != nil {
+		return nil, err
+	}
+
+	return watchHistories, nil
+}
+
+// GetCompletedVideos retrieves completed videos for a user
+func (r *watchHistoryRepository) GetCompletedVideos(ctx context.Context, userID string) ([]*models.WatchHistory, error) {
+	filter := bson.M{
+		"user_id":   userID,
+		"completed": true,
+	}
+	opts := options.Find().SetSort(bson.D{{Key: "last_watched", Value: -1}})
+
+	cursor, err := r.collection.Find(ctx, filter, opts)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var watchHistories []*models.WatchHistory
+	if err := cursor.All(ctx, &watchHistories); err != nil {
+		return nil, err
+	}
+
+	return watchHistories, nil
 }

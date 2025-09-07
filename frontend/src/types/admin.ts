@@ -3,10 +3,10 @@
 export interface VideoFormData {
   title: string;
   description: string;
-  url: string;
-  thumbnail_url: string;
-  duration: number;
-  subtitles_url?: string;
+  video: string;
+  thumbnail: string;
+  duration: string;
+  subtitle?: string;
 }
 
 export interface VocabularyFormData {

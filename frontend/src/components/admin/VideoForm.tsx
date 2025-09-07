@@ -13,24 +13,47 @@ const VideoForm: React.FC<VideoFormProps> = ({ video, onSubmit, onCancel }) => {
   const [formData, setFormData] = useState<VideoFormData>({
     title: "",
     description: "",
-    url: "",
-    thumbnail_url: "",
-    duration: 0,
-    subtitles_url: "",
+    video: "",
+    thumbnail: "",
+    duration: "",
+    subtitle: "",
   });
+
+  // Helper functions to convert between seconds and MM:SS format
+  const secondsToMMSS = (seconds: number | string): string => {
+    const totalSeconds =
+      typeof seconds === "string" ? parseInt(seconds) || 0 : seconds;
+    const minutes = Math.floor(totalSeconds / 60);
+    const remainingSeconds = totalSeconds % 60;
+    return `${minutes.toString().padStart(2, "0")}:${remainingSeconds
+      .toString()
+      .padStart(2, "0")}`;
+  };
+
+  // Helper function to check if a string is already in MM:SS format
+  const isMMSSFormat = (value: string): boolean => {
+    return /^([0-5]?[0-9]):([0-5][0-9])$/.test(value);
+  };
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (video) {
+      // Handle duration - convert from seconds to MM:SS if needed
+      let durationValue = video.duration || "";
+      if (durationValue && !isMMSSFormat(durationValue)) {
+        // If it's not already in MM:SS format, assume it's seconds and convert
+        durationValue = secondsToMMSS(durationValue);
+      }
+
       setFormData({
         title: video.title || "",
         description: video.description || "",
-        url: video.url || video.video || "",
-        thumbnail_url: video.thumbnail_url || video.thumbnail || "",
-        duration: typeof video.duration === "number" ? video.duration : 0,
-        subtitles_url: video.subtitles_url || video.subtitle || "",
+        video: video.video || video.video || "",
+        thumbnail: video.thumbnail || video.thumbnail || "",
+        duration: durationValue,
+        subtitle: video.subtitle || video.subtitles_url || "",
       });
     }
   }, [video]);
@@ -53,6 +76,7 @@ const VideoForm: React.FC<VideoFormProps> = ({ video, onSubmit, onCancel }) => {
     setError(null);
 
     try {
+      // Send duration in MM:SS format
       await onSubmit(formData);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save video");
@@ -74,82 +98,92 @@ const VideoForm: React.FC<VideoFormProps> = ({ video, onSubmit, onCancel }) => {
         <form onSubmit={handleSubmit} className="admin-form">
           {error && <div className="form-error">{error}</div>}
 
-          <div className="form-group">
-            <label htmlFor="title">Title *</label>
-            <input
-              type="text"
-              id="title"
-              name="title"
-              value={formData.title}
-              onChange={handleInputChange}
-              required
-              placeholder="Enter video title"
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="description">Description *</label>
-            <textarea
-              id="description"
-              name="description"
-              value={formData.description}
-              onChange={handleInputChange}
-              required
-              rows={4}
-              placeholder="Enter video description"
-            />
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="title">Title *</label>
+              <input
+                type="text"
+                id="title"
+                name="title"
+                value={formData.title}
+                onChange={handleInputChange}
+                required
+                placeholder="Enter video title"
+              />
+            </div>
           </div>
 
           <div className="form-row">
             <div className="form-group">
-              <label htmlFor="url">Video URL *</label>
+              <label htmlFor="description">Description *</label>
+              <textarea
+                id="description"
+                name="description"
+                value={formData.description}
+                onChange={handleInputChange}
+                required
+                rows={4}
+                placeholder="Enter video description"
+              />
+            </div>
+          </div>
+
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="video">Video URL *</label>
               <input
                 type="url"
-                id="url"
-                name="url"
-                value={formData.url}
+                id="video"
+                name="video"
+                value={formData.video}
                 onChange={handleInputChange}
                 required
                 placeholder="https://example.com/video.mp4"
               />
             </div>
           </div>
-          <div className="form-group">
-            <label htmlFor="thumbnail_url">Thumbnail URL</label>
-            <input
-              type="url"
-              id="thumbnail_url"
-              name="thumbnail_url"
-              value={formData.thumbnail_url}
-              onChange={handleInputChange}
-              placeholder="https://example.com/thumbnail.jpg"
-            />
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="thumbnail">Thumbnail URL</label>
+              <input
+                type="url"
+                id="thumbnail"
+                name="thumbnail"
+                value={formData.thumbnail}
+                onChange={handleInputChange}
+                placeholder="https://example.com/thumbnail.jpg"
+              />
+            </div>
           </div>
 
           <div className="form-row">
             <div className="form-group">
-              <label htmlFor="duration">Duration (seconds) *</label>
+              <label htmlFor="duration">Duration (MM:SS) *</label>
               <input
-                type="number"
+                type="text"
                 id="duration"
                 name="duration"
                 value={formData.duration}
                 onChange={handleInputChange}
                 required
-                min="0"
-                placeholder="300"
+                pattern="^([0-5]?[0-9]):([0-5][0-9])$"
+                placeholder="05:30"
               />
+              <div className="form-help">
+                Enter duration in MM:SS format (e.g., 05:30 for 5 minutes 30
+                seconds)
+              </div>
             </div>
           </div>
 
-          <div>
+          <div className="form-row">
             <div className="form-group">
               <label htmlFor="subtitles_url">Transcript URL</label>
               <input
                 type="url"
-                id="subtitles_url"
-                name="subtitles_url"
-                value={formData.subtitles_url}
+                id="subtitle"
+                name="subtitle"
+                value={formData.subtitle}
                 onChange={handleInputChange}
                 placeholder="https://example.com/subtitles.vtt"
               />

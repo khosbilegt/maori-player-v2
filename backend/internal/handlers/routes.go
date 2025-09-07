@@ -14,7 +14,7 @@ import (
 )
 
 // SetupRoutes configures all routes for the application
-func SetupRoutes(cfg *config.Config, videoRepo database.VideoRepository, userRepo database.UserRepository, vocabRepo database.VocabularyRepository) *mux.Router {
+func SetupRoutes(cfg *config.Config, videoRepo database.VideoRepository, userRepo database.UserRepository, vocabRepo database.VocabularyRepository, watchHistoryRepo database.WatchHistoryRepository) *mux.Router {
 	r := mux.NewRouter()
 
 	log.Println("Setting up routes")
@@ -29,6 +29,7 @@ func SetupRoutes(cfg *config.Config, videoRepo database.VideoRepository, userRep
 	videoHandler := NewVideoHandler(videoRepo)
 	authHandler := NewAuthHandler(userRepo, jwtManager)
 	vocabularyHandler := NewVocabularyHandler(vocabRepo)
+	watchHistoryHandler := NewWatchHistoryHandler(watchHistoryRepo, videoRepo)
 
 	// API routes
 	api := r.PathPrefix("/api/v1").Subrouter()
@@ -59,6 +60,14 @@ func SetupRoutes(cfg *config.Config, videoRepo database.VideoRepository, userRep
 	api.HandleFunc("/vocabulary/{id}", vocabularyHandler.UpdateVocabulary).Methods("PUT")
 	api.HandleFunc("/vocabulary/{id}", vocabularyHandler.DeleteVocabulary).Methods("DELETE")
 	api.HandleFunc("/vocabulary/search", vocabularyHandler.SearchVocabularies).Methods("GET")
+
+	// Watch history routes (protected - require authentication)
+	protected.HandleFunc("/watch-history", watchHistoryHandler.GetWatchHistory).Methods("GET")
+	protected.HandleFunc("/watch-history/video", watchHistoryHandler.GetWatchHistoryByVideo).Methods("GET")
+	protected.HandleFunc("/watch-history", watchHistoryHandler.CreateOrUpdateWatchHistory).Methods("POST")
+	protected.HandleFunc("/watch-history", watchHistoryHandler.DeleteWatchHistory).Methods("DELETE")
+	protected.HandleFunc("/watch-history/recent", watchHistoryHandler.GetRecentWatched).Methods("GET")
+	protected.HandleFunc("/watch-history/completed", watchHistoryHandler.GetCompletedVideos).Methods("GET")
 
 	// Health check endpoint
 	r.HandleFunc("/health", healthCheck).Methods("GET")

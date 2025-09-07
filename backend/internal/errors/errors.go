@@ -81,6 +81,12 @@ var (
 		Code:    "VOCABULARY_NOT_FOUND",
 		Message: "Vocabulary not found",
 	}
+
+	// Watch history not found
+	ErrWatchHistoryNotFound = &APIError{
+		Code:    "WATCH_HISTORY_NOT_FOUND",
+		Message: "Watch history not found",
+	}
 )
 
 // NewAPIError creates a new API error with custom message
@@ -127,7 +133,7 @@ func WriteErrorResponse(w http.ResponseWriter, err error) {
 // getStatusCodeFromError maps error codes to HTTP status codes
 func getStatusCodeFromError(err *APIError) int {
 	switch err.Code {
-	case "VIDEO_NOT_FOUND", "USER_NOT_FOUND":
+	case "VIDEO_NOT_FOUND", "USER_NOT_FOUND", "VOCABULARY_NOT_FOUND", "WATCH_HISTORY_NOT_FOUND":
 		return http.StatusNotFound
 	case "INVALID_REQUEST", "VALIDATION_ERROR":
 		return http.StatusBadRequest

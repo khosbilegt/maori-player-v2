@@ -203,3 +203,46 @@ func ValidateVocabularyID(id string) *errors.ValidationErrors {
 
 	return ve
 }
+
+// ValidateWatchHistoryRequest validates a watch history request
+func ValidateWatchHistoryRequest(req *models.WatchHistoryRequest) *errors.ValidationErrors {
+	ve := &errors.ValidationErrors{}
+
+	// Validate video ID
+	if strings.TrimSpace(req.VideoID) == "" {
+		ve.Add("video_id", "Video ID is required")
+	}
+
+	// Validate progress (0.0 to 1.0)
+	if req.Progress < 0.0 || req.Progress > 1.0 {
+		ve.Add("progress", "Progress must be between 0.0 and 1.0")
+	}
+
+	// Validate current time (must be non-negative)
+	if req.CurrentTime < 0 {
+		ve.Add("current_time", "Current time must be non-negative")
+	}
+
+	// Validate duration (must be positive)
+	if req.Duration <= 0 {
+		ve.Add("duration", "Duration must be positive")
+	}
+
+	// Validate that current time doesn't exceed duration
+	if req.CurrentTime > req.Duration {
+		ve.Add("current_time", "Current time cannot exceed duration")
+	}
+
+	return ve
+}
+
+// ValidateWatchHistoryID validates a watch history ID
+func ValidateWatchHistoryID(id string) *errors.ValidationErrors {
+	ve := &errors.ValidationErrors{}
+
+	if strings.TrimSpace(id) == "" {
+		ve.Add("id", "Watch history ID is required")
+	}
+
+	return ve
+}

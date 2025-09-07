@@ -60,6 +60,8 @@
 
 .admin-table-wrapper {
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 0 0 8px 8px;
 }
 
 .admin-table {
@@ -246,28 +248,34 @@
   font-size: 1.1rem;
 }
 
-/* Responsive */
+/* Responsive table fixes */
 @media (max-width: 768px) {
+  .admin-table-container {
+    margin: 0 -1rem;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+  }
+
   .admin-table-header {
+    padding: 1rem;
     flex-direction: column;
     align-items: stretch;
+    gap: 1rem;
   }
 
   .admin-header-actions {
-    justify-content: space-between;
-  }
-
-  .search-box {
-    flex: 1;
+    flex-direction: column;
+    gap: 0.75rem;
   }
 
   .search-input {
     min-width: auto;
-    flex: 1;
+    width: 100%;
   }
 
   .admin-table {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
   }
 
   .admin-table th,

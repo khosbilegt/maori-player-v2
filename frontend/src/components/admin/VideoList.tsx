@@ -132,10 +132,7 @@ const VideoList: React.FC<VideoListProps> = ({ onDelete }) => {
             <thead>
               <tr>
                 <th>Title</th>
-                <th>Category</th>
                 <th>Duration</th>
-                <th>Language</th>
-                <th>Difficulty</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -162,26 +159,7 @@ const VideoList: React.FC<VideoListProps> = ({ onDelete }) => {
                       </div>
                     </div>
                   </td>
-                  <td>
-                    <span className="badge badge-secondary">
-                      {video.category || "Uncategorized"}
-                    </span>
-                  </td>
                   <td>{formatDuration(video.duration)}</td>
-                  <td>
-                    <span className="badge badge-info">
-                      {video.language || "Unknown"}
-                    </span>
-                  </td>
-                  <td>
-                    <span
-                      className={`badge badge-${(
-                        video.difficulty_level || "beginner"
-                      ).toLowerCase()}`}
-                    >
-                      {video.difficulty_level || "Beginner"}
-                    </span>
-                  </td>
                   <td>
                     <div className="admin-actions">
                       <button
