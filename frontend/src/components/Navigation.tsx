@@ -31,6 +31,9 @@ const Navigation: React.FC = () => {
               <Link to="/history" className="nav-link">
                 History
               </Link>
+              <Link to="/learning" className="nav-link">
+                Learning
+              </Link>
               {isAdmin && (
                 <Link to="/admin" className="nav-link">
                   Admin
