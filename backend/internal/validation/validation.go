@@ -155,3 +155,51 @@ func isValidUsername(username string) bool {
 	usernameRegex := regexp.MustCompile(`^[a-zA-Z0-9_]+$`)
 	return usernameRegex.MatchString(username)
 }
+
+// ValidateVocabularyRequest validates a vocabulary request
+func ValidateVocabularyRequest(req *models.VocabularyRequest) *errors.ValidationErrors {
+	ve := &errors.ValidationErrors{}
+
+	// Validate Māori text
+	if strings.TrimSpace(req.Maori) == "" {
+		ve.Add("maori", "Māori text is required")
+	} else if len(req.Maori) > 200 {
+		ve.Add("maori", "Māori text must be less than 200 characters")
+	}
+
+	// Validate English text
+	if strings.TrimSpace(req.English) == "" {
+		ve.Add("english", "English text is required")
+	} else if len(req.English) > 200 {
+		ve.Add("english", "English text must be less than 200 characters")
+	}
+
+	// Validate pronunciation
+	if strings.TrimSpace(req.Pronunciation) == "" {
+		ve.Add("pronunciation", "Pronunciation is required")
+	} else if len(req.Pronunciation) > 200 {
+		ve.Add("pronunciation", "Pronunciation must be less than 200 characters")
+	}
+
+	// Validate description
+	if strings.TrimSpace(req.Description) == "" {
+		ve.Add("description", "Description is required")
+	} else if len(req.Description) > 1000 {
+		ve.Add("description", "Description must be less than 1000 characters")
+	}
+
+	return ve
+}
+
+// ValidateVocabularyID validates a vocabulary ID
+func ValidateVocabularyID(id string) *errors.ValidationErrors {
+	ve := &errors.ValidationErrors{}
+
+	if strings.TrimSpace(id) == "" {
+		ve.Add("id", "Vocabulary ID is required")
+	} else if len(id) > 100 {
+		ve.Add("id", "Vocabulary ID must be less than 100 characters")
+	}
+
+	return ve
+}

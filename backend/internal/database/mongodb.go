@@ -14,10 +14,11 @@ import (
 
 // MongoDB represents the MongoDB connection and collection
 type MongoDB struct {
-	Client         *mongo.Client
-	Database       *mongo.Database
-	Collection     *mongo.Collection
-	UserCollection *mongo.Collection
+	Client               *mongo.Client
+	Database             *mongo.Database
+	Collection           *mongo.Collection
+	UserCollection       *mongo.Collection
+	VocabularyCollection *mongo.Collection
 }
 
 // NewMongoDB creates a new MongoDB connection
@@ -38,12 +39,14 @@ func NewMongoDB(cfg *config.Config) (*MongoDB, error) {
 	database := client.Database(cfg.Database.Database)
 	collection := database.Collection("videos")
 	userCollection := database.Collection("users")
+	vocabularyCollection := database.Collection("vocabulary")
 
 	return &MongoDB{
-		Client:         client,
-		Database:       database,
-		Collection:     collection,
-		UserCollection: userCollection,
+		Client:               client,
+		Database:             database,
+		Collection:           collection,
+		UserCollection:       userCollection,
+		VocabularyCollection: vocabularyCollection,
 	}, nil
 }
 
@@ -155,6 +158,16 @@ type UserRepository interface {
 	Delete(ctx context.Context, id string) error
 }
 
+// VocabularyRepository interface for vocabulary operations
+type VocabularyRepository interface {
+	GetAll(ctx context.Context) ([]*models.Vocabulary, error)
+	GetByID(ctx context.Context, id string) (*models.Vocabulary, error)
+	Create(ctx context.Context, vocabulary *models.Vocabulary) error
+	Update(ctx context.Context, id string, vocabulary *models.Vocabulary) error
+	Delete(ctx context.Context, id string) error
+	Search(ctx context.Context, query string) ([]*models.Vocabulary, error)
+}
+
 // userRepository implements UserRepository
 type userRepository struct {
 	collection *mongo.Collection
@@ -238,4 +251,95 @@ func (r *userRepository) Delete(ctx context.Context, id string) error {
 	}
 
 	return nil
+}
+
+// vocabularyRepository implements VocabularyRepository
+type vocabularyRepository struct {
+	collection *mongo.Collection
+}
+
+// NewVocabularyRepository creates a new vocabulary repository
+func NewVocabularyRepository(db *MongoDB) VocabularyRepository {
+	return &vocabularyRepository{
+		collection: db.VocabularyCollection,
+	}
+}
+
+// GetAll retrieves all vocabulary items
+func (r *vocabularyRepository) GetAll(ctx context.Context) ([]*models.Vocabulary, error) {
+	cursor, err := r.collection.Find(ctx, bson.M{})
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var vocabularies []*models.Vocabulary
+	if err := cursor.All(ctx, &vocabularies); err != nil {
+		return nil, err
+	}
+
+	return vocabularies, nil
+}
+
+// GetByID retrieves a vocabulary item by ID
+func (r *vocabularyRepository) GetByID(ctx context.Context, id string) (*models.Vocabulary, error) {
+	var vocabulary models.Vocabulary
+	err := r.collection.FindOne(ctx, bson.M{"_id": id}).Decode(&vocabulary)
+	if err != nil {
+		return nil, err
+	}
+
+	return &vocabulary, nil
+}
+
+// Create creates a new vocabulary item
+func (r *vocabularyRepository) Create(ctx context.Context, vocabulary *models.Vocabulary) error {
+	vocabulary.GenerateID()
+	_, err := r.collection.InsertOne(ctx, vocabulary)
+	return err
+}
+
+// Update updates an existing vocabulary item
+func (r *vocabularyRepository) Update(ctx context.Context, id string, vocabulary *models.Vocabulary) error {
+	vocabulary.ID = id
+	_, err := r.collection.ReplaceOne(ctx, bson.M{"_id": id}, vocabulary)
+	return err
+}
+
+// Delete deletes a vocabulary item by ID
+func (r *vocabularyRepository) Delete(ctx context.Context, id string) error {
+	result, err := r.collection.DeleteOne(ctx, bson.M{"_id": id})
+	if err != nil {
+		return err
+	}
+
+	if result.DeletedCount == 0 {
+		return mongo.ErrNoDocuments
+	}
+
+	return nil
+}
+
+// Search searches vocabulary items by Māori or English text
+func (r *vocabularyRepository) Search(ctx context.Context, query string) ([]*models.Vocabulary, error) {
+	filter := bson.M{
+		"$or": []bson.M{
+			{"maori": bson.M{"$regex": query, "$options": "i"}},
+			{"english": bson.M{"$regex": query, "$options": "i"}},
+			{"description": bson.M{"$regex": query, "$options": "i"}},
+		},
+	}
+
+	cursor, err := r.collection.Find(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var vocabularies []*models.Vocabulary
+	if err := cursor.All(ctx, &vocabularies); err != nil {
+		return nil, err
+	}
+
+	return vocabularies, nil
 }

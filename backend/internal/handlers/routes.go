@@ -14,7 +14,7 @@ import (
 )
 
 // SetupRoutes configures all routes for the application
-func SetupRoutes(cfg *config.Config, videoRepo database.VideoRepository, userRepo database.UserRepository) *mux.Router {
+func SetupRoutes(cfg *config.Config, videoRepo database.VideoRepository, userRepo database.UserRepository, vocabRepo database.VocabularyRepository) *mux.Router {
 	r := mux.NewRouter()
 
 	log.Println("Setting up routes")
@@ -28,6 +28,7 @@ func SetupRoutes(cfg *config.Config, videoRepo database.VideoRepository, userRep
 	// Create handlers
 	videoHandler := NewVideoHandler(videoRepo)
 	authHandler := NewAuthHandler(userRepo, jwtManager)
+	vocabularyHandler := NewVocabularyHandler(vocabRepo)
 
 	// API routes
 	api := r.PathPrefix("/api/v1").Subrouter()
@@ -50,6 +51,14 @@ func SetupRoutes(cfg *config.Config, videoRepo database.VideoRepository, userRep
 	api.HandleFunc("/videos", videoHandler.CreateVideo).Methods("POST")
 	api.HandleFunc("/videos/{id}", videoHandler.UpdateVideo).Methods("PUT")
 	api.HandleFunc("/videos/{id}", videoHandler.DeleteVideo).Methods("DELETE")
+
+	// Vocabulary routes (public for now, but can be made protected if needed)
+	api.HandleFunc("/vocabulary", vocabularyHandler.GetVocabularies).Methods("GET")
+	api.HandleFunc("/vocabulary/{id}", vocabularyHandler.GetVocabulary).Methods("GET")
+	api.HandleFunc("/vocabulary", vocabularyHandler.CreateVocabulary).Methods("POST")
+	api.HandleFunc("/vocabulary/{id}", vocabularyHandler.UpdateVocabulary).Methods("PUT")
+	api.HandleFunc("/vocabulary/{id}", vocabularyHandler.DeleteVocabulary).Methods("DELETE")
+	api.HandleFunc("/vocabulary/search", vocabularyHandler.SearchVocabularies).Methods("GET")
 
 	// Health check endpoint
 	r.HandleFunc("/health", healthCheck).Methods("GET")

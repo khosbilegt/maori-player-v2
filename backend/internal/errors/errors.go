@@ -75,6 +75,12 @@ var (
 		Code:    "INVALID_TOKEN",
 		Message: "Invalid or expired token",
 	}
+
+	// Vocabulary not found
+	ErrVocabularyNotFound = &APIError{
+		Code:    "VOCABULARY_NOT_FOUND",
+		Message: "Vocabulary not found",
+	}
 )
 
 // NewAPIError creates a new API error with custom message
