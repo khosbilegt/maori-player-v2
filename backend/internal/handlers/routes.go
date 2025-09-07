@@ -43,26 +43,30 @@ func SetupRoutes(cfg *config.Config, videoRepo database.VideoRepository, userRep
 	protected := api.PathPrefix("").Subrouter()
 	protected.Use(middleware.AuthMiddleware(jwtManager))
 
-	// User profile routes
+	// Admin-only routes (require admin role)
+	admin := api.PathPrefix("").Subrouter()
+	admin.Use(middleware.AdminMiddleware)
+
+	// User profile routes (authenticated users)
 	protected.HandleFunc("/auth/profile", authHandler.GetProfile).Methods("GET")
 	protected.HandleFunc("/auth/profile", authHandler.UpdateProfile).Methods("PUT")
 
-	// Video routes (public for now, but can be made protected if needed)
+	// Video routes - public read access, admin-only write access
 	api.HandleFunc("/videos", videoHandler.GetVideos).Methods("GET")
 	api.HandleFunc("/videos/{id}", videoHandler.GetVideo).Methods("GET")
-	api.HandleFunc("/videos", videoHandler.CreateVideo).Methods("POST")
-	api.HandleFunc("/videos/{id}", videoHandler.UpdateVideo).Methods("PUT")
-	api.HandleFunc("/videos/{id}", videoHandler.DeleteVideo).Methods("DELETE")
+	admin.HandleFunc("/videos", videoHandler.CreateVideo).Methods("POST")
+	admin.HandleFunc("/videos/{id}", videoHandler.UpdateVideo).Methods("PUT")
+	admin.HandleFunc("/videos/{id}", videoHandler.DeleteVideo).Methods("DELETE")
 
-	// Vocabulary routes (public for now, but can be made protected if needed)
+	// Vocabulary routes - public read access, admin-only write access
 	api.HandleFunc("/vocabulary", vocabularyHandler.GetVocabularies).Methods("GET")
 	api.HandleFunc("/vocabulary/{id}", vocabularyHandler.GetVocabulary).Methods("GET")
-	api.HandleFunc("/vocabulary", vocabularyHandler.CreateVocabulary).Methods("POST")
-	api.HandleFunc("/vocabulary/{id}", vocabularyHandler.UpdateVocabulary).Methods("PUT")
-	api.HandleFunc("/vocabulary/{id}", vocabularyHandler.DeleteVocabulary).Methods("DELETE")
 	api.HandleFunc("/vocabulary/search", vocabularyHandler.SearchVocabularies).Methods("GET")
+	admin.HandleFunc("/vocabulary", vocabularyHandler.CreateVocabulary).Methods("POST")
+	admin.HandleFunc("/vocabulary/{id}", vocabularyHandler.UpdateVocabulary).Methods("PUT")
+	admin.HandleFunc("/vocabulary/{id}", vocabularyHandler.DeleteVocabulary).Methods("DELETE")
 
-	// Watch history routes (protected - require authentication)
+	// Watch history routes (authenticated users - no admin required)
 	protected.HandleFunc("/watch-history", watchHistoryHandler.GetWatchHistory).Methods("GET")
 	protected.HandleFunc("/watch-history/video", watchHistoryHandler.GetWatchHistoryByVideo).Methods("GET")
 	protected.HandleFunc("/watch-history", watchHistoryHandler.CreateOrUpdateWatchHistory).Methods("POST")
@@ -70,10 +74,10 @@ func SetupRoutes(cfg *config.Config, videoRepo database.VideoRepository, userRep
 	protected.HandleFunc("/watch-history/recent", watchHistoryHandler.GetRecentWatched).Methods("GET")
 	protected.HandleFunc("/watch-history/completed", watchHistoryHandler.GetCompletedVideos).Methods("GET")
 
-	// VTT file routes (protected - require authentication)
-	protected.HandleFunc("/vtt/upload", vttHandler.UploadVTT).Methods("POST")
-	protected.HandleFunc("/vtt/list", vttHandler.ListVTTFiles).Methods("GET")
-	protected.HandleFunc("/vtt/delete", vttHandler.DeleteVTTFile).Methods("DELETE")
+	// VTT file routes (admin-only)
+	admin.HandleFunc("/vtt/upload", vttHandler.UploadVTT).Methods("POST")
+	admin.HandleFunc("/vtt/list", vttHandler.ListVTTFiles).Methods("GET")
+	admin.HandleFunc("/vtt/delete", vttHandler.DeleteVTTFile).Methods("DELETE")
 
 	// Static file serving for uploaded VTT files
 	api.PathPrefix("/uploads/vtt/").Handler(http.StripPrefix("/api/v1/uploads/vtt/", http.FileServer(http.Dir("./uploads/vtt/"))))

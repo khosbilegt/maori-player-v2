@@ -87,6 +87,12 @@ var (
 		Code:    "WATCH_HISTORY_NOT_FOUND",
 		Message: "Watch history not found",
 	}
+
+	// Insufficient permissions
+	ErrInsufficientPermissions = &APIError{
+		Code:    "INSUFFICIENT_PERMISSIONS",
+		Message: "Insufficient permissions",
+	}
 )
 
 // NewAPIError creates a new API error with custom message
@@ -141,6 +147,8 @@ func getStatusCodeFromError(err *APIError) int {
 		return http.StatusUnauthorized
 	case "INVALID_CREDENTIALS":
 		return http.StatusUnauthorized
+	case "INSUFFICIENT_PERMISSIONS":
+		return http.StatusForbidden
 	case "USER_ALREADY_EXISTS":
 		return http.StatusConflict
 	case "DATABASE_ERROR", "INTERNAL_SERVER_ERROR":

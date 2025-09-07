@@ -15,6 +15,7 @@ type JWTClaims struct {
 	UserID   string `json:"user_id"`
 	Email    string `json:"email"`
 	Username string `json:"username"`
+	Role     string `json:"role"`
 	jwt.RegisteredClaims
 }
 
@@ -38,6 +39,7 @@ func (j *JWTManager) GenerateToken(user *models.User) (string, error) {
 		UserID:   user.ID,
 		Email:    user.Email,
 		Username: user.Username,
+		Role:     user.Role,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(j.expiration)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
@@ -83,4 +85,27 @@ func ExtractTokenFromHeader(authHeader string) (string, error) {
 	}
 
 	return authHeader[7:], nil
+}
+
+// ParseJWTToken parses a JWT token and returns the claims as a map
+func ParseJWTToken(tokenString string) (map[string]interface{}, error) {
+	// For now, we'll use a simple approach with the config
+	// In a real application, you might want to pass the JWT manager instance
+	cfg := config.LoadConfig()
+	jwtManager := NewJWTManager(&cfg.JWT)
+
+	claims, err := jwtManager.ValidateToken(tokenString)
+	if err != nil {
+		return nil, err
+	}
+
+	// Convert claims to map
+	claimsMap := map[string]interface{}{
+		"user_id":  claims.UserID,
+		"email":    claims.Email,
+		"username": claims.Username,
+		"role":     claims.Role,
+	}
+
+	return claimsMap, nil
 }

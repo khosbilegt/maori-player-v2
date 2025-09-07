@@ -14,6 +14,7 @@ type User struct {
 	Email     string    `json:"email" bson:"email"`
 	Username  string    `json:"username" bson:"username"`
 	Password  string    `json:"-" bson:"password"` // Hidden from JSON
+	Role      string    `json:"role" bson:"role"`  // "admin" or "user"
 	CreatedAt time.Time `json:"created_at" bson:"created_at"`
 	UpdatedAt time.Time `json:"updated_at" bson:"updated_at"`
 }
@@ -36,6 +37,7 @@ type UserResponse struct {
 	ID        string    `json:"id"`
 	Email     string    `json:"email"`
 	Username  string    `json:"username"`
+	Role      string    `json:"role"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
@@ -51,6 +53,7 @@ func (ur *UserRequest) ToUser() *User {
 	user := &User{
 		Email:     ur.Email,
 		Username:  ur.Username,
+		Role:      "user", // Default role for new users
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}
@@ -65,6 +68,7 @@ func (u *User) ToUserResponse() *UserResponse {
 		ID:        u.ID,
 		Email:     u.Email,
 		Username:  u.Username,
+		Role:      u.Role,
 		CreatedAt: u.CreatedAt,
 		UpdatedAt: u.UpdatedAt,
 	}
