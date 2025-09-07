@@ -371,17 +371,11 @@ func (h *LearningListHandler) GetLearningListStats(w http.ResponseWriter, r *htt
 	})
 }
 
-// getUserIDFromToken extracts user ID from JWT token in request context
+// getUserIDFromToken extracts user ID from request context populated by AuthMiddleware
 func (h *LearningListHandler) getUserIDFromToken(r *http.Request) (string, error) {
-	claims, ok := r.Context().Value("userClaims").(map[string]interface{})
-	if !ok {
+	userID, ok := r.Context().Value("user_id").(string)
+	if !ok || userID == "" {
 		return "", errors.ErrUnauthorized
 	}
-
-	userID, ok := claims["user_id"].(string)
-	if !ok {
-		return "", errors.ErrUnauthorized
-	}
-
 	return userID, nil
 }
