@@ -8,6 +8,17 @@ export interface VideoData {
   video: string;
   subtitle?: string;
   duration?: string;
+  // Additional fields for admin panel compatibility
+  url?: string;
+  thumbnail_url?: string;
+  category?: string;
+  tags?: string[];
+  language?: string;
+  difficulty_level?: string;
+  transcript_url?: string;
+  subtitles_url?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 interface VideoCardProps {

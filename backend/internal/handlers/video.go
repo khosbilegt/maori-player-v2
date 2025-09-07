@@ -1,14 +1,13 @@
 package handlers
 
 import (
-	"context"
 	"encoding/json"
 	"net/http"
-	"time"
 
 	"video-player-backend/internal/database"
 	"video-player-backend/internal/errors"
 	"video-player-backend/internal/models"
+	"video-player-backend/internal/utils"
 	"video-player-backend/internal/validation"
 
 	"github.com/gorilla/mux"
@@ -29,7 +28,7 @@ func NewVideoHandler(repo database.VideoRepository) *VideoHandler {
 
 // GetVideos handles GET /videos
 func (h *VideoHandler) GetVideos(w http.ResponseWriter, r *http.Request) {
-	ctx, cancel := contextWithTimeout()
+	ctx, cancel := utils.ContextWithTimeout()
 	defer cancel()
 
 	videos, err := h.repo.GetAll(ctx)
@@ -48,7 +47,7 @@ func (h *VideoHandler) GetVideos(w http.ResponseWriter, r *http.Request) {
 
 // GetVideo handles GET /videos/{id}
 func (h *VideoHandler) GetVideo(w http.ResponseWriter, r *http.Request) {
-	ctx, cancel := contextWithTimeout()
+	ctx, cancel := utils.ContextWithTimeout()
 	defer cancel()
 
 	params := mux.Vars(r)
@@ -76,7 +75,7 @@ func (h *VideoHandler) GetVideo(w http.ResponseWriter, r *http.Request) {
 
 // CreateVideo handles POST /videos
 func (h *VideoHandler) CreateVideo(w http.ResponseWriter, r *http.Request) {
-	ctx, cancel := contextWithTimeout()
+	ctx, cancel := utils.ContextWithTimeout()
 	defer cancel()
 
 	var videoReq models.VideoRequest
@@ -110,7 +109,7 @@ func (h *VideoHandler) CreateVideo(w http.ResponseWriter, r *http.Request) {
 
 // UpdateVideo handles PUT /videos/{id}
 func (h *VideoHandler) UpdateVideo(w http.ResponseWriter, r *http.Request) {
-	ctx, cancel := contextWithTimeout()
+	ctx, cancel := utils.ContextWithTimeout()
 	defer cancel()
 
 	params := mux.Vars(r)
@@ -156,7 +155,7 @@ func (h *VideoHandler) UpdateVideo(w http.ResponseWriter, r *http.Request) {
 
 // DeleteVideo handles DELETE /videos/{id}
 func (h *VideoHandler) DeleteVideo(w http.ResponseWriter, r *http.Request) {
-	ctx, cancel := contextWithTimeout()
+	ctx, cancel := utils.ContextWithTimeout()
 	defer cancel()
 
 	params := mux.Vars(r)
@@ -178,9 +177,4 @@ func (h *VideoHandler) DeleteVideo(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusNoContent)
-}
-
-// contextWithTimeout creates a context with timeout
-func contextWithTimeout() (context.Context, context.CancelFunc) {
-	return context.WithTimeout(context.Background(), 10*time.Second)
 }

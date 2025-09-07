@@ -136,6 +136,51 @@ export class ApiClient {
     return this.get(API_ENDPOINTS.VIDEOS.BY_ID(id));
   }
 
+  // Admin Video methods
+  async createVideo(videoData: any): Promise<VideoData> {
+    return this.post(API_ENDPOINTS.VIDEOS.BASE, videoData);
+  }
+
+  async updateVideo(id: string, videoData: any): Promise<VideoData> {
+    return this.put(API_ENDPOINTS.VIDEOS.BY_ID(id), videoData);
+  }
+
+  async deleteVideo(id: string): Promise<void> {
+    return this.delete(API_ENDPOINTS.VIDEOS.BY_ID(id));
+  }
+
+  // Vocabulary methods
+  async getVocabularies(): Promise<any[]> {
+    return this.get(`${environment.apiBaseUrl}/api/v1/vocabulary`);
+  }
+
+  async getVocabulary(id: string): Promise<any> {
+    return this.get(`${environment.apiBaseUrl}/api/v1/vocabulary/${id}`);
+  }
+
+  async createVocabulary(vocabData: any): Promise<any> {
+    return this.post(`${environment.apiBaseUrl}/api/v1/vocabulary`, vocabData);
+  }
+
+  async updateVocabulary(id: string, vocabData: any): Promise<any> {
+    return this.put(
+      `${environment.apiBaseUrl}/api/v1/vocabulary/${id}`,
+      vocabData
+    );
+  }
+
+  async deleteVocabulary(id: string): Promise<void> {
+    return this.delete(`${environment.apiBaseUrl}/api/v1/vocabulary/${id}`);
+  }
+
+  async searchVocabularies(query: string): Promise<any[]> {
+    return this.get(
+      `${
+        environment.apiBaseUrl
+      }/api/v1/vocabulary/search?q=${encodeURIComponent(query)}`
+    );
+  }
+
   // Health check
   async healthCheck(): Promise<{ status: string; service: string }> {
     return this.get(API_ENDPOINTS.HEALTH);

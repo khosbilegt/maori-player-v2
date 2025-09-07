@@ -7,6 +7,10 @@ import LoginPage from "../pages/LoginPage";
 import RegisterPage from "../pages/RegisterPage";
 import ProtectedRoute from "../components/ProtectedRoute";
 import Navigation from "../components/Navigation";
+import AdminLayout from "../components/admin/AdminLayout";
+import AdminDashboard from "../pages/admin/AdminDashboard";
+import AdminVideos from "../pages/admin/AdminVideos";
+import AdminVocabulary from "../pages/admin/AdminVocabulary";
 
 function AppRouter() {
   // Set basename for GitHub Pages deployment
@@ -36,6 +40,37 @@ function AppRouter() {
             element={
               <ProtectedRoute>
                 <VideoPage />
+              </ProtectedRoute>
+            }
+          />
+          {/* Admin Routes */}
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute>
+                <AdminLayout>
+                  <AdminDashboard />
+                </AdminLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/videos"
+            element={
+              <ProtectedRoute>
+                <AdminLayout>
+                  <AdminVideos />
+                </AdminLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/vocabulary"
+            element={
+              <ProtectedRoute>
+                <AdminLayout>
+                  <AdminVocabulary />
+                </AdminLayout>
               </ProtectedRoute>
             }
           />

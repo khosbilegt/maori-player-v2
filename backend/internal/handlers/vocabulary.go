@@ -7,6 +7,7 @@ import (
 	"video-player-backend/internal/database"
 	"video-player-backend/internal/errors"
 	"video-player-backend/internal/models"
+	"video-player-backend/internal/utils"
 	"video-player-backend/internal/validation"
 
 	"github.com/gorilla/mux"
@@ -27,7 +28,7 @@ func NewVocabularyHandler(repo database.VocabularyRepository) *VocabularyHandler
 
 // GetVocabularies handles GET /vocabulary
 func (h *VocabularyHandler) GetVocabularies(w http.ResponseWriter, r *http.Request) {
-	ctx, cancel := contextWithTimeout()
+	ctx, cancel := utils.ContextWithTimeout()
 	defer cancel()
 
 	vocabularies, err := h.repo.GetAll(ctx)
@@ -46,7 +47,7 @@ func (h *VocabularyHandler) GetVocabularies(w http.ResponseWriter, r *http.Reque
 
 // GetVocabulary handles GET /vocabulary/{id}
 func (h *VocabularyHandler) GetVocabulary(w http.ResponseWriter, r *http.Request) {
-	ctx, cancel := contextWithTimeout()
+	ctx, cancel := utils.ContextWithTimeout()
 	defer cancel()
 
 	params := mux.Vars(r)
@@ -74,7 +75,7 @@ func (h *VocabularyHandler) GetVocabulary(w http.ResponseWriter, r *http.Request
 
 // CreateVocabulary handles POST /vocabulary
 func (h *VocabularyHandler) CreateVocabulary(w http.ResponseWriter, r *http.Request) {
-	ctx, cancel := contextWithTimeout()
+	ctx, cancel := utils.ContextWithTimeout()
 	defer cancel()
 
 	var vocabReq models.VocabularyRequest
@@ -108,7 +109,7 @@ func (h *VocabularyHandler) CreateVocabulary(w http.ResponseWriter, r *http.Requ
 
 // UpdateVocabulary handles PUT /vocabulary/{id}
 func (h *VocabularyHandler) UpdateVocabulary(w http.ResponseWriter, r *http.Request) {
-	ctx, cancel := contextWithTimeout()
+	ctx, cancel := utils.ContextWithTimeout()
 	defer cancel()
 
 	params := mux.Vars(r)
@@ -161,7 +162,7 @@ func (h *VocabularyHandler) UpdateVocabulary(w http.ResponseWriter, r *http.Requ
 
 // DeleteVocabulary handles DELETE /vocabulary/{id}
 func (h *VocabularyHandler) DeleteVocabulary(w http.ResponseWriter, r *http.Request) {
-	ctx, cancel := contextWithTimeout()
+	ctx, cancel := utils.ContextWithTimeout()
 	defer cancel()
 
 	params := mux.Vars(r)
@@ -187,7 +188,7 @@ func (h *VocabularyHandler) DeleteVocabulary(w http.ResponseWriter, r *http.Requ
 
 // SearchVocabularies handles GET /vocabulary/search?q={query}
 func (h *VocabularyHandler) SearchVocabularies(w http.ResponseWriter, r *http.Request) {
-	ctx, cancel := contextWithTimeout()
+	ctx, cancel := utils.ContextWithTimeout()
 	defer cancel()
 
 	query := r.URL.Query().Get("q")
