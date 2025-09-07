@@ -93,7 +93,7 @@ func (h *VTTUploadHandler) UploadVTT(w http.ResponseWriter, r *http.Request) {
 		"original_name": header.Filename,
 		"size":          header.Size,
 		"uploaded_at":   time.Now().UTC(),
-		"url":           fmt.Sprintf("/uploads/vtt/%s", filename),
+		"url":           fmt.Sprintf("/api/v1/uploads/vtt/%s", filename),
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -156,7 +156,7 @@ func (h *VTTUploadHandler) generateUniqueFilename(originalFilename string) strin
 // GetVTTFile serves VTT files
 func (h *VTTUploadHandler) GetVTTFile(w http.ResponseWriter, r *http.Request) {
 	// Get filename from URL path
-	filename := strings.TrimPrefix(r.URL.Path, "/uploads/vtt/")
+	filename := strings.TrimPrefix(r.URL.Path, "/api/v1/uploads/vtt/")
 
 	// Validate filename
 	if filename == "" || strings.Contains(filename, "..") {
@@ -204,7 +204,7 @@ func (h *VTTUploadHandler) ListVTTFiles(w http.ResponseWriter, r *http.Request) 
 				"filename":    file.Name(),
 				"size":        info.Size(),
 				"modified_at": info.ModTime().UTC(),
-				"url":         fmt.Sprintf("/uploads/vtt/%s", file.Name()),
+				"url":         fmt.Sprintf("/api/v1/uploads/vtt/%s", file.Name()),
 			})
 		}
 	}

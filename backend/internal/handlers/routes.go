@@ -76,7 +76,7 @@ func SetupRoutes(cfg *config.Config, videoRepo database.VideoRepository, userRep
 	protected.HandleFunc("/vtt/delete", vttHandler.DeleteVTTFile).Methods("DELETE")
 
 	// Static file serving for uploaded VTT files
-	r.PathPrefix("/uploads/vtt/").Handler(http.StripPrefix("/uploads/vtt/", http.FileServer(http.Dir("./uploads/vtt/"))))
+	api.PathPrefix("/uploads/vtt/").Handler(http.StripPrefix("/api/v1/uploads/vtt/", http.FileServer(http.Dir("./uploads/vtt/"))))
 
 	// Health check endpoint
 	r.HandleFunc("/health", healthCheck).Methods("GET")

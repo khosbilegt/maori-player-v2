@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { apiClient } from "../../utils/apiClient";
 import type { VocabularyFormData } from "../../types/admin";
-import VocabularyForm from "./VocabularyForm";
 import "./AdminTable.css";
+import VocabularyForm from "./VocabularyForm";
 
 interface Vocabulary {
   id: string;
@@ -15,14 +15,10 @@ interface Vocabulary {
 }
 
 interface VocabularyListProps {
-  onEdit: (vocabulary: Vocabulary) => void;
   onDelete: (id: string) => void;
 }
 
-const VocabularyList: React.FC<VocabularyListProps> = ({
-  onEdit,
-  onDelete,
-}) => {
+const VocabularyList: React.FC<VocabularyListProps> = ({ onDelete }) => {
   const [vocabularies, setVocabularies] = useState<Vocabulary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

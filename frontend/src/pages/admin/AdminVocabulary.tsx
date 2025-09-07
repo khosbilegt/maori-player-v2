@@ -2,20 +2,20 @@ import React from "react";
 import VocabularyList from "../../components/admin/VocabularyList";
 import "./AdminPage.css";
 
-interface Vocabulary {
-  id: string;
-  maori: string;
-  english: string;
-  pronunciation: string;
-  description: string;
-  created_at: string;
-  updated_at: string;
-}
+// interface Vocabulary {
+//   id: string;
+//   maori: string;
+//   english: string;
+//   pronunciation: string;
+//   description: string;
+//   created_at: string;
+//   updated_at: string;
+// }
 
 const AdminVocabulary: React.FC = () => {
-  const handleEdit = (vocabulary: Vocabulary) => {
-    console.log("Edit vocabulary:", vocabulary);
-  };
+  // const handleEdit = (vocabulary: Vocabulary) => {
+  //   console.log("Edit vocabulary:", vocabulary);
+  // };
 
   const handleDelete = (id: string) => {
     console.log("Delete vocabulary:", id);
@@ -28,7 +28,7 @@ const AdminVocabulary: React.FC = () => {
         <p>Create, edit, and manage Māori vocabulary items</p>
       </div>
 
-      <VocabularyList onEdit={handleEdit} onDelete={handleDelete} />
+      <VocabularyList onDelete={handleDelete} />
     </div>
   );
 };

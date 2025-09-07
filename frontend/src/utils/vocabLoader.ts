@@ -1,5 +1,4 @@
 import { environment } from "../config/environment";
-import { getAssetPath } from "./assetPaths";
 
 export interface VocabEntry {
   id: string;
