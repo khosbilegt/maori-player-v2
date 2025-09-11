@@ -32,9 +32,10 @@ func main() {
 	userRepo := database.NewUserRepository(db)
 	vocabRepo := database.NewVocabularyRepository(db)
 	watchHistoryRepo := database.NewWatchHistoryRepository(db)
+	playlistRepo := database.NewPlaylistRepository(db)
 
 	// Setup routes
-	router := handlers.SetupRoutes(cfg, db, videoRepo, userRepo, vocabRepo, watchHistoryRepo)
+	router := handlers.SetupRoutes(cfg, db, videoRepo, userRepo, vocabRepo, watchHistoryRepo, playlistRepo)
 
 	// Create server
 	server := &http.Server{

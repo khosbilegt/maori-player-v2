@@ -14,7 +14,7 @@ import (
 )
 
 // SetupRoutes configures all routes for the application
-func SetupRoutes(cfg *config.Config, db *database.MongoDB, videoRepo database.VideoRepository, userRepo database.UserRepository, vocabRepo database.VocabularyRepository, watchHistoryRepo database.WatchHistoryRepository) *mux.Router {
+func SetupRoutes(cfg *config.Config, db *database.MongoDB, videoRepo database.VideoRepository, userRepo database.UserRepository, vocabRepo database.VocabularyRepository, watchHistoryRepo database.WatchHistoryRepository, playlistRepo database.PlaylistRepository) *mux.Router {
 	r := mux.NewRouter()
 
 	log.Println("Setting up routes")
@@ -32,6 +32,7 @@ func SetupRoutes(cfg *config.Config, db *database.MongoDB, videoRepo database.Vi
 	watchHistoryHandler := NewWatchHistoryHandler(watchHistoryRepo, videoRepo)
 	vttHandler := NewVTTUploadHandler("./uploads/vtt")
 	learningListHandler := NewLearningListHandler(db)
+	playlistHandler := NewPlaylistHandler(playlistRepo, videoRepo)
 
 	// API routes
 	api := r.PathPrefix("/api/v1").Subrouter()
@@ -82,6 +83,18 @@ func SetupRoutes(cfg *config.Config, db *database.MongoDB, videoRepo database.Vi
 	protected.HandleFunc("/learning-list/{id}", learningListHandler.GetLearningListItem).Methods("GET")
 	protected.HandleFunc("/learning-list/{id}", learningListHandler.UpdateLearningListItem).Methods("PUT")
 	protected.HandleFunc("/learning-list/{id}", learningListHandler.DeleteLearningListItem).Methods("DELETE")
+
+	// Playlist routes (authenticated users - no admin required)
+	protected.HandleFunc("/playlists", playlistHandler.GetPlaylists).Methods("GET")
+	protected.HandleFunc("/playlists/user", playlistHandler.GetUserPlaylists).Methods("GET")
+	protected.HandleFunc("/playlists/public", playlistHandler.GetPublicPlaylists).Methods("GET")
+	protected.HandleFunc("/playlists", playlistHandler.CreatePlaylist).Methods("POST")
+	protected.HandleFunc("/playlists/{id}", playlistHandler.GetPlaylist).Methods("GET")
+	protected.HandleFunc("/playlists/{id}", playlistHandler.UpdatePlaylist).Methods("PUT")
+	protected.HandleFunc("/playlists/{id}", playlistHandler.DeletePlaylist).Methods("DELETE")
+	protected.HandleFunc("/playlists/{id}/videos", playlistHandler.AddVideoToPlaylist).Methods("POST")
+	protected.HandleFunc("/playlists/{id}/videos", playlistHandler.RemoveVideoFromPlaylist).Methods("DELETE")
+	protected.HandleFunc("/playlists/{id}/reorder", playlistHandler.ReorderPlaylistVideos).Methods("PUT")
 
 	// VTT file routes (admin-only)
 	admin.HandleFunc("/vtt/upload", vttHandler.UploadVTT).Methods("POST")

@@ -15,13 +15,17 @@ const WordTooltip: React.FC<WordTooltipProps> = ({ vocabEntry, children }) => {
       {children}
       <div className={`word-tooltip-popup`} ref={tooltipRef}>
         <div className="word-tooltip-content">
-          <div className="word-tooltip-word">{vocabEntry.maori}</div>
+          <div
+            style={{
+              display: "flex",
+              gap: "10px",
+              justifyContent: "space-between",
+            }}
+          >
+            <div className="word-tooltip-word">{vocabEntry.maori}</div>
+            <button className="word-tooltip-pronunciation">+</button>
+          </div>
           <div className="word-tooltip-english">{vocabEntry.english}</div>
-          {vocabEntry.pronunciation && (
-            <div className="word-tooltip-pronunciation">
-              [{vocabEntry.pronunciation}]
-            </div>
-          )}
           {vocabEntry.description && (
             <div className="word-tooltip-description">
               {vocabEntry.description}

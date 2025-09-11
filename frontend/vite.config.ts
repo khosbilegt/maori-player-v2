@@ -1,5 +1,7 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
+import path from "path";
+import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig(({ mode }) => {
   const isProduction = mode === "production";
@@ -11,7 +13,7 @@ export default defineConfig(({ mode }) => {
     process.env.GITHUB_REPOSITORY?.split("/")[1] || "maori-player";
 
   return {
-    plugins: [react()],
+    plugins: [react(), tailwindcss()],
     base: isProduction && isGitHubPages ? `/${repoName}/` : "/",
     build: {
       outDir: "dist",
@@ -23,6 +25,11 @@ export default defineConfig(({ mode }) => {
             vendor: ["react", "react-dom", "react-router-dom"],
           },
         },
+      },
+    },
+    resolve: {
+      alias: {
+        "@": path.resolve(__dirname, "./src"),
       },
     },
     server: {

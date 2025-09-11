@@ -22,6 +22,7 @@ type MongoDB struct {
 	VocabularyCollection   *mongo.Collection
 	WatchHistoryCollection *mongo.Collection
 	LearningListCollection *mongo.Collection
+	PlaylistCollection     *mongo.Collection
 }
 
 // NewMongoDB creates a new MongoDB connection
@@ -45,6 +46,7 @@ func NewMongoDB(cfg *config.Config) (*MongoDB, error) {
 	vocabularyCollection := database.Collection("vocabulary")
 	watchHistoryCollection := database.Collection("watch_history")
 	learningListCollection := database.Collection("learning_list")
+	playlistCollection := database.Collection("playlists")
 
 	return &MongoDB{
 		Client:                 client,
@@ -54,6 +56,7 @@ func NewMongoDB(cfg *config.Config) (*MongoDB, error) {
 		VocabularyCollection:   vocabularyCollection,
 		WatchHistoryCollection: watchHistoryCollection,
 		LearningListCollection: learningListCollection,
+		PlaylistCollection:     playlistCollection,
 	}, nil
 }
 
@@ -613,4 +616,198 @@ func (r *watchHistoryRepository) GetCompletedVideos(ctx context.Context, userID 
 	}
 
 	return watchHistories, nil
+}
+
+// PlaylistRepository interface for playlist operations
+type PlaylistRepository interface {
+	GetAll(ctx context.Context) ([]*models.Playlist, error)
+	GetByID(ctx context.Context, id string) (*models.Playlist, error)
+	GetByUserID(ctx context.Context, userID string) ([]*models.Playlist, error)
+	GetPublicPlaylists(ctx context.Context) ([]*models.Playlist, error)
+	Create(ctx context.Context, playlist *models.Playlist) error
+	Update(ctx context.Context, id string, playlist *models.Playlist) error
+	Delete(ctx context.Context, id string) error
+	AddVideo(ctx context.Context, id, videoID string) error
+	RemoveVideo(ctx context.Context, id, videoID string) error
+	ReorderVideos(ctx context.Context, id string, videoIDs []string) error
+}
+
+// playlistRepository implements PlaylistRepository
+type playlistRepository struct {
+	collection *mongo.Collection
+}
+
+// NewPlaylistRepository creates a new playlist repository
+func NewPlaylistRepository(db *MongoDB) PlaylistRepository {
+	return &playlistRepository{
+		collection: db.PlaylistCollection,
+	}
+}
+
+// GetAll retrieves all playlists
+func (r *playlistRepository) GetAll(ctx context.Context) ([]*models.Playlist, error) {
+	cursor, err := r.collection.Find(ctx, bson.M{})
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var playlists []*models.Playlist
+	if err = cursor.All(ctx, &playlists); err != nil {
+		return nil, err
+	}
+
+	return playlists, nil
+}
+
+// GetByID retrieves a playlist by ID
+func (r *playlistRepository) GetByID(ctx context.Context, id string) (*models.Playlist, error) {
+	var playlist models.Playlist
+	err := r.collection.FindOne(ctx, bson.M{"_id": id}).Decode(&playlist)
+	if err != nil {
+		return nil, err
+	}
+	return &playlist, nil
+}
+
+// GetByUserID retrieves all playlists for a specific user
+func (r *playlistRepository) GetByUserID(ctx context.Context, userID string) ([]*models.Playlist, error) {
+	filter := bson.M{"user_id": userID}
+	opts := options.Find().SetSort(bson.D{{Key: "created_at", Value: -1}})
+
+	cursor, err := r.collection.Find(ctx, filter, opts)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var playlists []*models.Playlist
+	if err = cursor.All(ctx, &playlists); err != nil {
+		return nil, err
+	}
+
+	return playlists, nil
+}
+
+// GetPublicPlaylists retrieves all public playlists
+func (r *playlistRepository) GetPublicPlaylists(ctx context.Context) ([]*models.Playlist, error) {
+	filter := bson.M{"is_public": true}
+	opts := options.Find().SetSort(bson.D{{Key: "created_at", Value: -1}})
+
+	cursor, err := r.collection.Find(ctx, filter, opts)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var playlists []*models.Playlist
+	if err = cursor.All(ctx, &playlists); err != nil {
+		return nil, err
+	}
+
+	return playlists, nil
+}
+
+// Create creates a new playlist
+func (r *playlistRepository) Create(ctx context.Context, playlist *models.Playlist) error {
+	playlist.GenerateID()
+	_, err := r.collection.InsertOne(ctx, playlist)
+	return err
+}
+
+// Update updates an existing playlist
+func (r *playlistRepository) Update(ctx context.Context, id string, playlist *models.Playlist) error {
+	update := bson.M{
+		"$set": bson.M{
+			"name":        playlist.Name,
+			"description": playlist.Description,
+			"video_ids":   playlist.VideoIDs,
+			"is_public":   playlist.IsPublic,
+			"updated_at":  playlist.UpdatedAt,
+		},
+	}
+
+	result, err := r.collection.UpdateOne(ctx, bson.M{"_id": id}, update)
+	if err != nil {
+		return err
+	}
+
+	if result.MatchedCount == 0 {
+		return mongo.ErrNoDocuments
+	}
+
+	return nil
+}
+
+// Delete deletes a playlist by ID
+func (r *playlistRepository) Delete(ctx context.Context, id string) error {
+	result, err := r.collection.DeleteOne(ctx, bson.M{"_id": id})
+	if err != nil {
+		return err
+	}
+
+	if result.DeletedCount == 0 {
+		return mongo.ErrNoDocuments
+	}
+
+	return nil
+}
+
+// AddVideo adds a video to a playlist
+func (r *playlistRepository) AddVideo(ctx context.Context, id, videoID string) error {
+	update := bson.M{
+		"$addToSet": bson.M{"video_ids": videoID},
+		"$set":      bson.M{"updated_at": time.Now()},
+	}
+
+	result, err := r.collection.UpdateOne(ctx, bson.M{"_id": id}, update)
+	if err != nil {
+		return err
+	}
+
+	if result.MatchedCount == 0 {
+		return mongo.ErrNoDocuments
+	}
+
+	return nil
+}
+
+// RemoveVideo removes a video from a playlist
+func (r *playlistRepository) RemoveVideo(ctx context.Context, id, videoID string) error {
+	update := bson.M{
+		"$pull": bson.M{"video_ids": videoID},
+		"$set":  bson.M{"updated_at": time.Now()},
+	}
+
+	result, err := r.collection.UpdateOne(ctx, bson.M{"_id": id}, update)
+	if err != nil {
+		return err
+	}
+
+	if result.MatchedCount == 0 {
+		return mongo.ErrNoDocuments
+	}
+
+	return nil
+}
+
+// ReorderVideos reorders videos in a playlist
+func (r *playlistRepository) ReorderVideos(ctx context.Context, id string, videoIDs []string) error {
+	update := bson.M{
+		"$set": bson.M{
+			"video_ids":  videoIDs,
+			"updated_at": time.Now(),
+		},
+	}
+
+	result, err := r.collection.UpdateOne(ctx, bson.M{"_id": id}, update)
+	if err != nil {
+		return err
+	}
+
+	if result.MatchedCount == 0 {
+		return mongo.ErrNoDocuments
+	}
+
+	return nil
 }
