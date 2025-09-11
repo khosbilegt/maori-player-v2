@@ -39,6 +39,7 @@ interface AuthContextType {
     username: string,
     password?: string
   ) => Promise<void>;
+  checkProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -148,6 +149,35 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  const checkProfile = async (): Promise<void> => {
+    if (!token || !isAuthenticated) {
+      return;
+    }
+
+    try {
+      const { user: profileUser, isAuthenticated: isValid } =
+        await apiClient.checkProfile(token);
+
+      if (!isValid) {
+        console.log(
+          "Profile check failed - user not authenticated, logging out"
+        );
+        logout();
+      } else if (profileUser) {
+        // Update user data if profile is valid
+        setUser(profileUser);
+        localStorage.setItem("auth_user", JSON.stringify(profileUser));
+      }
+    } catch (error) {
+      console.error("Profile check failed:", error);
+      // Only logout on 401 errors, not on network errors
+      if ((error as any)?.status === 401) {
+        console.log("401 error during profile check - logging out");
+        logout();
+      }
+    }
+  };
+
   const value: AuthContextType = {
     user,
     token,
@@ -158,6 +188,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     register,
     logout,
     updateProfile,
+    checkProfile,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

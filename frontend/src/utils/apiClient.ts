@@ -24,9 +24,12 @@ export class ApiClient {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(
+        const error = new Error(
           errorData.message || `HTTP ${response.status}: ${response.statusText}`
         );
+        // Add status code to error for easier handling
+        (error as any).status = response.status;
+        throw error;
       }
 
       return response;
@@ -108,6 +111,21 @@ export class ApiClient {
     return this.get(API_ENDPOINTS.AUTH.PROFILE, {
       Authorization: `Bearer ${token}`,
     });
+  }
+
+  // Check profile with 401 handling for authentication validation
+  async checkProfile(
+    token: string
+  ): Promise<{ user: User; isAuthenticated: boolean }> {
+    try {
+      const user = await this.getProfile(token);
+      return { user, isAuthenticated: true };
+    } catch (error: any) {
+      if (error.status === 401) {
+        return { user: null as any, isAuthenticated: false };
+      }
+      throw error;
+    }
   }
 
   async updateProfile(

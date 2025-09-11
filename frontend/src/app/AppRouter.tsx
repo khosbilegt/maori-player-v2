@@ -14,6 +14,7 @@ import AdminVideos from "../pages/admin/AdminVideos";
 import AdminVocabulary from "../pages/admin/AdminVocabulary";
 import AdminVTT from "../pages/admin/AdminVTT";
 import LearningList from "../pages/LearningList";
+import ProfileChecker from "../components/ProfileChecker";
 
 function AppRouter() {
   // Set basename for GitHub Pages deployment
@@ -24,6 +25,7 @@ function AppRouter() {
 
   return (
     <AuthProvider>
+      <ProfileChecker />
       <BrowserRouter basename={basename}>
         <Navigation />
         <Routes>

@@ -1,20 +1,23 @@
 # Multi-stage build for optimal image size
 FROM node:18-alpine AS builder
 
+# Install pnpm
+RUN npm install -g pnpm
+
 # Set working directory
 WORKDIR /app
 
 # Copy package files
-COPY package*.json ./
+COPY package.json pnpm-lock.yaml ./
 
 # Install dependencies
-RUN npm ci --only=production
+RUN pnpm install --frozen-lockfile
 
 # Copy source code
 COPY . .
 
-# Build the application
-RUN npm run build
+# Build the application with Docker-specific environment
+RUN VITE_API_BASE_URL=https://tereo.koso.dev pnpm run build
 
 # Production stage
 FROM nginx:alpine AS production
