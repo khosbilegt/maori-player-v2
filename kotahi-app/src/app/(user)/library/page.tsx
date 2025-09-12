@@ -52,11 +52,11 @@ function LibraryPage() {
           placeholder="Search titles or kupu (e.g, 'pakihi', 'hauora')"
         />
         <div className="flex gap-4">
-          <Button>
+          <Button variant="outline">
             <p className="text-sm">Filter</p>
             <Funnel />
           </Button>
-          <Button>
+          <Button variant="outline">
             <p className="text-sm">My library</p>
             <ListVideo />
           </Button>
