@@ -3,6 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { ThemeToggleDropdown } from "@/components/ThemeToggleDropdown";
 import { cn } from "@/lib/utils";
 
 interface NavbarProps {
@@ -51,10 +52,17 @@ export function Navbar({ className }: NavbarProps) {
             >
               Progress
             </Link>
+            <Link
+              href="/demo"
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Demo
+            </Link>
           </div>
 
           {/* User Actions */}
           <div className="flex items-center space-x-4">
+            <ThemeToggleDropdown />
             <Button variant="ghost" size="sm">
               Profile
             </Button>
