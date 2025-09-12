@@ -1,11 +1,14 @@
+"use client";
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { VideoData } from "@/lib/types";
 import { Check } from "lucide-react";
 import { Button } from "../ui/button";
 import { Progress } from "../ui/progress";
+import { useRouter } from "next/navigation";
 
 function VideoCard({ video }: { video: VideoData }) {
+  const router = useRouter();
   return (
     <Card key={video.id} className="p-0 h-full">
       <CardContent className="flex flex-col p-0 h-full">
@@ -32,8 +35,17 @@ function VideoCard({ video }: { video: VideoData }) {
             <p className="text-gray-500">Familiarity: 50%</p>
           </div>
           <div className="flex gap-2">
-            <Button className="w-3/4">Play</Button>
-            <Button className="w-1/4">Save</Button>
+            <Button
+              className="w-3/4"
+              onClick={() => {
+                router.push(`/watch/${video.id}`);
+              }}
+            >
+              Play
+            </Button>
+            <Button className="w-1/4" variant="outline">
+              Save
+            </Button>
           </div>
         </div>
       </CardContent>
