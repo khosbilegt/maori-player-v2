@@ -24,8 +24,8 @@ export interface VideoData {
   id: string;
   title: string;
   description?: string;
-  url: string;
-  thumbnail_url?: string;
+  video: string;
+  thumbnail?: string;
   duration?: number;
   created_at: string;
   updated_at: string;
