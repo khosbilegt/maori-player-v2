@@ -32,39 +32,11 @@ export function Navbar({ className }: NavbarProps) {
             </Link>
           </div>
 
-          {/* Navigation Links */}
-          <div className="hidden md:flex items-center space-x-6">
-            <Link
-              href="/library"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Library
-            </Link>
-            <Link
-              href="/learning"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Learning
-            </Link>
-            <Link
-              href="/progress"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Progress
-            </Link>
-            <Link
-              href="/demo"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Demo
-            </Link>
-          </div>
-
           {/* User Actions */}
           <div className="flex items-center space-x-4">
             <ThemeToggleDropdown />
             <Button variant="ghost" size="sm">
-              Profile
+              My library
             </Button>
             <Button size="sm">Sign Out</Button>
           </div>
