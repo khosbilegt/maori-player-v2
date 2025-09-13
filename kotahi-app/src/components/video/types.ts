@@ -24,7 +24,16 @@ export interface VideoPlayerProps {
   currentTime?: number;
 }
 
+export interface SubtitleOverlayProps {
+  transcript: TranscriptItem[];
+  currentTime: number;
+  className?: string;
+  fontSize?: number;
+  videoRef?: React.RefObject<HTMLVideoElement | null>;
+}
+
 export interface SubtitleControlsProps {
   onSizeChange: (size: number) => void;
   className?: string;
+  videoRef?: React.RefObject<HTMLVideoElement | null>;
 }

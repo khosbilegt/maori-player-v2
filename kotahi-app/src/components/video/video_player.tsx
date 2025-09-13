@@ -70,27 +70,27 @@ const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
     }, [onTimeUpdate, onDurationChange, onVideoEnd]);
 
     return (
-      <div className={`video-player ${className}`}>
-        <div className="video-container">
+      <div className={`relative w-full max-w-4xl mx-auto ${className}`}>
+        <div className="relative bg-black rounded-lg overflow-hidden shadow-lg">
           <video
             ref={videoRef}
             src={src}
             controls
-            className="video-element"
+            className="w-full h-auto"
             preload="metadata"
           />
           {transcript && (
             <SubtitleOverlay
               transcript={transcript}
               currentTime={currentTime}
-              className="video-subtitles"
               fontSize={subtitleFontSize}
+              videoRef={videoRef}
             />
           )}
 
           <SubtitleControls
             onSizeChange={handleSubtitleSizeChange}
-            className="video-subtitle-controls"
+            videoRef={videoRef}
           />
         </div>
       </div>

@@ -248,12 +248,12 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
     }
   };
 
-  // const handleClosePopover = () => {
-  //   setShowPopover(false);
-  //   setSelectedText("");
-  //   // Clear any text selection
-  //   window.getSelection()?.removeAllRanges();
-  // };
+  const handleClosePopover = () => {
+    setShowPopover(false);
+    setSelectedText("");
+    // Clear any text selection
+    window.getSelection()?.removeAllRanges();
+  };
 
   const handleAddToLearnList = async (text: string) => {
     try {
@@ -415,14 +415,14 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
         </div>
       </div>
 
-      {/* {showPopover && (
+      {showPopover && (
         <TextSelectionPopover
           selectedText={selectedText}
           position={popoverPosition}
           onClose={handleClosePopover}
           onAddToLearnList={handleAddToLearnList}
         />
-      )} */}
+      )}
     </>
   );
 };

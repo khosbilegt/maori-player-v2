@@ -17,7 +17,7 @@ RUN pnpm install --frozen-lockfile
 COPY . .
 
 # Build the application with Docker-specific environment
-RUN VITE_API_BASE_URL=https://tereo.koso.dev pnpm run build
+RUN VITE_API_BASE_URL=https://kotahi.app pnpm run build
 
 # Production stage
 FROM nginx:alpine AS production
