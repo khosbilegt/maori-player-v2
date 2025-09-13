@@ -35,9 +35,9 @@ export function Navbar({ className }: NavbarProps) {
           {/* User Actions */}
           <div className="flex items-center space-x-4">
             <ThemeToggleDropdown />
-            <Button variant="ghost" size="sm">
+            <Link href="/profile/library" className="text-sm text-primary">
               My library
-            </Button>
+            </Link>
             <Button size="sm">Sign Out</Button>
           </div>
         </div>
