@@ -7,6 +7,7 @@ import React, {
   useState,
 } from "react";
 import { VideoPlayerProps, VideoPlayerRef } from "./types";
+import { environment } from "@/lib/config";
 import SubtitleOverlay from "./subtitle_overlay";
 import SubtitleControls from "./subtitle_controls";
 
@@ -14,21 +15,52 @@ const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
   (
     {
       src,
+      subtitleSrc,
       onTimeUpdate,
       onDurationChange,
       onVideoEnd,
       className = "",
-      transcript,
-      currentTime = 0,
     },
     ref
   ) => {
     const videoRef = useRef<HTMLVideoElement>(null);
     const [subtitleFontSize, setSubtitleFontSize] = useState(1.1);
+    const [trackElement, setTrackElement] = useState<HTMLTrackElement | null>(
+      null
+    );
 
     const handleSubtitleSizeChange = (size: number) => {
       setSubtitleFontSize(size);
     };
+
+    // Handle dynamic subtitle loading
+    useEffect(() => {
+      const video = videoRef.current;
+      if (!video || !subtitleSrc) return;
+
+      // Remove existing track if it exists
+      if (trackElement) {
+        video.removeChild(trackElement);
+      }
+
+      // Create new track element
+      const track = document.createElement("track");
+      track.kind = "subtitles";
+      track.src = environment.apiBaseUrl + subtitleSrc;
+      track.srclang = "en";
+      track.label = "English";
+      track.default = true;
+
+      video.appendChild(track);
+      setTrackElement(track);
+
+      // Cleanup function
+      return () => {
+        if (trackElement && video.contains(trackElement)) {
+          video.removeChild(trackElement);
+        }
+      };
+    }, [subtitleSrc]);
 
     useImperativeHandle(ref, () => ({
       getCurrentTime: () => videoRef.current?.currentTime || 0,
@@ -78,19 +110,6 @@ const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
             controls
             className="w-full h-auto"
             preload="metadata"
-          />
-          {transcript && (
-            <SubtitleOverlay
-              transcript={transcript}
-              currentTime={currentTime}
-              fontSize={subtitleFontSize}
-              videoRef={videoRef}
-            />
-          )}
-
-          <SubtitleControls
-            onSizeChange={handleSubtitleSizeChange}
-            videoRef={videoRef}
           />
         </div>
       </div>
