@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { TranscriptItem } from "./types";
 
 function VideoTranscription({
@@ -12,8 +12,43 @@ function VideoTranscription({
   currentTime: number;
   onSeek: (time: number) => void;
 }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const itemRefs = useRef<Map<number, HTMLDivElement>>(new Map());
+
+  // Auto-scroll to current transcript item
+  useEffect(() => {
+    if (!transcript.length || !containerRef.current) return;
+
+    const currentItem = transcript.find(
+      (item) => currentTime >= item.startTime && currentTime <= item.endTime
+    );
+
+    if (currentItem) {
+      const itemIndex = transcript.findIndex(
+        (item) => item.id === currentItem.id
+      );
+      const itemElement = itemRefs.current.get(itemIndex);
+
+      if (itemElement && containerRef.current) {
+        const containerRect = containerRef.current.getBoundingClientRect();
+        const itemRect = itemElement.getBoundingClientRect();
+
+        // Check if item is not visible in the container
+        const isVisible =
+          itemRect.top >= containerRect.top &&
+          itemRect.bottom <= containerRect.bottom;
+
+        if (!isVisible) {
+          itemElement.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+          });
+        }
+      }
+    }
+  }, [currentTime, transcript]);
   return (
-    <div className="overflow-y-scroll">
+    <div ref={containerRef} className="overflow-y-scroll">
       <div className="bg-card border rounded-lg p-4 space-y-2">
         {isLoadingTranscript ? (
           <div className="text-center py-8 text-muted-foreground">
@@ -26,6 +61,13 @@ function VideoTranscription({
         ) : (
           transcript.map((item: TranscriptItem, index: number) => (
             <div
+              ref={(el) => {
+                if (el) {
+                  itemRefs.current.set(index, el);
+                } else {
+                  itemRefs.current.delete(index);
+                }
+              }}
               onClick={() => {
                 onSeek(item.startTime + 1);
               }}
