@@ -1,6 +1,6 @@
 "use client";
 import VideoPlayer from "@/components/video/video_player";
-import { useVideo } from "@/lib/hooks/api";
+import { useVideo, useVocabularies } from "@/lib/hooks/api";
 import { useParams } from "next/navigation";
 import React, { useEffect, useState, useRef } from "react";
 import { environment } from "@/lib/config";
@@ -14,6 +14,7 @@ import Link from "next/link";
 function WatchPage() {
   const { videoId } = useParams();
   const { data: video } = useVideo(videoId as string);
+  const { vocabularies } = useVocabularies();
   const [currentTime, setCurrentTime] = useState(0);
   const [transcript, setTranscript] = useState<TranscriptItem[]>([]);
   const [isLoadingTranscript, setIsLoadingTranscript] = useState(false);
@@ -78,6 +79,7 @@ function WatchPage() {
             transcript={transcript}
             currentTime={currentTime}
             onSeek={handleSeek}
+            vocabularies={vocabularies || []}
           />
         </div>
       </div>

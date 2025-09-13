@@ -35,13 +35,9 @@ export interface VideoData {
 // Vocabulary types
 export interface Vocabulary {
   id: string;
-  maori_word: string;
-  english_translation: string;
-  pronunciation?: string;
-  example_sentence?: string;
-  category?: string;
-  created_at: string;
-  updated_at: string;
+  maori: string;
+  english: string;
+  description: string;
 }
 
 // Watch history types
