@@ -8,8 +8,6 @@ import React, {
 } from "react";
 import { VideoPlayerProps, VideoPlayerRef } from "./types";
 import { environment } from "@/lib/config";
-import SubtitleOverlay from "./subtitle_overlay";
-import SubtitleControls from "./subtitle_controls";
 
 const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
   (
@@ -24,14 +22,9 @@ const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
     ref
   ) => {
     const videoRef = useRef<HTMLVideoElement>(null);
-    const [subtitleFontSize, setSubtitleFontSize] = useState(1.1);
     const [trackElement, setTrackElement] = useState<HTMLTrackElement | null>(
       null
     );
-
-    const handleSubtitleSizeChange = (size: number) => {
-      setSubtitleFontSize(size);
-    };
 
     // Handle dynamic subtitle loading
     useEffect(() => {
@@ -103,13 +96,14 @@ const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
 
     return (
       <div className={`relative w-full max-w-4xl mx-auto ${className}`}>
-        <div className="relative bg-black rounded-lg overflow-hidden shadow-lg">
+        <div className="relative bg-black rounded-lg overflow-hidden shadow-lg h-full">
           <video
             ref={videoRef}
             src={src}
             controls
             className="w-full h-auto"
             preload="metadata"
+            height="100%"
           />
         </div>
       </div>

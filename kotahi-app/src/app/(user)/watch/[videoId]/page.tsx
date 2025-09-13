@@ -8,6 +8,8 @@ import type { TranscriptItem } from "@/lib/types";
 import { loadVTTTranscript } from "@/lib/vtt-parser";
 import VideoTranscription from "@/components/video/video_transcription";
 import type { VideoPlayerRef } from "@/components/video/types";
+import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
 
 function WatchPage() {
   const { videoId } = useParams();
@@ -46,14 +48,6 @@ function WatchPage() {
     setCurrentTime(time);
   };
 
-  const handleAddToLearningList = (text: string) => {
-    console.log("Adding to learning list:", text);
-  };
-
-  const handleAddToVocabulary = (text: string) => {
-    console.log("Adding to vocabulary:", text);
-  };
-
   const handleSeek = (time: number) => {
     videoPlayerRef.current?.seekTo(time);
   };
@@ -61,7 +55,12 @@ function WatchPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex flex-col gap-4">
-        <h1 className="text-2xl font-bold">{video?.title}</h1>
+        <div className="flex items-center gap-2">
+          <Link href="/library">
+            <ArrowLeft className="w-4 h-4" />
+          </Link>
+          <h1 className="text-2xl font-bold">{video?.title}</h1>
+        </div>
         <p className="text-muted-foreground">{video?.description}</p>
 
         <div className="flex gap-4 h-[500px]">
