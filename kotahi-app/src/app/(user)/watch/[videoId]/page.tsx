@@ -1,24 +1,22 @@
 "use client";
 import VideoPlayer from "@/components/video/video_player";
-import TextSelectionPopover from "@/components/video/text_selection_popover";
-import { useVideo, useVTTFiles } from "@/lib/hooks/api";
-import { useTextSelection } from "@/hooks/use-text-selection";
+import { useVideo } from "@/lib/hooks/api";
 import { useParams } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { environment } from "@/lib/config";
-import { TranscriptItem } from "@/lib/types";
+import type { TranscriptItem } from "@/lib/types";
 import { loadVTTTranscript } from "@/lib/vtt-parser";
+import VideoTranscription from "@/components/video/video_transcription";
+import type { VideoPlayerRef } from "@/components/video/types";
 
 function WatchPage() {
   const { videoId } = useParams();
   const { data: video } = useVideo(videoId as string);
-  const { selectedText, position, isVisible, clearSelection } =
-    useTextSelection();
   const [currentTime, setCurrentTime] = useState(0);
   const [transcript, setTranscript] = useState<TranscriptItem[]>([]);
   const [isLoadingTranscript, setIsLoadingTranscript] = useState(false);
+  const videoPlayerRef = useRef<VideoPlayerRef>(null);
 
-  // Load transcript when video data is available
   useEffect(() => {
     const loadTranscript = async () => {
       if (!video?.subtitle) {
@@ -50,12 +48,14 @@ function WatchPage() {
 
   const handleAddToLearningList = (text: string) => {
     console.log("Adding to learning list:", text);
-    // TODO: Implement API call to add to learning list
   };
 
   const handleAddToVocabulary = (text: string) => {
     console.log("Adding to vocabulary:", text);
-    // TODO: Implement API call to add to vocabulary
+  };
+
+  const handleSeek = (time: number) => {
+    videoPlayerRef.current?.seekTo(time);
   };
 
   return (
@@ -64,55 +64,22 @@ function WatchPage() {
         <h1 className="text-2xl font-bold">{video?.title}</h1>
         <p className="text-muted-foreground">{video?.description}</p>
 
-        <VideoPlayer
-          src={video?.video}
-          onTimeUpdate={handleTimeUpdate}
-          transcript={transcript}
-          currentTime={currentTime}
-        />
-
-        {/* Text Selection Popover */}
-        {isVisible && selectedText && (
-          <TextSelectionPopover
-            selectedText={selectedText}
-            position={position}
-            onAddToLearningList={handleAddToLearningList}
-            onAddToVocabulary={handleAddToVocabulary}
-            onClose={clearSelection}
+        <div className="flex gap-4 h-[500px]">
+          <VideoPlayer
+            ref={videoPlayerRef}
+            src={video?.video}
+            subtitleSrc={video?.subtitle}
+            onTimeUpdate={handleTimeUpdate}
+            transcript={transcript}
+            currentTime={currentTime}
           />
-        )}
 
-        {/* Transcript Display */}
-        <div className="mt-8">
-          <h2 className="text-xl font-semibold mb-4">Transcript</h2>
-          <div className="bg-card border rounded-lg p-4 space-y-2">
-            {isLoadingTranscript ? (
-              <div className="text-center py-8 text-muted-foreground">
-                Loading transcript...
-              </div>
-            ) : transcript.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                No transcript available
-              </div>
-            ) : (
-              transcript.map((item: TranscriptItem, index: number) => (
-                <div
-                  key={item.id || index}
-                  className={`p-2 rounded transition-colors cursor-pointer ${
-                    currentTime >= item.startTime && currentTime <= item.endTime
-                      ? "bg-primary/10 border-l-4 border-primary"
-                      : "hover:bg-muted/50"
-                  }`}
-                >
-                  <span className="text-sm text-muted-foreground mr-2">
-                    {Math.floor(item.startTime / 60)}:
-                    {(item.startTime % 60).toFixed(0).padStart(2, "0")}
-                  </span>
-                  <span className="text-foreground">{item.text}</span>
-                </div>
-              ))
-            )}
-          </div>
+          <VideoTranscription
+            isLoadingTranscript={isLoadingTranscript}
+            transcript={transcript}
+            currentTime={currentTime}
+            onSeek={handleSeek}
+          />
         </div>
       </div>
     </div>

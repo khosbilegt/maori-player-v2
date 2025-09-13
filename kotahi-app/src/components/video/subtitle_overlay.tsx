@@ -17,19 +17,23 @@ const SubtitleOverlay: React.FC<SubtitleOverlayProps> = ({
       const isNowFullscreen = !!document.fullscreenElement;
       setIsFullscreen(isNowFullscreen);
 
-      if (isNowFullscreen && videoRef?.current) {
+      if (isNowFullscreen) {
         // Create a container for subtitles in fullscreen mode
         const container = document.createElement("div");
-        container.style.position = "absolute";
-        container.style.bottom = "80px";
-        container.style.left = "0";
-        container.style.right = "0";
-        container.style.zIndex = "9999";
+        container.id = "fullscreen-subtitle-container";
+        container.style.position = "fixed";
+        container.style.bottom = "100px";
+        container.style.left = "50%";
+        container.style.transform = "translateX(-50%)";
+        container.style.zIndex = "999999";
         container.style.display = "flex";
         container.style.justifyContent = "center";
+        container.style.alignItems = "center";
         container.style.pointerEvents = "none";
+        container.style.width = "100vw";
+        container.style.height = "auto";
 
-        videoRef.current.appendChild(container);
+        document.body.appendChild(container);
         fullscreenContainerRef.current = container;
       } else if (!isNowFullscreen && fullscreenContainerRef.current) {
         // Clean up fullscreen container
@@ -45,7 +49,7 @@ const SubtitleOverlay: React.FC<SubtitleOverlayProps> = ({
         fullscreenContainerRef.current.remove();
       }
     };
-  }, [videoRef]);
+  }, []);
 
   // Find the current active subtitle
   const currentSubtitle = transcript
@@ -61,8 +65,13 @@ const SubtitleOverlay: React.FC<SubtitleOverlayProps> = ({
 
   const subtitleElement = (
     <div
-      className="bg-black/80 text-white px-4 py-2 rounded-lg backdrop-blur-sm border border-white/20 shadow-lg max-w-[80%] text-center"
-      style={{ fontSize: `${fontSize}rem` }}
+      className={`bg-black/90 text-white px-6 py-3 rounded-lg backdrop-blur-sm border border-white/30 shadow-2xl text-center font-medium ${
+        isFullscreen ? "max-w-[90%] text-lg" : "max-w-[80%]"
+      }`}
+      style={{
+        fontSize: `${fontSize * (isFullscreen ? 1.2 : 1)}rem`,
+        textShadow: "2px 2px 4px rgba(0,0,0,0.8)",
+      }}
     >
       {currentSubtitle.text}
     </div>
