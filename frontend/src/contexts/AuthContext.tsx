@@ -150,7 +150,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const checkProfile = async (): Promise<void> => {
-    if (!token || !isAuthenticated) {
+    if (!token) {
       return;
     }
 

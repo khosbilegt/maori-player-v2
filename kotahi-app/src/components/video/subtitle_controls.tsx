@@ -1,11 +1,15 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
+import { createPortal } from "react-dom";
 import { SubtitleControlsProps } from "./types";
 
 const SubtitleControls: React.FC<SubtitleControlsProps> = ({
   onSizeChange,
   className = "",
+  videoRef,
 }) => {
   const [fontSize, setFontSize] = useState(1.1); // Default 1.1rem
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const fullscreenContainerRef = useRef<HTMLDivElement | null>(null);
   const minSize = 0.7;
   const maxSize = 2.0;
   const stepSize = 0.1;
@@ -27,6 +31,38 @@ const SubtitleControls: React.FC<SubtitleControlsProps> = ({
     setFontSize(defaultSize);
     onSizeChange(defaultSize);
   };
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      const isNowFullscreen = !!document.fullscreenElement;
+      setIsFullscreen(isNowFullscreen);
+
+      if (isNowFullscreen && videoRef?.current) {
+        // Create a container for controls in fullscreen mode
+        const container = document.createElement("div");
+        container.style.position = "absolute";
+        container.style.bottom = "16px";
+        container.style.left = "16px";
+        container.style.zIndex = "9999";
+        container.style.pointerEvents = "auto";
+
+        videoRef.current.appendChild(container);
+        fullscreenContainerRef.current = container;
+      } else if (!isNowFullscreen && fullscreenContainerRef.current) {
+        // Clean up fullscreen container
+        fullscreenContainerRef.current.remove();
+        fullscreenContainerRef.current = null;
+      }
+    };
+
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+      if (fullscreenContainerRef.current) {
+        fullscreenContainerRef.current.remove();
+      }
+    };
+  }, [videoRef]);
 
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
@@ -62,12 +98,12 @@ const SubtitleControls: React.FC<SubtitleControlsProps> = ({
 
   const formatSize = (size: number) => `${Math.round(size * 100)}%`;
 
-  return (
-    <div className={`subtitle-controls ${className}`}>
-      <div className="subtitle-controls-label">Subtitle Size</div>
-      <div className="subtitle-controls-buttons">
+  const controlsElement = (
+    <div className="bg-black/80 backdrop-blur-sm border border-white/20 rounded-lg p-3">
+      <div className="text-white text-sm font-medium mb-2">Subtitle Size</div>
+      <div className="flex items-center gap-2 mb-2">
         <button
-          className="subtitle-control-btn decrease"
+          className="p-2 bg-white/10 hover:bg-white/20 text-white rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           onClick={decreaseFontSize}
           disabled={fontSize <= minSize}
           title="Decrease subtitle size (-)"
@@ -84,10 +120,12 @@ const SubtitleControls: React.FC<SubtitleControlsProps> = ({
           </svg>
         </button>
 
-        <div className="subtitle-size-display">{formatSize(fontSize)}</div>
+        <div className="text-white text-sm font-medium min-w-[3rem] text-center">
+          {formatSize(fontSize)}
+        </div>
 
         <button
-          className="subtitle-control-btn increase"
+          className="p-2 bg-white/10 hover:bg-white/20 text-white rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           onClick={increaseFontSize}
           disabled={fontSize >= maxSize}
           title="Increase subtitle size (+)"
@@ -114,12 +152,24 @@ const SubtitleControls: React.FC<SubtitleControlsProps> = ({
       </div>
 
       <button
-        className="subtitle-reset-btn"
+        className="w-full px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-md transition-colors"
         onClick={resetFontSize}
         title="Reset subtitle size (Ctrl+0)"
       >
         Reset
       </button>
+    </div>
+  );
+
+  // In fullscreen mode, render controls inside the video element
+  if (isFullscreen && fullscreenContainerRef.current) {
+    return createPortal(controlsElement, fullscreenContainerRef.current);
+  }
+
+  // In normal mode, render controls in the regular container
+  return (
+    <div className={`absolute bottom-4 left-4 z-20 ${className}`}>
+      {controlsElement}
     </div>
   );
 };

@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ThemeToggleDropdown } from "@/components/ThemeToggleDropdown";
+import { ThemeToggleDropdown } from "@/components/theme/theme_toggle_dropdown";
 import { cn } from "@/lib/utils";
 
 interface NavbarProps {
