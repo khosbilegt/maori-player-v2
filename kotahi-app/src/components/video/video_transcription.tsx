@@ -1,4 +1,5 @@
-import React, { useEffect, useRef, useMemo } from "react";
+"use client";
+import React, { useEffect, useRef } from "react";
 import { TranscriptItem } from "./types";
 import { Vocabulary } from "@/lib/types";
 import {
@@ -6,6 +7,10 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { Button } from "../ui/button";
+import { Notebook, X } from "lucide-react";
+import { useLearningListMutations } from "@/lib/hooks/api";
+import { toast } from "sonner";
 
 function VideoTranscription({
   isLoadingTranscript,
@@ -22,6 +27,7 @@ function VideoTranscription({
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<Map<number, HTMLDivElement>>(new Map());
+  const { createItem } = useLearningListMutations();
 
   // Find vocabulary matches in text
   const findVocabularyMatches = (text: string, vocabularies: Vocabulary[]) => {
@@ -100,7 +106,33 @@ function VideoTranscription({
             </span>
           </PopoverTrigger>
           <PopoverContent side="top">
-            <p className="font-light">{match.vocabulary.maori}</p>
+            <div className="flex justify-between">
+              <p className="font-light">{match.vocabulary.maori}</p>
+              <Button
+                variant="ghost"
+                className="p-0"
+                onClick={async () => {
+                  try {
+                    const token = localStorage.getItem("auth_token") || "";
+                    await createItem(token, {
+                      text: match.vocabulary.maori,
+                      video_id: "",
+                      notes: "",
+                    });
+                    toast.success(
+                      `Added "${match.vocabulary.maori}" to learning list`
+                    );
+                  } catch (error) {
+                    toast.error(
+                      `Failed to add "${match.vocabulary.maori}" to learning list`
+                    );
+                    console.error("Error adding to learning list:", error);
+                  }
+                }}
+              >
+                <Notebook />
+              </Button>
+            </div>
             <p className="font-semibold">{match.vocabulary.english}</p>
             <p className="text-muted-foreground">
               {match.vocabulary.description}

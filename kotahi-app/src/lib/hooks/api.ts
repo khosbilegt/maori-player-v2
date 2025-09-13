@@ -299,22 +299,58 @@ export const useLearningListMutations = () => {
   const [deleteMutation] = useDeleteLearningListItemMutation();
 
   const createItem = useCallback(
-    (token: string, data: CreateLearningListItemRequest) => {
-      return createMutation({ token, data });
+    async (token: string, data: CreateLearningListItemRequest) => {
+      const result = await createMutation({ token, data });
+      if (result.error) {
+        let errorMessage = "Failed to create learning list item";
+
+        if ("data" in result.error && result.error.data) {
+          errorMessage = (result.error.data as any)?.message || errorMessage;
+        } else if ("message" in result.error) {
+          errorMessage = result.error.message || errorMessage;
+        }
+
+        throw new Error(errorMessage);
+      }
+      return result.data;
     },
     [createMutation]
   );
 
   const updateItem = useCallback(
-    (token: string, id: string, data: UpdateLearningListItemRequest) => {
-      return updateMutation({ token, id, data });
+    async (token: string, id: string, data: UpdateLearningListItemRequest) => {
+      const result = await updateMutation({ token, id, data });
+      if (result.error) {
+        let errorMessage = "Failed to update learning list item";
+
+        if ("data" in result.error && result.error.data) {
+          errorMessage = (result.error.data as any)?.message || errorMessage;
+        } else if ("message" in result.error) {
+          errorMessage = result.error.message || errorMessage;
+        }
+
+        throw new Error(errorMessage);
+      }
+      return result.data;
     },
     [updateMutation]
   );
 
   const deleteItem = useCallback(
-    (token: string, id: string) => {
-      return deleteMutation({ token, id });
+    async (token: string, id: string) => {
+      const result = await deleteMutation({ token, id });
+      if (result.error) {
+        let errorMessage = "Failed to delete learning list item";
+
+        if ("data" in result.error && result.error.data) {
+          errorMessage = (result.error.data as any)?.message || errorMessage;
+        } else if ("message" in result.error) {
+          errorMessage = result.error.message || errorMessage;
+        }
+
+        throw new Error(errorMessage);
+      }
+      return result.data;
     },
     [deleteMutation]
   );
