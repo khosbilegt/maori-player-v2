@@ -19,11 +19,7 @@ import type {
   CreateWatchHistoryRequest,
   CreateLearningListItemRequest,
   UpdateLearningListItemRequest,
-  WatchHistoryParams,
   LearningListParams,
-  VocabularySearchParams,
-  RecentWatchedParams,
-  DeleteVTTParams,
 } from "./types";
 
 // Helper function to get auth headers

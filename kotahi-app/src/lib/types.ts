@@ -25,6 +25,7 @@ export interface VideoData {
   title: string;
   description?: string;
   video: string;
+  subtitle?: string;
   thumbnail?: string;
   duration?: number;
   created_at: string;
@@ -164,4 +165,12 @@ export interface RecentWatchedParams {
 
 export interface DeleteVTTParams {
   filename: string;
+}
+
+// Transcript types
+export interface TranscriptItem {
+  id: string;
+  startTime: number;
+  endTime: number;
+  text: string;
 }
