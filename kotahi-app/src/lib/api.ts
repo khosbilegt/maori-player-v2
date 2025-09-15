@@ -32,8 +32,11 @@ export const apiSlice = createApi({
   reducerPath: "api",
   baseQuery: fetchBaseQuery({
     baseUrl: environment.apiBaseUrl,
-    prepareHeaders: (headers) => {
-      headers.set("Content-Type", "application/json");
+    prepareHeaders: (headers, { endpoint }) => {
+      // Only set Content-Type for non-file upload endpoints
+      if (endpoint !== "uploadVTTFile") {
+        headers.set("Content-Type", "application/json");
+      }
       return headers;
     },
   }),
