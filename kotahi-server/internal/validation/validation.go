@@ -172,13 +172,6 @@ func ValidateVocabularyRequest(req *models.VocabularyRequest) *errors.Validation
 		ve.Add("english", "English text must be less than 200 characters")
 	}
 
-	// Validate pronunciation
-	if strings.TrimSpace(req.Pronunciation) == "" {
-		ve.Add("pronunciation", "Pronunciation is required")
-	} else if len(req.Pronunciation) > 200 {
-		ve.Add("pronunciation", "Pronunciation must be less than 200 characters")
-	}
-
 	// Validate description
 	if strings.TrimSpace(req.Description) == "" {
 		ve.Add("description", "Description is required")

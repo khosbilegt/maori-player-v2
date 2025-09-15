@@ -8,13 +8,12 @@ import (
 
 // Vocabulary represents a Māori vocabulary word/phrase
 type Vocabulary struct {
-	ID            string    `json:"id" bson:"_id,omitempty"`
-	Maori         string    `json:"maori" bson:"maori"`
-	English       string    `json:"english" bson:"english"`
-	Pronunciation string    `json:"pronunciation" bson:"pronunciation"`
-	Description   string    `json:"description" bson:"description"`
-	CreatedAt     time.Time `json:"created_at" bson:"created_at"`
-	UpdatedAt     time.Time `json:"updated_at" bson:"updated_at"`
+	ID          string    `json:"id" bson:"_id,omitempty"`
+	Maori       string    `json:"maori" bson:"maori"`
+	English     string    `json:"english" bson:"english"`
+	Description string    `json:"description" bson:"description"`
+	CreatedAt   time.Time `json:"created_at" bson:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at" bson:"updated_at"`
 }
 
 // VocabularyRequest represents the request payload for creating/updating vocabulary
@@ -29,12 +28,11 @@ type VocabularyRequest struct {
 func (vr *VocabularyRequest) ToVocabulary() *Vocabulary {
 	now := time.Now()
 	return &Vocabulary{
-		Maori:         vr.Maori,
-		English:       vr.English,
-		Pronunciation: vr.Pronunciation,
-		Description:   vr.Description,
-		CreatedAt:     now,
-		UpdatedAt:     now,
+		Maori:       vr.Maori,
+		English:     vr.English,
+		Description: vr.Description,
+		CreatedAt:   now,
+		UpdatedAt:   now,
 	}
 }
 
@@ -72,7 +70,6 @@ func sanitizeForID(input string) string {
 func (v *Vocabulary) UpdateFromRequest(vr *VocabularyRequest) {
 	v.Maori = vr.Maori
 	v.English = vr.English
-	v.Pronunciation = vr.Pronunciation
 	v.Description = vr.Description
 	v.UpdatedAt = time.Now()
 }
