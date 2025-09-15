@@ -44,9 +44,6 @@ export default function SubtitleManagement() {
     setIsUploading(true);
 
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-
       await uploadVTTFile({ token, file });
       toast.success("VTT file uploaded successfully!");
 
