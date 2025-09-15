@@ -1,0 +1,261 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  SelectOverlay,
+} from "@/components/ui/select";
+import { useGetVTTFilesQuery } from "@/lib/api";
+import type { VideoData } from "@/lib/types";
+
+interface VideoFormData {
+  title: string;
+  description: string;
+  video: string;
+  thumbnail: string;
+  duration: string;
+  subtitle: string;
+}
+
+interface VideoFormProps {
+  video?: VideoData | null;
+  onSubmit: (data: VideoFormData) => Promise<void>;
+  onCancel: () => void;
+  isLoading?: boolean;
+}
+
+export default function VideoForm({
+  video,
+  onSubmit,
+  onCancel,
+  isLoading = false,
+}: VideoFormProps) {
+  const token = localStorage.getItem("token");
+  const { data: vttFiles, isLoading: vttLoading } = useGetVTTFilesQuery(
+    token || ""
+  );
+
+  const [formData, setFormData] = useState<VideoFormData>({
+    title: "",
+    description: "",
+    video: "",
+    thumbnail: "",
+    duration: "",
+    subtitle: "",
+  });
+
+  // Helper functions to convert between seconds and MM:SS format
+  const secondsToMMSS = (seconds: number | string): string => {
+    const totalSeconds =
+      typeof seconds === "string" ? parseInt(seconds) || 0 : seconds;
+    const minutes = Math.floor(totalSeconds / 60);
+    const remainingSeconds = totalSeconds % 60;
+    return `${minutes.toString().padStart(2, "0")}:${remainingSeconds
+      .toString()
+      .padStart(2, "0")}`;
+  };
+
+  // Helper function to check if a string is already in MM:SS format
+  const isMMSSFormat = (value: string): boolean => {
+    return /^([0-5]?[0-9]):([0-5][0-9])$/.test(value);
+  };
+
+  useEffect(() => {
+    if (video) {
+      // Handle duration - convert from seconds to MM:SS if needed
+      let durationValue = video.duration?.toString() || "";
+      if (durationValue && !isMMSSFormat(durationValue)) {
+        // If it's not already in MM:SS format, assume it's seconds and convert
+        durationValue = secondsToMMSS(durationValue);
+      }
+
+      setFormData({
+        title: video.title || "",
+        description: video.description || "",
+        video: video.video || "",
+        thumbnail: video.thumbnail || "",
+        duration: durationValue,
+        subtitle: video.subtitle || "",
+      });
+    }
+  }, [video]);
+
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await onSubmit(formData);
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>{video ? "Edit Video" : "Create New Video"}</CardTitle>
+        <CardDescription>
+          {video
+            ? "Update video information"
+            : "Add a new video to the library"}
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">Title *</label>
+              <Input
+                name="title"
+                value={formData.title}
+                onChange={handleInputChange}
+                placeholder="Enter video title"
+                required
+                disabled={isLoading}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                Duration (MM:SS) *
+              </label>
+              <Input
+                name="duration"
+                value={formData.duration}
+                onChange={handleInputChange}
+                placeholder="05:30"
+                pattern="^([0-5]?[0-9]):([0-5][0-9])$"
+                required
+                disabled={isLoading}
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Enter duration in MM:SS format (e.g., 05:30 for 5 minutes 30
+                seconds)
+              </p>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              Description *
+            </label>
+            <textarea
+              name="description"
+              value={formData.description}
+              onChange={handleInputChange}
+              placeholder="Enter video description"
+              required
+              rows={4}
+              disabled={isLoading}
+              className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              Video URL *
+            </label>
+            <Input
+              name="video"
+              type="url"
+              value={formData.video}
+              onChange={handleInputChange}
+              placeholder="https://example.com/video.mp4"
+              required
+              disabled={isLoading}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              Thumbnail URL
+            </label>
+            <Input
+              name="thumbnail"
+              type="url"
+              value={formData.thumbnail}
+              onChange={handleInputChange}
+              placeholder="https://example.com/thumbnail.jpg"
+              disabled={isLoading}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              Subtitle File
+            </label>
+            <div className="space-y-2">
+              <Select
+                value={formData.subtitle}
+                onValueChange={(value) =>
+                  setFormData({ ...formData, subtitle: value })
+                }
+                placeholder="Select a subtitle file"
+                disabled={isLoading || vttLoading}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a subtitle file" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem key="no-subtitle" value="">
+                    <span className="text-muted-foreground">No subtitle</span>
+                  </SelectItem>
+                  {vttFiles?.data?.map((file) => (
+                    <SelectItem key={file.id} value={file.filename}>
+                      {file.filename}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+                <SelectOverlay />
+              </Select>
+
+              {vttLoading && (
+                <p className="text-sm text-muted-foreground">
+                  Loading subtitle files...
+                </p>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Choose from uploaded VTT files or enter a custom URL
+            </p>
+          </div>
+
+          <div className="flex gap-2">
+            <Button type="submit" disabled={isLoading}>
+              {isLoading
+                ? "Saving..."
+                : video
+                ? "Update Video"
+                : "Create Video"}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onCancel}
+              disabled={isLoading}
+            >
+              Cancel
+            </Button>
+          </div>
+        </form>
+      </CardContent>
+    </Card>
+  );
+}
