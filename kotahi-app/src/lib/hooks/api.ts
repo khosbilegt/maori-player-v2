@@ -30,6 +30,16 @@ import {
   useUpdateLearningListItemMutation,
   useDeleteLearningListItemMutation,
   useGetLearningListStatsQuery,
+  useGetPlaylistsQuery,
+  useGetUserPlaylistsQuery,
+  useGetPublicPlaylistsQuery,
+  useGetPlaylistQuery,
+  useCreatePlaylistMutation,
+  useUpdatePlaylistMutation,
+  useDeletePlaylistMutation,
+  useAddVideoToPlaylistMutation,
+  useRemoveVideoFromPlaylistMutation,
+  useReorderPlaylistVideosMutation,
 } from "../api";
 import type {
   LoginRequest,
@@ -39,6 +49,8 @@ import type {
   UpdateVideoRequest,
   CreateVocabularyRequest,
   UpdateVocabularyRequest,
+  CreatePlaylistRequest,
+  UpdatePlaylistRequest,
   CreateWatchHistoryRequest,
   CreateLearningListItemRequest,
   UpdateLearningListItemRequest,
@@ -66,8 +78,8 @@ export const useAuth = () => {
   );
 
   const updateProfile = useCallback(
-    (token: string, data: UpdateProfileRequest) => {
-      return updateProfileMutation({ token, data });
+    (data: UpdateProfileRequest) => {
+      return updateProfileMutation(data);
     },
     [updateProfileMutation]
   );
@@ -79,10 +91,8 @@ export const useAuth = () => {
   };
 };
 
-export const useProfile = (token: string | null) => {
-  return useGetProfileQuery(token || "", {
-    skip: !token,
-  });
+export const useProfile = () => {
+  return useGetProfileQuery();
 };
 
 // Video hooks
@@ -96,9 +106,9 @@ export const useVideos = () => {
     useDeleteVideoMutation();
 
   const createVideo = useCallback(
-    async (token: string, data: CreateVideoRequest) => {
+    async (data: CreateVideoRequest) => {
       try {
-        const result = await createVideoMutation({ token, data }).unwrap();
+        const result = await createVideoMutation(data).unwrap();
         return result;
       } catch (error) {
         throw error;
@@ -108,9 +118,9 @@ export const useVideos = () => {
   );
 
   const updateVideo = useCallback(
-    async (token: string, id: string, data: UpdateVideoRequest) => {
+    async (id: string, data: UpdateVideoRequest) => {
       try {
-        const result = await updateVideoMutation({ token, id, data }).unwrap();
+        const result = await updateVideoMutation({ id, data }).unwrap();
         return result;
       } catch (error) {
         throw error;
@@ -120,9 +130,9 @@ export const useVideos = () => {
   );
 
   const deleteVideo = useCallback(
-    async (token: string, id: string) => {
+    async (id: string) => {
       try {
-        await deleteVideoMutation({ token, id }).unwrap();
+        await deleteVideoMutation(id).unwrap();
       } catch (error) {
         throw error;
       }
@@ -164,9 +174,9 @@ export const useVocabularies = () => {
     useDeleteVocabularyMutation();
 
   const createVocabulary = useCallback(
-    async (token: string, data: CreateVocabularyRequest) => {
+    async (data: CreateVocabularyRequest) => {
       try {
-        const result = await createVocabularyMutation({ token, data }).unwrap();
+        const result = await createVocabularyMutation(data).unwrap();
         return result;
       } catch (error) {
         throw error;
@@ -176,13 +186,9 @@ export const useVocabularies = () => {
   );
 
   const updateVocabulary = useCallback(
-    async (token: string, id: string, data: UpdateVocabularyRequest) => {
+    async (id: string, data: UpdateVocabularyRequest) => {
       try {
-        const result = await updateVocabularyMutation({
-          token,
-          id,
-          data,
-        }).unwrap();
+        const result = await updateVocabularyMutation({ id, data }).unwrap();
         return result;
       } catch (error) {
         throw error;
@@ -192,9 +198,9 @@ export const useVocabularies = () => {
   );
 
   const deleteVocabulary = useCallback(
-    async (token: string, id: string) => {
+    async (id: string) => {
       try {
-        await deleteVocabularyMutation({ token, id }).unwrap();
+        await deleteVocabularyMutation(id).unwrap();
       } catch (error) {
         throw error;
       }
@@ -218,6 +224,134 @@ export const useVocabularies = () => {
 
 export const useVocabulary = (id: string) => {
   return useGetVocabularyQuery(id);
+};
+
+// Playlist hooks
+export const usePlaylists = () => {
+  const { data: playlists, isLoading, error, refetch } = useGetPlaylistsQuery();
+  const [createPlaylistMutation, { isLoading: isCreating }] =
+    useCreatePlaylistMutation();
+  const [updatePlaylistMutation, { isLoading: isUpdating }] =
+    useUpdatePlaylistMutation();
+  const [deletePlaylistMutation, { isLoading: isDeleting }] =
+    useDeletePlaylistMutation();
+
+  const createPlaylist = useCallback(
+    async (data: CreatePlaylistRequest) => {
+      try {
+        const result = await createPlaylistMutation(data).unwrap();
+        return result;
+      } catch (error) {
+        throw error;
+      }
+    },
+    [createPlaylistMutation]
+  );
+
+  const updatePlaylist = useCallback(
+    async (id: string, data: UpdatePlaylistRequest) => {
+      try {
+        const result = await updatePlaylistMutation({ id, data }).unwrap();
+        return result;
+      } catch (error) {
+        throw error;
+      }
+    },
+    [updatePlaylistMutation]
+  );
+
+  const deletePlaylist = useCallback(
+    async (id: string) => {
+      try {
+        await deletePlaylistMutation(id).unwrap();
+      } catch (error) {
+        throw error;
+      }
+    },
+    [deletePlaylistMutation]
+  );
+
+  return {
+    playlists,
+    isLoading,
+    error,
+    refetch,
+    createPlaylist,
+    updatePlaylist,
+    deletePlaylist,
+    isCreating,
+    isUpdating,
+    isDeleting,
+  };
+};
+
+export const useUserPlaylists = () => {
+  return useGetUserPlaylistsQuery();
+};
+
+export const usePublicPlaylists = () => {
+  return useGetPublicPlaylistsQuery();
+};
+
+export const usePlaylist = (id: string) => {
+  return useGetPlaylistQuery(id);
+};
+
+export const usePlaylistMutations = () => {
+  const [addVideoMutation] = useAddVideoToPlaylistMutation();
+  const [removeVideoMutation] = useRemoveVideoFromPlaylistMutation();
+  const [reorderVideosMutation] = useReorderPlaylistVideosMutation();
+
+  const addVideoToPlaylist = useCallback(
+    async (playlistId: string, videoId: string) => {
+      try {
+        const result = await addVideoMutation({
+          id: playlistId,
+          video_id: videoId,
+        }).unwrap();
+        return result;
+      } catch (error) {
+        throw error;
+      }
+    },
+    [addVideoMutation]
+  );
+
+  const removeVideoFromPlaylist = useCallback(
+    async (playlistId: string, videoId: string) => {
+      try {
+        const result = await removeVideoMutation({
+          id: playlistId,
+          video_id: videoId,
+        }).unwrap();
+        return result;
+      } catch (error) {
+        throw error;
+      }
+    },
+    [removeVideoMutation]
+  );
+
+  const reorderPlaylistVideos = useCallback(
+    async (playlistId: string, videoIds: string[]) => {
+      try {
+        const result = await reorderVideosMutation({
+          id: playlistId,
+          video_ids: videoIds,
+        }).unwrap();
+        return result;
+      } catch (error) {
+        throw error;
+      }
+    },
+    [reorderVideosMutation]
+  );
+
+  return {
+    addVideoToPlaylist,
+    removeVideoFromPlaylist,
+    reorderPlaylistVideos,
+  };
 };
 
 export const useSearchVocabularies = (query: string) => {
@@ -285,10 +419,8 @@ export const useCompletedVideos = (token: string | null) => {
 };
 
 // VTT file hooks
-export const useVTTFiles = (token: string | null) => {
-  return useGetVTTFilesQuery(token || "", {
-    skip: !token,
-  });
+export const useVTTFiles = () => {
+  return useGetVTTFilesQuery();
 };
 
 export const useVTTMutations = () => {
@@ -296,15 +428,15 @@ export const useVTTMutations = () => {
   const [deleteMutation] = useDeleteVTTFileMutation();
 
   const uploadFile = useCallback(
-    (token: string, file: File) => {
-      return uploadMutation({ token, file });
+    (file: File) => {
+      return uploadMutation(file);
     },
     [uploadMutation]
   );
 
   const deleteFile = useCallback(
-    (token: string, filename: string) => {
-      return deleteMutation({ token, filename });
+    (filename: string) => {
+      return deleteMutation(filename);
     },
     [deleteMutation]
   );

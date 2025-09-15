@@ -9,6 +9,8 @@ import type {
   LearningListItem,
   LearningListStats,
   VTTFile,
+  Playlist,
+  PlaylistWithVideos,
   LoginRequest,
   RegisterRequest,
   UpdateProfileRequest,
@@ -16,6 +18,8 @@ import type {
   UpdateVideoRequest,
   CreateVocabularyRequest,
   UpdateVocabularyRequest,
+  CreatePlaylistRequest,
+  UpdatePlaylistRequest,
   CreateWatchHistoryRequest,
   CreateLearningListItemRequest,
   UpdateLearningListItemRequest,
@@ -27,19 +31,43 @@ const getAuthHeaders = (token: string) => ({
   Authorization: `Bearer ${token}`,
 });
 
-// Create the API slice
-export const apiSlice = createApi({
-  reducerPath: "api",
-  baseQuery: fetchBaseQuery({
+// Custom base query that handles token expiry
+const baseQueryWithReauth = async (args: any, api: any, extraOptions: any) => {
+  let result = await fetchBaseQuery({
     baseUrl: environment.apiBaseUrl,
     prepareHeaders: (headers, { endpoint }) => {
       // Only set Content-Type for non-file upload endpoints
       if (endpoint !== "uploadVTTFile") {
         headers.set("Content-Type", "application/json");
       }
+
+      // Add token to all requests except public endpoints
+      const publicEndpoints = ["healthCheck", "login", "register"];
+      if (!publicEndpoints.includes(endpoint)) {
+        const token = localStorage.getItem("token");
+        if (token) {
+          headers.set("Authorization", `Bearer ${token}`);
+        }
+      }
+
       return headers;
     },
-  }),
+  })(args, api, extraOptions);
+
+  // If we get a 401, the token is expired - log out the user
+  if (result.error && result.error.status === 401) {
+    localStorage.removeItem("token");
+    // Redirect to login page
+    window.location.href = "/auth/login";
+  }
+
+  return result;
+};
+
+// Create the API slice
+export const apiSlice = createApi({
+  reducerPath: "api",
+  baseQuery: baseQueryWithReauth,
   tagTypes: [
     "User",
     "Video",
@@ -47,6 +75,7 @@ export const apiSlice = createApi({
     "WatchHistory",
     "LearningList",
     "VTT",
+    "Playlist",
   ],
   endpoints: (builder) => ({
     // Health check
@@ -73,23 +102,16 @@ export const apiSlice = createApi({
       invalidatesTags: ["User"],
     }),
 
-    getProfile: builder.query<User, string>({
-      query: (token) => ({
-        url: "/api/v1/auth/profile",
-        headers: getAuthHeaders(token),
-      }),
+    getProfile: builder.query<User, void>({
+      query: () => "/api/v1/auth/profile",
       providesTags: ["User"],
     }),
 
-    updateProfile: builder.mutation<
-      User,
-      { token: string; data: UpdateProfileRequest }
-    >({
-      query: ({ token, data }) => ({
+    updateProfile: builder.mutation<User, UpdateProfileRequest>({
+      query: (data) => ({
         url: "/api/v1/auth/profile",
         method: "PUT",
         body: data,
-        headers: getAuthHeaders(token),
       }),
       invalidatesTags: ["User"],
     }),
@@ -105,37 +127,31 @@ export const apiSlice = createApi({
       providesTags: (result, error, id) => [{ type: "Video", id }],
     }),
 
-    createVideo: builder.mutation<
-      VideoData,
-      { token: string; data: CreateVideoRequest }
-    >({
-      query: ({ token, data }) => ({
+    createVideo: builder.mutation<VideoData, CreateVideoRequest>({
+      query: (data) => ({
         url: "/api/v1/videos",
         method: "POST",
         body: data,
-        headers: getAuthHeaders(token),
       }),
       invalidatesTags: ["Video"],
     }),
 
     updateVideo: builder.mutation<
       VideoData,
-      { token: string; id: string; data: UpdateVideoRequest }
+      { id: string; data: UpdateVideoRequest }
     >({
-      query: ({ token, id, data }) => ({
+      query: ({ id, data }) => ({
         url: `/api/v1/videos/${id}`,
         method: "PUT",
         body: data,
-        headers: getAuthHeaders(token),
       }),
       invalidatesTags: ["Video"],
     }),
 
-    deleteVideo: builder.mutation<void, { token: string; id: string }>({
-      query: ({ token, id }) => ({
+    deleteVideo: builder.mutation<void, string>({
+      query: (id) => ({
         url: `/api/v1/videos/${id}`,
         method: "DELETE",
-        headers: getAuthHeaders(token),
       }),
       invalidatesTags: ["Video"],
     }),
@@ -151,37 +167,31 @@ export const apiSlice = createApi({
       providesTags: (result, error, id) => [{ type: "Vocabulary", id }],
     }),
 
-    createVocabulary: builder.mutation<
-      Vocabulary,
-      { token: string; data: CreateVocabularyRequest }
-    >({
-      query: ({ token, data }) => ({
+    createVocabulary: builder.mutation<Vocabulary, CreateVocabularyRequest>({
+      query: (data) => ({
         url: "/api/v1/vocabulary",
         method: "POST",
         body: data,
-        headers: getAuthHeaders(token),
       }),
       invalidatesTags: ["Vocabulary"],
     }),
 
     updateVocabulary: builder.mutation<
       Vocabulary,
-      { token: string; id: string; data: UpdateVocabularyRequest }
+      { id: string; data: UpdateVocabularyRequest }
     >({
-      query: ({ token, id, data }) => ({
+      query: ({ id, data }) => ({
         url: `/api/v1/vocabulary/${id}`,
         method: "PUT",
         body: data,
-        headers: getAuthHeaders(token),
       }),
       invalidatesTags: ["Vocabulary"],
     }),
 
-    deleteVocabulary: builder.mutation<void, { token: string; id: string }>({
-      query: ({ token, id }) => ({
+    deleteVocabulary: builder.mutation<void, string>({
+      query: (id) => ({
         url: `/api/v1/vocabulary/${id}`,
         method: "DELETE",
-        headers: getAuthHeaders(token),
       }),
       invalidatesTags: ["Vocabulary"],
     }),
@@ -259,38 +269,116 @@ export const apiSlice = createApi({
     }),
 
     // VTT file endpoints
-    uploadVTTFile: builder.mutation<
-      { data: VTTFile },
-      { token: string; file: File }
-    >({
-      query: ({ token, file }) => {
+    uploadVTTFile: builder.mutation<{ data: VTTFile }, File>({
+      query: (file) => {
         const formData = new FormData();
         formData.append("vtt_file", file);
         return {
           url: "/api/v1/vtt/upload",
           method: "POST",
           body: formData,
-          headers: getAuthHeaders(token),
         };
       },
       invalidatesTags: ["VTT"],
     }),
 
-    getVTTFiles: builder.query<{ data: VTTFile[] }, string>({
-      query: (token) => ({
-        url: "/api/v1/vtt/list",
-        headers: getAuthHeaders(token),
-      }),
+    getVTTFiles: builder.query<{ data: VTTFile[] }, void>({
+      query: () => "/api/v1/vtt/list",
       providesTags: ["VTT"],
     }),
 
-    deleteVTTFile: builder.mutation<void, { token: string; filename: string }>({
-      query: ({ token, filename }) => ({
+    deleteVTTFile: builder.mutation<void, string>({
+      query: (filename) => ({
         url: `/api/v1/vtt/delete?filename=${encodeURIComponent(filename)}`,
         method: "DELETE",
-        headers: getAuthHeaders(token),
       }),
       invalidatesTags: ["VTT"],
+    }),
+
+    // Playlist endpoints
+    getPlaylists: builder.query<Playlist[], void>({
+      query: () => "/api/v1/playlists",
+      providesTags: ["Playlist"],
+    }),
+
+    getUserPlaylists: builder.query<Playlist[], void>({
+      query: () => "/api/v1/playlists/user",
+      providesTags: ["Playlist"],
+    }),
+
+    getPublicPlaylists: builder.query<Playlist[], void>({
+      query: () => "/api/v1/playlists/public",
+      providesTags: ["Playlist"],
+    }),
+
+    getPlaylist: builder.query<PlaylistWithVideos, string>({
+      query: (id) => `/api/v1/playlists/${id}`,
+      providesTags: (result, error, id) => [{ type: "Playlist", id }],
+    }),
+
+    createPlaylist: builder.mutation<Playlist, CreatePlaylistRequest>({
+      query: (data) => ({
+        url: "/api/v1/playlists",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["Playlist"],
+    }),
+
+    updatePlaylist: builder.mutation<
+      Playlist,
+      { id: string; data: UpdatePlaylistRequest }
+    >({
+      query: ({ id, data }) => ({
+        url: `/api/v1/playlists/${id}`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["Playlist"],
+    }),
+
+    deletePlaylist: builder.mutation<void, string>({
+      query: (id) => ({
+        url: `/api/v1/playlists/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Playlist"],
+    }),
+
+    addVideoToPlaylist: builder.mutation<
+      Playlist,
+      { id: string; video_id: string }
+    >({
+      query: ({ id, video_id }) => ({
+        url: `/api/v1/playlists/${id}/videos`,
+        method: "POST",
+        body: { video_id },
+      }),
+      invalidatesTags: ["Playlist"],
+    }),
+
+    removeVideoFromPlaylist: builder.mutation<
+      Playlist,
+      { id: string; video_id: string }
+    >({
+      query: ({ id, video_id }) => ({
+        url: `/api/v1/playlists/${id}/videos`,
+        method: "DELETE",
+        body: { video_id },
+      }),
+      invalidatesTags: ["Playlist"],
+    }),
+
+    reorderPlaylistVideos: builder.mutation<
+      Playlist,
+      { id: string; video_ids: string[] }
+    >({
+      query: ({ id, video_ids }) => ({
+        url: `/api/v1/playlists/${id}/reorder`,
+        method: "PUT",
+        body: { video_ids },
+      }),
+      invalidatesTags: ["Playlist"],
     }),
 
     // Learning list endpoints
@@ -422,4 +510,16 @@ export const {
   useUpdateLearningListItemMutation,
   useDeleteLearningListItemMutation,
   useGetLearningListStatsQuery,
+
+  // Playlists
+  useGetPlaylistsQuery,
+  useGetUserPlaylistsQuery,
+  useGetPublicPlaylistsQuery,
+  useGetPlaylistQuery,
+  useCreatePlaylistMutation,
+  useUpdatePlaylistMutation,
+  useDeletePlaylistMutation,
+  useAddVideoToPlaylistMutation,
+  useRemoveVideoFromPlaylistMutation,
+  useReorderPlaylistVideosMutation,
 } = apiSlice;
