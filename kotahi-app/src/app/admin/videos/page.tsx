@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Card,
   CardContent,
@@ -17,6 +16,7 @@ import {
   useDeleteVideoMutation,
 } from "@/lib/api";
 import { toast } from "sonner";
+import VideoForm from "@/components/admin/VideoForm";
 import type {
   VideoData,
   CreateVideoRequest,
@@ -26,37 +26,31 @@ import type {
 export default function VideoManagement() {
   const [isCreating, setIsCreating] = useState(false);
   const [editingVideo, setEditingVideo] = useState<VideoData | null>(null);
-  const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    url: "",
-    thumbnail_url: "",
-    duration: "",
-  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const token = localStorage.getItem("token");
   const { data: videos, isLoading } = useGetVideosQuery();
   const [createVideo] = useCreateVideoMutation();
   const [updateVideo] = useUpdateVideoMutation();
   const [deleteVideo] = useDeleteVideoMutation();
 
-  const token = localStorage.getItem("token");
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
+  const handleFormSubmit = async (formData: any) => {
     if (!token) {
       toast.error("Authentication required");
       return;
     }
+
+    setIsSubmitting(true);
 
     try {
       if (editingVideo) {
         const updateData: UpdateVideoRequest = {
           title: formData.title,
           description: formData.description || undefined,
-          url: formData.url,
-          thumbnail_url: formData.thumbnail_url || undefined,
-          duration: formData.duration ? parseInt(formData.duration) : undefined,
+          video: formData.video,
+          thumbnail: formData.thumbnail || undefined,
+          duration: formData.duration || undefined,
+          subtitle: formData.subtitle || undefined,
         };
         await updateVideo({ token, id: editingVideo.id, data: updateData });
         toast.success("Video updated successfully!");
@@ -64,9 +58,10 @@ export default function VideoManagement() {
         const createData: CreateVideoRequest = {
           title: formData.title,
           description: formData.description || undefined,
-          url: formData.url,
-          thumbnail_url: formData.thumbnail_url || undefined,
-          duration: formData.duration ? parseInt(formData.duration) : undefined,
+          video: formData.video,
+          thumbnail: formData.thumbnail || undefined,
+          duration: formData.duration || undefined,
+          subtitle: formData.subtitle || undefined,
         };
         await createVideo({ token, data: createData });
         toast.success("Video created successfully!");
@@ -75,18 +70,13 @@ export default function VideoManagement() {
       resetForm();
     } catch (error: any) {
       toast.error(error?.data?.message || "Operation failed");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleEdit = (video: VideoData) => {
     setEditingVideo(video);
-    setFormData({
-      title: video.title,
-      description: video.description || "",
-      url: video.video,
-      thumbnail_url: video.thumbnail || "",
-      duration: video.duration?.toString() || "",
-    });
     setIsCreating(true);
   };
 
@@ -109,13 +99,6 @@ export default function VideoManagement() {
   };
 
   const resetForm = () => {
-    setFormData({
-      title: "",
-      description: "",
-      url: "",
-      thumbnail_url: "",
-      duration: "",
-    });
     setEditingVideo(null);
     setIsCreating(false);
   };
@@ -156,85 +139,12 @@ export default function VideoManagement() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Title *
-                  </label>
-                  <Input
-                    value={formData.title}
-                    onChange={(e) =>
-                      setFormData({ ...formData, title: e.target.value })
-                    }
-                    placeholder="Video title"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Duration (seconds)
-                  </label>
-                  <Input
-                    type="number"
-                    value={formData.duration}
-                    onChange={(e) =>
-                      setFormData({ ...formData, duration: e.target.value })
-                    }
-                    placeholder="Video duration"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  Description
-                </label>
-                <Input
-                  value={formData.description}
-                  onChange={(e) =>
-                    setFormData({ ...formData, description: e.target.value })
-                  }
-                  placeholder="Video description"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  Video URL *
-                </label>
-                <Input
-                  value={formData.url}
-                  onChange={(e) =>
-                    setFormData({ ...formData, url: e.target.value })
-                  }
-                  placeholder="https://example.com/video.mp4"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  Thumbnail URL
-                </label>
-                <Input
-                  value={formData.thumbnail_url}
-                  onChange={(e) =>
-                    setFormData({ ...formData, thumbnail_url: e.target.value })
-                  }
-                  placeholder="https://example.com/thumbnail.jpg"
-                />
-              </div>
-
-              <div className="flex gap-2">
-                <Button type="submit">
-                  {editingVideo ? "Update Video" : "Create Video"}
-                </Button>
-                <Button type="button" variant="outline" onClick={resetForm}>
-                  Cancel
-                </Button>
-              </div>
-            </form>
+            <VideoForm
+              video={editingVideo}
+              onSubmit={handleFormSubmit}
+              onCancel={resetForm}
+              isLoading={isSubmitting}
+            />
           </CardContent>
         </Card>
       )}
@@ -256,12 +166,14 @@ export default function VideoManagement() {
                   {video.duration ? `${video.duration}s` : "Unknown"}
                 </p>
                 <p>
-                  <strong>Created:</strong>{" "}
-                  {new Date(video.created_at).toLocaleDateString()}
-                </p>
-                <p>
-                  <strong>Updated:</strong>{" "}
-                  {new Date(video.updated_at).toLocaleDateString()}
+                  <strong>Subtitle:</strong>{" "}
+                  {video.subtitle ? (
+                    <span className="text-green-600 dark:text-green-400">
+                      {video.subtitle}
+                    </span>
+                  ) : (
+                    <span className="text-muted-foreground">None</span>
+                  )}
                 </p>
               </div>
               <div className="flex gap-2 mt-4">

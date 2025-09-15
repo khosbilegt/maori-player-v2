@@ -77,9 +77,8 @@ export interface LearningListStats {
 export interface VTTFile {
   id: string;
   filename: string;
-  original_filename: string;
-  file_path: string;
-  created_at: string;
+  size: number;
+  url: string;
 }
 
 // Request types for API calls
@@ -103,9 +102,10 @@ export interface UpdateProfileRequest {
 export interface CreateVideoRequest {
   title: string;
   description?: string;
-  url: string;
-  thumbnail_url?: string;
-  duration?: number;
+  video: string;
+  subtitle?: string;
+  thumbnail?: string;
+  duration?: string;
 }
 
 export interface UpdateVideoRequest extends Partial<CreateVideoRequest> {}

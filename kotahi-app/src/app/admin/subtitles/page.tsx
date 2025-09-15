@@ -156,18 +156,14 @@ export default function SubtitleManagement() {
             <Card key={file.id}>
               <CardHeader>
                 <CardTitle className="text-lg truncate">
-                  {file.original_filename}
+                  {file.filename}
                 </CardTitle>
                 <CardDescription>{file.filename}</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
                   <p>
-                    <strong>Uploaded:</strong>{" "}
-                    {new Date(file.created_at).toLocaleDateString()}
-                  </p>
-                  <p>
-                    <strong>Path:</strong> {file.file_path}
+                    <strong>Path:</strong> {file.url}
                   </p>
                 </div>
                 <div className="flex gap-2 mt-4">
