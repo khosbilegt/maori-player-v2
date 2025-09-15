@@ -1,16 +1,46 @@
 "use client";
 
 import * as React from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ThemeToggleDropdown } from "@/components/theme/theme_toggle_dropdown";
 import { cn } from "@/lib/utils";
+import type { User } from "@/lib/types";
 
 interface NavbarProps {
   className?: string;
 }
 
 export function Navbar({ className }: NavbarProps) {
+  const [user, setUser] = useState<User | null>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    // Check if user is authenticated
+    const token = localStorage.getItem("token");
+    const userData = localStorage.getItem("user");
+
+    if (token && userData) {
+      try {
+        setUser(JSON.parse(userData));
+      } catch (error) {
+        console.error("Error parsing user data:", error);
+        // Clear invalid data
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+      }
+    }
+  }, []);
+
+  const handleSignOut = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    setUser(null);
+    router.push("/");
+  };
+
   return (
     <nav
       className={cn(
@@ -35,10 +65,28 @@ export function Navbar({ className }: NavbarProps) {
           {/* User Actions */}
           <div className="flex items-center space-x-4">
             <ThemeToggleDropdown />
-            <Link href="/profile/library" className="text-sm text-primary">
-              My library
-            </Link>
-            <Button size="sm">Sign Out</Button>
+            {user ? (
+              <>
+                <Link href="/library" className="text-sm text-primary">
+                  My library
+                </Link>
+                <span className="text-sm text-gray-600 dark:text-gray-400">
+                  {user.username}
+                </span>
+                <Button size="sm" onClick={handleSignOut}>
+                  Sign Out
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button asChild size="sm" variant="outline">
+                  <Link href="/auth/login">Sign In</Link>
+                </Button>
+                <Button asChild size="sm">
+                  <Link href="/auth/register">Sign Up</Link>
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </div>
