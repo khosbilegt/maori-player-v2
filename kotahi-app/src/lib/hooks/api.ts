@@ -293,8 +293,10 @@ export const usePublicPlaylists = () => {
   return useGetPublicPlaylistsQuery();
 };
 
-export const usePlaylist = (id: string) => {
-  return useGetPlaylistQuery(id);
+export const usePlaylist = (id: string, options?: { skip?: boolean }) => {
+  return useGetPlaylistQuery(id, {
+    skip: options?.skip || !id,
+  });
 };
 
 export const usePlaylistMutations = () => {
