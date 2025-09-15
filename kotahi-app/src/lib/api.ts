@@ -128,7 +128,7 @@ export const apiSlice = createApi({
         body: data,
         headers: getAuthHeaders(token),
       }),
-      invalidatesTags: (result, error, { id }) => [{ type: "Video", id }],
+      invalidatesTags: ["Video"],
     }),
 
     deleteVideo: builder.mutation<void, { token: string; id: string }>({
@@ -137,7 +137,7 @@ export const apiSlice = createApi({
         method: "DELETE",
         headers: getAuthHeaders(token),
       }),
-      invalidatesTags: (result, error, { id }) => [{ type: "Video", id }],
+      invalidatesTags: ["Video"],
     }),
 
     // Vocabulary endpoints
@@ -174,7 +174,7 @@ export const apiSlice = createApi({
         body: data,
         headers: getAuthHeaders(token),
       }),
-      invalidatesTags: (result, error, { id }) => [{ type: "Vocabulary", id }],
+      invalidatesTags: ["Vocabulary"],
     }),
 
     deleteVocabulary: builder.mutation<void, { token: string; id: string }>({
@@ -183,7 +183,7 @@ export const apiSlice = createApi({
         method: "DELETE",
         headers: getAuthHeaders(token),
       }),
-      invalidatesTags: (result, error, { id }) => [{ type: "Vocabulary", id }],
+      invalidatesTags: ["Vocabulary"],
     }),
 
     searchVocabularies: builder.query<Vocabulary[], string>({
