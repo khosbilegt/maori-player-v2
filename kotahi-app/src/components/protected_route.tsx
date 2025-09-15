@@ -6,9 +6,13 @@ import type { User } from "@/lib/types";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
+  requireAdmin?: boolean;
 }
 
-export default function ProtectedRoute({ children }: ProtectedRouteProps) {
+export default function ProtectedRoute({
+  children,
+  requireAdmin = false,
+}: ProtectedRouteProps) {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const router = useRouter();
@@ -23,6 +27,12 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
         const parsedUser = JSON.parse(userData);
         setUser(parsedUser);
         setIsAuthenticated(true);
+
+        // Check admin requirement
+        if (requireAdmin && parsedUser.role !== "admin") {
+          router.push("/library");
+          return;
+        }
       } catch (error) {
         console.error("Error parsing user data:", error);
         // Clear invalid data
@@ -33,7 +43,7 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
     } else {
       setIsAuthenticated(false);
     }
-  }, []);
+  }, [requireAdmin, router]);
 
   // Show loading state while checking authentication
   if (isAuthenticated === null) {
@@ -55,6 +65,12 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
     return null;
   }
 
-  // If authenticated, render the protected content
+  // If admin required but user is not admin, redirect to library
+  if (requireAdmin && user?.role !== "admin") {
+    router.push("/library");
+    return null;
+  }
+
+  // If authenticated and authorized, render the protected content
   return <>{children}</>;
 }

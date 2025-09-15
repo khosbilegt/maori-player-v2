@@ -1,7 +1,7 @@
 import React from "react";
 import { Navbar } from "@/components/ui/navbar";
 import { Footer } from "@/components/ui/footer";
-import ProtectedRoute from "@/components/ProtectedRoute";
+import ProtectedRoute from "@/components/protected_route";
 
 function UserLayout({ children }: { children: React.ReactNode }) {
   return (
