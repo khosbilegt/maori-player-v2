@@ -312,7 +312,7 @@ export const apiSlice = createApi({
     }),
 
     getPlaylist: builder.query<PlaylistWithVideos, string>({
-      query: (id) => `/api/v1/playlists/${id}`,
+      query: (id) => `/api/v1/playlists/${id}?populate=true`,
       providesTags: (result, error, id) => [{ type: "Playlist", id }],
     }),
 
