@@ -111,11 +111,9 @@ export interface CreateVideoRequest {
 export interface UpdateVideoRequest extends Partial<CreateVideoRequest> {}
 
 export interface CreateVocabularyRequest {
-  maori_word: string;
-  english_translation: string;
-  pronunciation?: string;
-  example_sentence?: string;
-  category?: string;
+  maori: string;
+  english: string;
+  description?: string;
 }
 
 export interface UpdateVocabularyRequest

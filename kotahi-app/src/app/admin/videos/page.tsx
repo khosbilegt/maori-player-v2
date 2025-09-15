@@ -16,7 +16,7 @@ import {
   useDeleteVideoMutation,
 } from "@/lib/api";
 import { toast } from "sonner";
-import VideoForm from "@/components/admin/VideoForm";
+import VideoForm from "@/components/admin/video_form";
 import type {
   VideoData,
   CreateVideoRequest,
