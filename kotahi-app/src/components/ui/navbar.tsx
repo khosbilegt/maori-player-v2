@@ -70,6 +70,9 @@ export function Navbar({ className }: NavbarProps) {
                 <Link href="/library" className="text-sm text-primary">
                   My library
                 </Link>
+                <Link href="/learning-list" className="text-sm text-primary">
+                  Learning List
+                </Link>
                 {user.role === "admin" && (
                   <Link href="/admin" className="text-sm text-primary">
                     Admin Panel

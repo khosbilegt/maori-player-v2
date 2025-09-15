@@ -384,9 +384,9 @@ export const apiSlice = createApi({
     // Learning list endpoints
     getLearningList: builder.query<
       { data: LearningListItem[] },
-      { token: string; params?: LearningListParams }
+      LearningListParams | void
     >({
-      query: ({ token, params }) => {
+      query: (params) => {
         const queryParams = new URLSearchParams();
         if (params?.status) queryParams.append("status", params.status);
         if (params?.video_id) queryParams.append("video_id", params.video_id);
@@ -395,7 +395,6 @@ export const apiSlice = createApi({
           url: `/api/v1/learning-list${
             queryParams.toString() ? `?${queryParams.toString()}` : ""
           }`,
-          headers: getAuthHeaders(token),
         };
       },
       providesTags: ["LearningList"],
@@ -403,61 +402,46 @@ export const apiSlice = createApi({
 
     createLearningListItem: builder.mutation<
       { data: LearningListItem },
-      { token: string; data: CreateLearningListItemRequest }
+      CreateLearningListItemRequest
     >({
-      query: ({ token, data }) => ({
+      query: (data) => ({
         url: "/api/v1/learning-list",
         method: "POST",
         body: data,
-        headers: getAuthHeaders(token),
       }),
       invalidatesTags: ["LearningList"],
     }),
 
-    getLearningListItem: builder.query<
-      { data: LearningListItem },
-      { token: string; id: string }
-    >({
-      query: ({ token, id }) => ({
+    getLearningListItem: builder.query<{ data: LearningListItem }, string>({
+      query: (id) => ({
         url: `/api/v1/learning-list/${id}`,
-        headers: getAuthHeaders(token),
       }),
-      providesTags: (result, error, { id }) => [{ type: "LearningList", id }],
+      providesTags: (result, error, id) => [{ type: "LearningList", id }],
     }),
 
     updateLearningListItem: builder.mutation<
       { data: LearningListItem },
-      { token: string; id: string; data: UpdateLearningListItemRequest }
+      { id: string; data: UpdateLearningListItemRequest }
     >({
-      query: ({ token, id, data }) => ({
+      query: ({ id, data }) => ({
         url: `/api/v1/learning-list/${id}`,
         method: "PUT",
         body: data,
-        headers: getAuthHeaders(token),
       }),
-      invalidatesTags: (result, error, { id }) => [
-        { type: "LearningList", id },
-      ],
+      invalidatesTags: ["LearningList"],
     }),
 
-    deleteLearningListItem: builder.mutation<
-      { message: string },
-      { token: string; id: string }
-    >({
-      query: ({ token, id }) => ({
+    deleteLearningListItem: builder.mutation<{ message: string }, string>({
+      query: (id) => ({
         url: `/api/v1/learning-list/${id}`,
         method: "DELETE",
-        headers: getAuthHeaders(token),
       }),
-      invalidatesTags: (result, error, { id }) => [
-        { type: "LearningList", id },
-      ],
+      invalidatesTags: ["LearningList"],
     }),
 
-    getLearningListStats: builder.query<{ data: LearningListStats }, string>({
-      query: (token) => ({
+    getLearningListStats: builder.query<{ data: LearningListStats }, void>({
+      query: () => ({
         url: "/api/v1/learning-list/stats",
-        headers: getAuthHeaders(token),
       }),
       providesTags: ["LearningList"],
     }),
