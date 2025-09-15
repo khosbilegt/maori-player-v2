@@ -11,6 +11,14 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
   useGetVocabulariesQuery,
   useCreateVocabularyMutation,
   useUpdateVocabularyMutation,
@@ -29,11 +37,9 @@ export default function VocabularyManagement() {
     null
   );
   const [formData, setFormData] = useState({
-    maori_word: "",
-    english_translation: "",
-    pronunciation: "",
-    example_sentence: "",
-    category: "",
+    maori: "",
+    english: "",
+    description: "",
   });
 
   const { data: vocabularies, isLoading } = useGetVocabulariesQuery();
@@ -54,11 +60,9 @@ export default function VocabularyManagement() {
     try {
       if (editingVocabulary) {
         const updateData: UpdateVocabularyRequest = {
-          maori_word: formData.maori_word,
-          english_translation: formData.english_translation,
-          pronunciation: formData.pronunciation || undefined,
-          example_sentence: formData.example_sentence || undefined,
-          category: formData.category || undefined,
+          maori: formData.maori,
+          english: formData.english,
+          description: formData.description || undefined,
         };
         await updateVocabulary({
           token,
@@ -68,11 +72,9 @@ export default function VocabularyManagement() {
         toast.success("Vocabulary updated successfully!");
       } else {
         const createData: CreateVocabularyRequest = {
-          maori_word: formData.maori_word,
-          english_translation: formData.english_translation,
-          pronunciation: formData.pronunciation || undefined,
-          example_sentence: formData.example_sentence || undefined,
-          category: formData.category || undefined,
+          maori: formData.maori,
+          english: formData.english,
+          description: formData.description || undefined,
         };
         await createVocabulary({ token, data: createData });
         toast.success("Vocabulary created successfully!");
@@ -87,11 +89,9 @@ export default function VocabularyManagement() {
   const handleEdit = (vocabulary: Vocabulary) => {
     setEditingVocabulary(vocabulary);
     setFormData({
-      maori_word: vocabulary.maori,
-      english_translation: vocabulary.english,
-      pronunciation: "",
-      example_sentence: "",
-      category: "",
+      maori: vocabulary.maori,
+      english: vocabulary.english,
+      description: "",
     });
     setIsCreating(true);
   };
@@ -116,11 +116,9 @@ export default function VocabularyManagement() {
 
   const resetForm = () => {
     setFormData({
-      maori_word: "",
-      english_translation: "",
-      pronunciation: "",
-      example_sentence: "",
-      category: "",
+      maori: "",
+      english: "",
+      description: "",
     });
     setEditingVocabulary(null);
     setIsCreating(false);
@@ -169,9 +167,9 @@ export default function VocabularyManagement() {
                     Maori Word *
                   </label>
                   <Input
-                    value={formData.maori_word}
+                    value={formData.maori}
                     onChange={(e) =>
-                      setFormData({ ...formData, maori_word: e.target.value })
+                      setFormData({ ...formData, maori: e.target.value })
                     }
                     placeholder="Maori word"
                     required
@@ -182,11 +180,11 @@ export default function VocabularyManagement() {
                     English Translation *
                   </label>
                   <Input
-                    value={formData.english_translation}
+                    value={formData.english}
                     onChange={(e) =>
                       setFormData({
                         ...formData,
-                        english_translation: e.target.value,
+                        english: e.target.value,
                       })
                     }
                     placeholder="English translation"
@@ -195,49 +193,19 @@ export default function VocabularyManagement() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Pronunciation
-                  </label>
-                  <Input
-                    value={formData.pronunciation}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        pronunciation: e.target.value,
-                      })
-                    }
-                    placeholder="Pronunciation guide"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Category
-                  </label>
-                  <Input
-                    value={formData.category}
-                    onChange={(e) =>
-                      setFormData({ ...formData, category: e.target.value })
-                    }
-                    placeholder="Category (e.g., Greetings, Food)"
-                  />
-                </div>
-              </div>
-
               <div>
                 <label className="block text-sm font-medium mb-1">
-                  Example Sentence
+                  Description
                 </label>
                 <Input
-                  value={formData.example_sentence}
+                  value={formData.description}
                   onChange={(e) =>
                     setFormData({
                       ...formData,
-                      example_sentence: e.target.value,
+                      description: e.target.value,
                     })
                   }
-                  placeholder="Example sentence using this word"
+                  placeholder="Description"
                 />
               </div>
 
@@ -256,47 +224,63 @@ export default function VocabularyManagement() {
         </Card>
       )}
 
-      {/* Vocabulary List */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {vocabularies?.map((vocabulary: Vocabulary) => (
-          <Card key={vocabulary.id}>
-            <CardHeader>
-              <CardTitle className="text-lg">{vocabulary.maori}</CardTitle>
-              <CardDescription>{vocabulary.english}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-                <p>
-                  <strong>Description:</strong> {vocabulary.description}
-                </p>
-              </div>
-              <div className="flex gap-2 mt-4">
-                <Button size="sm" onClick={() => handleEdit(vocabulary)}>
-                  Edit
-                </Button>
-                <Button
-                  size="sm"
-                  variant="destructive"
-                  onClick={() => handleDelete(vocabulary.id)}
-                >
-                  Delete
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      {/* Vocabulary Table */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Vocabulary Items</CardTitle>
+          <CardDescription>
+            Manage all vocabulary items in the database
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Maori Word</TableHead>
+                <TableHead>English Translation</TableHead>
+                <TableHead>Description</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {vocabularies?.map((vocabulary: Vocabulary) => (
+                <TableRow key={vocabulary.id}>
+                  <TableCell className="font-medium">
+                    {vocabulary.maori}
+                  </TableCell>
+                  <TableCell>{vocabulary.english}</TableCell>
+                  <TableCell className="max-w-xs truncate">
+                    {vocabulary.description}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex gap-2 justify-end">
+                      <Button size="sm" onClick={() => handleEdit(vocabulary)}>
+                        Edit
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => handleDelete(vocabulary.id)}
+                      >
+                        Delete
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
 
-      {vocabularies?.length === 0 && (
-        <Card>
-          <CardContent className="text-center py-8">
-            <p className="text-gray-600 dark:text-gray-400">
-              No vocabulary items found. Add your first vocabulary item to get
-              started.
-            </p>
-          </CardContent>
-        </Card>
-      )}
+          {vocabularies?.length === 0 && (
+            <div className="text-center py-8">
+              <p className="text-gray-600 dark:text-gray-400">
+                No vocabulary items found. Add your first vocabulary item to get
+                started.
+              </p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
