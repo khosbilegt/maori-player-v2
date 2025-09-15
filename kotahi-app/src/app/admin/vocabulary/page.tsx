@@ -91,7 +91,7 @@ export default function VocabularyManagement() {
     setFormData({
       maori: vocabulary.maori,
       english: vocabulary.english,
-      description: "",
+      description: vocabulary.description || "",
     });
     setIsCreating(true);
   };

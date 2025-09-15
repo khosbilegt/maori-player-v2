@@ -88,27 +88,44 @@ export const useProfile = (token: string | null) => {
 // Video hooks
 export const useVideos = () => {
   const { data: videos, isLoading, error, refetch } = useGetVideosQuery();
-  const [createVideoMutation] = useCreateVideoMutation();
-  const [updateVideoMutation] = useUpdateVideoMutation();
-  const [deleteVideoMutation] = useDeleteVideoMutation();
+  const [createVideoMutation, { isLoading: isCreating }] =
+    useCreateVideoMutation();
+  const [updateVideoMutation, { isLoading: isUpdating }] =
+    useUpdateVideoMutation();
+  const [deleteVideoMutation, { isLoading: isDeleting }] =
+    useDeleteVideoMutation();
 
   const createVideo = useCallback(
-    (token: string, data: CreateVideoRequest) => {
-      return createVideoMutation({ token, data });
+    async (token: string, data: CreateVideoRequest) => {
+      try {
+        const result = await createVideoMutation({ token, data }).unwrap();
+        return result;
+      } catch (error) {
+        throw error;
+      }
     },
     [createVideoMutation]
   );
 
   const updateVideo = useCallback(
-    (token: string, id: string, data: UpdateVideoRequest) => {
-      return updateVideoMutation({ token, id, data });
+    async (token: string, id: string, data: UpdateVideoRequest) => {
+      try {
+        const result = await updateVideoMutation({ token, id, data }).unwrap();
+        return result;
+      } catch (error) {
+        throw error;
+      }
     },
     [updateVideoMutation]
   );
 
   const deleteVideo = useCallback(
-    (token: string, id: string) => {
-      return deleteVideoMutation({ token, id });
+    async (token: string, id: string) => {
+      try {
+        await deleteVideoMutation({ token, id }).unwrap();
+      } catch (error) {
+        throw error;
+      }
     },
     [deleteVideoMutation]
   );
@@ -121,6 +138,9 @@ export const useVideos = () => {
     createVideo,
     updateVideo,
     deleteVideo,
+    isCreating,
+    isUpdating,
+    isDeleting,
   };
 };
 
@@ -136,27 +156,48 @@ export const useVocabularies = () => {
     error,
     refetch,
   } = useGetVocabulariesQuery();
-  const [createVocabularyMutation] = useCreateVocabularyMutation();
-  const [updateVocabularyMutation] = useUpdateVocabularyMutation();
-  const [deleteVocabularyMutation] = useDeleteVocabularyMutation();
+  const [createVocabularyMutation, { isLoading: isCreating }] =
+    useCreateVocabularyMutation();
+  const [updateVocabularyMutation, { isLoading: isUpdating }] =
+    useUpdateVocabularyMutation();
+  const [deleteVocabularyMutation, { isLoading: isDeleting }] =
+    useDeleteVocabularyMutation();
 
   const createVocabulary = useCallback(
-    (token: string, data: CreateVocabularyRequest) => {
-      return createVocabularyMutation({ token, data });
+    async (token: string, data: CreateVocabularyRequest) => {
+      try {
+        const result = await createVocabularyMutation({ token, data }).unwrap();
+        return result;
+      } catch (error) {
+        throw error;
+      }
     },
     [createVocabularyMutation]
   );
 
   const updateVocabulary = useCallback(
-    (token: string, id: string, data: UpdateVocabularyRequest) => {
-      return updateVocabularyMutation({ token, id, data });
+    async (token: string, id: string, data: UpdateVocabularyRequest) => {
+      try {
+        const result = await updateVocabularyMutation({
+          token,
+          id,
+          data,
+        }).unwrap();
+        return result;
+      } catch (error) {
+        throw error;
+      }
     },
     [updateVocabularyMutation]
   );
 
   const deleteVocabulary = useCallback(
-    (token: string, id: string) => {
-      return deleteVocabularyMutation({ token, id });
+    async (token: string, id: string) => {
+      try {
+        await deleteVocabularyMutation({ token, id }).unwrap();
+      } catch (error) {
+        throw error;
+      }
     },
     [deleteVocabularyMutation]
   );
@@ -169,6 +210,9 @@ export const useVocabularies = () => {
     createVocabulary,
     updateVocabulary,
     deleteVocabulary,
+    isCreating,
+    isUpdating,
+    isDeleting,
   };
 };
 
