@@ -450,25 +450,12 @@ export const useVTTMutations = () => {
 };
 
 // Learning list hooks
-export const useLearningList = (
-  token: string | null,
-  params?: LearningListParams
-) => {
-  return useGetLearningListQuery(
-    { token: token || "", params },
-    {
-      skip: !token,
-    }
-  );
+export const useLearningList = (params?: LearningListParams) => {
+  return useGetLearningListQuery(params);
 };
 
-export const useLearningListItem = (token: string | null, id: string) => {
-  return useGetLearningListItemQuery(
-    { token: token || "", id },
-    {
-      skip: !token || !id,
-    }
-  );
+export const useLearningListItem = (id: string) => {
+  return useGetLearningListItemQuery(id);
 };
 
 export const useLearningListMutations = () => {
@@ -477,58 +464,36 @@ export const useLearningListMutations = () => {
   const [deleteMutation] = useDeleteLearningListItemMutation();
 
   const createItem = useCallback(
-    async (token: string, data: CreateLearningListItemRequest) => {
-      const result = await createMutation({ token, data });
-      if (result.error) {
-        let errorMessage = "Failed to create learning list item";
-
-        if ("data" in result.error && result.error.data) {
-          errorMessage = (result.error.data as any)?.message || errorMessage;
-        } else if ("message" in result.error) {
-          errorMessage = result.error.message || errorMessage;
-        }
-
-        throw new Error(errorMessage);
+    async (data: CreateLearningListItemRequest) => {
+      try {
+        const result = await createMutation(data).unwrap();
+        return result;
+      } catch (error) {
+        throw error;
       }
-      return result.data;
     },
     [createMutation]
   );
 
   const updateItem = useCallback(
-    async (token: string, id: string, data: UpdateLearningListItemRequest) => {
-      const result = await updateMutation({ token, id, data });
-      if (result.error) {
-        let errorMessage = "Failed to update learning list item";
-
-        if ("data" in result.error && result.error.data) {
-          errorMessage = (result.error.data as any)?.message || errorMessage;
-        } else if ("message" in result.error) {
-          errorMessage = result.error.message || errorMessage;
-        }
-
-        throw new Error(errorMessage);
+    async (id: string, data: UpdateLearningListItemRequest) => {
+      try {
+        const result = await updateMutation({ id, data }).unwrap();
+        return result;
+      } catch (error) {
+        throw error;
       }
-      return result.data;
     },
     [updateMutation]
   );
 
   const deleteItem = useCallback(
-    async (token: string, id: string) => {
-      const result = await deleteMutation({ token, id });
-      if (result.error) {
-        let errorMessage = "Failed to delete learning list item";
-
-        if ("data" in result.error && result.error.data) {
-          errorMessage = (result.error.data as any)?.message || errorMessage;
-        } else if ("message" in result.error) {
-          errorMessage = result.error.message || errorMessage;
-        }
-
-        throw new Error(errorMessage);
+    async (id: string) => {
+      try {
+        await deleteMutation(id).unwrap();
+      } catch (error) {
+        throw error;
       }
-      return result.data;
     },
     [deleteMutation]
   );
@@ -540,8 +505,6 @@ export const useLearningListMutations = () => {
   };
 };
 
-export const useLearningListStats = (token: string | null) => {
-  return useGetLearningListStatsQuery(token || "", {
-    skip: !token,
-  });
+export const useLearningListStats = () => {
+  return useGetLearningListStatsQuery();
 };
