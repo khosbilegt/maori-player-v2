@@ -27,7 +27,7 @@ export interface VideoData {
   video: string;
   subtitle?: string;
   thumbnail?: string;
-  duration?: number;
+  duration?: string;
   created_at: string;
   updated_at: string;
 }

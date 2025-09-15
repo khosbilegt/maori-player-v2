@@ -16,7 +16,6 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-  SelectOverlay,
 } from "@/components/ui/select";
 import { useGetVTTFilesQuery } from "@/lib/api";
 import type { VideoData } from "@/lib/types";
@@ -75,20 +74,23 @@ export default function VideoForm({
 
   useEffect(() => {
     if (video) {
-      // Handle duration - convert from seconds to MM:SS if needed
-      let durationValue = video.duration?.toString() || "";
-      if (durationValue && !isMMSSFormat(durationValue)) {
-        // If it's not already in MM:SS format, assume it's seconds and convert
-        durationValue = secondsToMMSS(durationValue);
-      }
-
       setFormData({
         title: video.title || "",
         description: video.description || "",
         video: video.video || "",
         thumbnail: video.thumbnail || "",
-        duration: durationValue,
+        duration: video.duration || "",
         subtitle: video.subtitle || "",
+      });
+    } else {
+      // Reset form when creating new video
+      setFormData({
+        title: "",
+        description: "",
+        video: "",
+        thumbnail: "",
+        duration: "",
+        subtitle: "",
       });
     }
   }, [video]);
@@ -101,6 +103,7 @@ export default function VideoForm({
       ...prev,
       [name]: value,
     }));
+    console.log(formData);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -204,26 +207,26 @@ export default function VideoForm({
             <div className="space-y-2">
               <Select
                 value={formData.subtitle}
-                onValueChange={(value) =>
-                  setFormData({ ...formData, subtitle: value })
-                }
-                placeholder="Select a subtitle file"
+                onValueChange={(value) => {
+                  if (value?.length > 0) {
+                    setFormData({ ...formData, subtitle: value });
+                  }
+                }}
                 disabled={isLoading || vttLoading}
               >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a subtitle file" />
+                <SelectTrigger className="w-full">
+                  <SelectValue
+                    placeholder="Select a subtitle file"
+                    className="w-full"
+                  />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem key="no-subtitle" value="">
-                    <span className="text-muted-foreground">No subtitle</span>
-                  </SelectItem>
                   {vttFiles?.data?.map((file) => (
-                    <SelectItem key={file.id} value={file.filename}>
+                    <SelectItem key={file.filename} value={file.url}>
                       {file.filename}
                     </SelectItem>
                   ))}
                 </SelectContent>
-                <SelectOverlay />
               </Select>
 
               {vttLoading && (
@@ -232,9 +235,6 @@ export default function VideoForm({
                 </p>
               )}
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Choose from uploaded VTT files or enter a custom URL
-            </p>
           </div>
 
           <div className="flex gap-2">
