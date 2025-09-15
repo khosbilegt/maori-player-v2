@@ -21,19 +21,13 @@ export default function SubtitleManagement() {
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const token = localStorage.getItem("token");
-  const { data: vttFiles, isLoading } = useGetVTTFilesQuery(token || "");
+  const { data: vttFiles, isLoading } = useGetVTTFilesQuery();
   const [uploadVTTFile] = useUploadVTTFileMutation();
   const [deleteVTTFile] = useDeleteVTTFileMutation();
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    if (!token) {
-      toast.error("Authentication required");
-      return;
-    }
 
     // Validate file type
     if (!file.name.endsWith(".vtt")) {
@@ -44,7 +38,7 @@ export default function SubtitleManagement() {
     setIsUploading(true);
 
     try {
-      await uploadVTTFile({ token, file });
+      await uploadVTTFile(file);
       toast.success("VTT file uploaded successfully!");
 
       // Reset file input
@@ -59,17 +53,12 @@ export default function SubtitleManagement() {
   };
 
   const handleDelete = async (filename: string) => {
-    if (!token) {
-      toast.error("Authentication required");
-      return;
-    }
-
     if (!confirm("Are you sure you want to delete this VTT file?")) {
       return;
     }
 
     try {
-      await deleteVTTFile({ token, filename });
+      await deleteVTTFile(filename);
       toast.success("VTT file deleted successfully!");
     } catch (error: any) {
       toast.error(error?.data?.message || "Delete failed");

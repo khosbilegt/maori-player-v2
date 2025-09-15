@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { FileText, LayoutDashboard, Play, WholeWord } from "lucide-react";
+import { FileText, LayoutDashboard, Play, WholeWord, List } from "lucide-react";
 
 const adminNavItems = [
   {
@@ -16,6 +16,11 @@ const adminNavItems = [
     title: "Videos",
     href: "/admin/videos",
     icon: <Play />,
+  },
+  {
+    title: "Playlists",
+    href: "/admin/playlists",
+    icon: <List />,
   },
   {
     title: "Vocabulary",

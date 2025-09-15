@@ -47,15 +47,8 @@ export default function VocabularyManagement() {
   const [updateVocabulary] = useUpdateVocabularyMutation();
   const [deleteVocabulary] = useDeleteVocabularyMutation();
 
-  const token = localStorage.getItem("token");
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!token) {
-      toast.error("Authentication required");
-      return;
-    }
 
     try {
       if (editingVocabulary) {
@@ -64,11 +57,7 @@ export default function VocabularyManagement() {
           english: formData.english,
           description: formData.description || undefined,
         };
-        await updateVocabulary({
-          token,
-          id: editingVocabulary.id,
-          data: updateData,
-        });
+        await updateVocabulary({ id: editingVocabulary.id, data: updateData });
         toast.success("Vocabulary updated successfully!");
       } else {
         const createData: CreateVocabularyRequest = {
@@ -76,7 +65,7 @@ export default function VocabularyManagement() {
           english: formData.english,
           description: formData.description || undefined,
         };
-        await createVocabulary({ token, data: createData });
+        await createVocabulary(createData);
         toast.success("Vocabulary created successfully!");
       }
 
@@ -97,17 +86,12 @@ export default function VocabularyManagement() {
   };
 
   const handleDelete = async (vocabularyId: string) => {
-    if (!token) {
-      toast.error("Authentication required");
-      return;
-    }
-
     if (!confirm("Are you sure you want to delete this vocabulary item?")) {
       return;
     }
 
     try {
-      await deleteVocabulary({ token, id: vocabularyId });
+      await deleteVocabulary(vocabularyId);
       toast.success("Vocabulary deleted successfully!");
     } catch (error: any) {
       toast.error(error?.data?.message || "Delete failed");

@@ -81,6 +81,29 @@ export interface VTTFile {
   url: string;
 }
 
+// Playlist types
+export interface Playlist {
+  id: string;
+  name: string;
+  description: string;
+  user_id: string;
+  video_ids: string[];
+  is_public: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PlaylistWithVideos {
+  id: string;
+  name: string;
+  description: string;
+  user_id: string;
+  videos: VideoData[];
+  is_public: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 // Request types for API calls
 export interface LoginRequest {
   email: string;
@@ -118,6 +141,15 @@ export interface CreateVocabularyRequest {
 
 export interface UpdateVocabularyRequest
   extends Partial<CreateVocabularyRequest> {}
+
+export interface CreatePlaylistRequest {
+  name: string;
+  description?: string;
+  video_ids: string[];
+  is_public?: boolean;
+}
+
+export interface UpdatePlaylistRequest extends Partial<CreatePlaylistRequest> {}
 
 export interface CreateWatchHistoryRequest {
   video_id: string;
