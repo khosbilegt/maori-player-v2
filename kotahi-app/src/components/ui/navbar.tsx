@@ -70,6 +70,11 @@ export function Navbar({ className }: NavbarProps) {
                 <Link href="/library" className="text-sm text-primary">
                   My library
                 </Link>
+                {user.role === "admin" && (
+                  <Link href="/admin" className="text-sm text-primary">
+                    Admin Panel
+                  </Link>
+                )}
                 <span className="text-sm text-gray-600 dark:text-gray-400">
                   {user.username}
                 </span>
