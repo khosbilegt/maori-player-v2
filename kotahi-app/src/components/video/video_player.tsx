@@ -18,6 +18,7 @@ const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
       onDurationChange,
       onVideoEnd,
       className = "",
+      initialTime = 0,
     },
     ref
   ) => {
@@ -77,6 +78,10 @@ const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
 
       const handleLoadedMetadata = () => {
         onDurationChange?.(video.duration);
+        // Set initial time if provided
+        if (initialTime > 0 && video.currentTime === 0) {
+          video.currentTime = initialTime;
+        }
       };
 
       const handleVideoEnd = () => {
@@ -92,7 +97,7 @@ const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
         video.removeEventListener("loadedmetadata", handleLoadedMetadata);
         video.removeEventListener("ended", handleVideoEnd);
       };
-    }, [onTimeUpdate, onDurationChange, onVideoEnd]);
+    }, [onTimeUpdate, onDurationChange, onVideoEnd, initialTime]);
 
     return (
       <div className={`relative w-full max-w-4xl mx-auto ${className}`}>
