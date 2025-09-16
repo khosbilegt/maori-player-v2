@@ -101,14 +101,13 @@ const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
 
     return (
       <div className={`relative w-full max-w-4xl mx-auto ${className}`}>
-        <div className="relative bg-black rounded-lg overflow-hidden shadow-lg h-full">
+        <div className="relative bg-black rounded-lg overflow-hidden shadow-lg">
           <video
             ref={videoRef}
             src={src}
             controls
-            className="w-full h-auto"
+            className="w-full h-auto aspect-video"
             preload="metadata"
-            height="100%"
           />
         </div>
       </div>

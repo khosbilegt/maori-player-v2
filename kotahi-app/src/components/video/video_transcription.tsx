@@ -113,8 +113,7 @@ function VideoTranscription({
                 className="p-0"
                 onClick={async () => {
                   try {
-                    const token = localStorage.getItem("auth_token") || "";
-                    await createItem(token, {
+                    await createItem({
                       text: match.vocabulary.maori,
                       video_id: "",
                       notes: "",
@@ -185,7 +184,7 @@ function VideoTranscription({
     }
   }, [currentTime, transcript]);
   return (
-    <div ref={containerRef} className="overflow-y-scroll">
+    <div ref={containerRef} className="overflow-y-scroll h-[400px] lg:h-full">
       <div className="bg-card border rounded-lg p-4 space-y-2">
         {isLoadingTranscript ? (
           <div className="text-center py-8 text-muted-foreground">
