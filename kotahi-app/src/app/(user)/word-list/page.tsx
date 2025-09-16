@@ -4,9 +4,17 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   useLearningList,
   useLearningListStats,
   useVocabularies,
+  useLearningListMutations,
 } from "@/lib/hooks/api";
 import { toast } from "sonner";
 import type { LearningListItem, Vocabulary } from "@/lib/types";
@@ -29,6 +37,7 @@ export default function LearningListPage() {
     isLoading: isLoadingVocab,
     error: vocabError,
   } = useVocabularies();
+  const { updateItem } = useLearningListMutations();
 
   const learningList = learningListData?.data || [];
   const stats = statsData?.data;
@@ -73,6 +82,18 @@ export default function LearningListPage() {
   const getExamplesForWord = (word: LearningListItem) => {
     // TODO: Add examples to vocabulary API or create separate examples endpoint
     return [];
+  };
+
+  // Handle status change
+  const handleStatusChange = async (wordId: string, newStatus: string) => {
+    try {
+      await updateItem(wordId, {
+        status: newStatus as "new" | "learning" | "learned",
+      });
+      toast.success("Status updated successfully!");
+    } catch (error: any) {
+      toast.error(error?.data?.message || "Failed to update status");
+    }
   };
 
   // Set default selected word
@@ -123,7 +144,7 @@ export default function LearningListPage() {
     <div className="container mx-auto px-4 py-8 space-y-6">
       {/* Statistics Bar */}
       <div className=" rounded-lg p-4">
-        <div className="flex flex-wrap gap-6 text-sm">
+        <div className="w-full flex gap-4 items-center border-b pb-4 border-t pt-4">
           <div className="flex items-center gap-2">
             <span className="font-medium">Saved words:</span>
             <span className="text-blue-600 dark:text-blue-400 font-bold">
@@ -174,13 +195,39 @@ export default function LearningListPage() {
               >
                 <div className="flex items-center justify-between">
                   <span className="font-medium">{word.text}</span>
-                  <span
-                    className={`px-2 py-1 rounded-full text-xs font-medium capitalize ${getStatusColor(
-                      word.status
-                    )}`}
+                  <Select
+                    value={word.status}
+                    onValueChange={(value) =>
+                      handleStatusChange(word.id, value)
+                    }
                   >
-                    {word.status}
-                  </span>
+                    <SelectTrigger
+                      className="w-30 h-7 text-xs"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="new">
+                        <div className="flex items-center gap-2">
+                          <Clock className="w-3 h-3" />
+                          New
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="learning">
+                        <div className="flex items-center gap-2">
+                          <BookOpen className="w-3 h-3" />
+                          Learning
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="learned">
+                        <div className="flex items-center gap-2">
+                          <CheckCircle className="w-3 h-3" />
+                          Learned
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
             ))}
