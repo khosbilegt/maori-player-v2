@@ -1,14 +1,54 @@
 "use client";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { VideoData } from "@/lib/types";
-import { Check } from "lucide-react";
+import { Check, Bookmark, BookmarkCheck } from "lucide-react";
 import { Button } from "../ui/button";
 import { Progress } from "../ui/progress";
 import { useRouter } from "next/navigation";
+import {
+  useWatchHistoryByVideo,
+  useWatchHistoryMutations,
+} from "@/lib/hooks/api";
+import { toast } from "sonner";
 
 function VideoCard({ video }: { video: VideoData }) {
   const router = useRouter();
+  const [token] = useState(() => localStorage.getItem("token"));
+  const [isInWatchList, setIsInWatchList] = useState(false);
+
+  const { data: watchHistoryData } = useWatchHistoryByVideo(token, video.id);
+  const { createOrUpdate } = useWatchHistoryMutations();
+
+  useEffect(() => {
+    if (watchHistoryData?.data) {
+      setIsInWatchList(true);
+    } else {
+      setIsInWatchList(false);
+    }
+  }, [watchHistoryData]);
+
+  const handleAddToWatchList = async () => {
+    if (!token) {
+      toast.error("Please log in to add videos to your watch list");
+      return;
+    }
+
+    try {
+      await createOrUpdate(token, {
+        video_id: video.id,
+        progress: 0,
+        current_time: 0,
+        duration: 0, // Will be updated when video is actually played
+        completed: false,
+      });
+      setIsInWatchList(true);
+      toast.success("Added to watch list!");
+    } catch (error: any) {
+      toast.error(error?.data?.message || "Failed to add to watch list");
+    }
+  };
+
   return (
     <Card key={video.id} className="p-0 h-full">
       <CardContent className="flex flex-col p-0 h-full">
@@ -43,8 +83,17 @@ function VideoCard({ video }: { video: VideoData }) {
             >
               Play
             </Button>
-            <Button className="w-1/4" variant="outline">
-              Save
+            <Button
+              className="w-1/4"
+              variant={isInWatchList ? "default" : "outline"}
+              onClick={handleAddToWatchList}
+              disabled={isInWatchList}
+            >
+              {isInWatchList ? (
+                <BookmarkCheck className="w-4 h-4" />
+              ) : (
+                <Bookmark className="w-4 h-4" />
+              )}
             </Button>
           </div>
         </div>
