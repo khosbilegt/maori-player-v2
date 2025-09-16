@@ -8,11 +8,27 @@ import { Button } from "@/components/ui/button";
 export function ThemeToggleDropdown() {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = React.useState(false);
+  const [isOpen, setIsOpen] = React.useState(false);
 
   // useEffect only runs on the client, so now we can safely show the UI
   React.useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Close dropdown when clicking outside
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (isOpen) {
+        const target = event.target as Element;
+        if (!target.closest(".theme-dropdown")) {
+          setIsOpen(false);
+        }
+      }
+    };
+
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, [isOpen]);
 
   if (!mounted) {
     return (
@@ -45,19 +61,33 @@ export function ThemeToggleDropdown() {
     }
   };
 
+  const handleThemeChange = (newTheme: string) => {
+    setTheme(newTheme);
+    setIsOpen(false);
+  };
+
   return (
-    <div className="relative group">
-      <Button variant="ghost" size="sm" className="flex items-center gap-2">
+    <div className="relative group theme-dropdown">
+      <Button
+        variant="ghost"
+        size="sm"
+        className="flex items-center gap-2"
+        onClick={() => setIsOpen(!isOpen)}
+      >
         {getThemeIcon()}
         <span className="hidden sm:inline text-sm">{getThemeLabel()}</span>
         <span className="sr-only">Toggle theme</span>
       </Button>
 
       {/* Dropdown menu */}
-      <div className="absolute right-0 mt-2 w-32 bg-popover border border-border rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+      <div
+        className={`absolute right-0 mt-2 w-32 bg-popover border border-border rounded-md shadow-lg transition-all duration-200 z-50 ${
+          isOpen ? "opacity-100 visible" : "opacity-0 invisible"
+        }`}
+      >
         <div className="py-1">
           <button
-            onClick={() => setTheme("light")}
+            onClick={() => handleThemeChange("light")}
             className={`w-full px-3 py-2 text-sm text-left hover:bg-accent hover:text-accent-foreground flex items-center gap-2 ${
               theme === "light" ? "bg-accent text-accent-foreground" : ""
             }`}
@@ -66,7 +96,7 @@ export function ThemeToggleDropdown() {
             Light
           </button>
           <button
-            onClick={() => setTheme("dark")}
+            onClick={() => handleThemeChange("dark")}
             className={`w-full px-3 py-2 text-sm text-left hover:bg-accent hover:text-accent-foreground flex items-center gap-2 ${
               theme === "dark" ? "bg-accent text-accent-foreground" : ""
             }`}
@@ -75,7 +105,7 @@ export function ThemeToggleDropdown() {
             Dark
           </button>
           <button
-            onClick={() => setTheme("system")}
+            onClick={() => handleThemeChange("system")}
             className={`w-full px-3 py-2 text-sm text-left hover:bg-accent hover:text-accent-foreground flex items-center gap-2 ${
               theme === "system" ? "bg-accent text-accent-foreground" : ""
             }`}
