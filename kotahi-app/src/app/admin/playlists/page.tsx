@@ -31,7 +31,6 @@ import type {
   Playlist,
   CreatePlaylistRequest,
   UpdatePlaylistRequest,
-  VideoData,
 } from "@/lib/types";
 
 export default function PlaylistManagement() {
@@ -116,10 +115,6 @@ export default function PlaylistManagement() {
     });
     setEditingPlaylist(null);
     setIsCreating(false);
-  };
-
-  const handleVideoSelection = (videoIds: string[]) => {
-    setFormData({ ...formData, video_ids: videoIds });
   };
 
   const getVideoTitle = (videoId: string) => {

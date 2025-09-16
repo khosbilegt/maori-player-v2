@@ -15,13 +15,9 @@ import {
 import { FileText, Play, WholeWord } from "lucide-react";
 
 export default function AdminDashboard() {
-  const token = localStorage.getItem("token");
-  const { data: videos, isLoading: videosLoading } = useGetVideosQuery();
-  const { data: vocabularies, isLoading: vocabLoading } =
-    useGetVocabulariesQuery();
-  const { data: vttFiles, isLoading: vttLoading } = useGetVTTFilesQuery(
-    token || ""
-  );
+  const { data: videos } = useGetVideosQuery();
+  const { data: vocabularies } = useGetVocabulariesQuery();
+  const { data: vttFiles } = useGetVTTFilesQuery();
 
   const stats = [
     {

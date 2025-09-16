@@ -1,6 +1,5 @@
 import React from "react";
 import { Navbar } from "@/components/ui/navbar";
-import { Footer } from "@/components/ui/footer";
 import ProtectedRoute from "@/components/protected_route";
 import { AdminSidebar } from "@/components/admin/admin_sidebar";
 

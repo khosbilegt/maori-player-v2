@@ -17,15 +17,8 @@ import {
   useLearningListMutations,
 } from "@/lib/hooks/api";
 import { toast } from "sonner";
-import type { LearningListItem, Vocabulary } from "@/lib/types";
-import {
-  BookOpen,
-  CheckCircle,
-  Clock,
-  Play,
-  ExternalLink,
-  Trash2,
-} from "lucide-react";
+import type { LearningListItem } from "@/lib/types";
+import { BookOpen, CheckCircle, Clock, Play, Trash2 } from "lucide-react";
 import Link from "next/link";
 
 export default function LearningListPage() {
@@ -85,12 +78,6 @@ export default function LearningListPage() {
     },
   ];
 
-  // Get examples for selected word (for now, return empty array since examples aren't in the API)
-  const getExamplesForWord = (word: LearningListItem) => {
-    // TODO: Add examples to vocabulary API or create separate examples endpoint
-    return [];
-  };
-
   // Handle status change
   const handleStatusChange = async (wordId: string, newStatus: string) => {
     try {
@@ -132,19 +119,6 @@ export default function LearningListPage() {
       setSelectedWord(enrichedWords[0]);
     }
   }, [enrichedWords, selectedWord]);
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "new":
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
-      case "learning":
-        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200";
-      case "learned":
-        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
-      default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200";
-    }
-  };
 
   if (isLoading) {
     return (
@@ -313,7 +287,7 @@ export default function LearningListPage() {
                 <Card>
                   <CardHeader>
                     <CardTitle>
-                      Videos containing '{selectedWord.text}'
+                      Videos containing &apos;{selectedWord.text}&apos;
                     </CardTitle>
                   </CardHeader>
                   <CardContent>

@@ -8,7 +8,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Button } from "../ui/button";
-import { Notebook, X } from "lucide-react";
+import { Notebook } from "lucide-react";
 import { useLearningListMutations } from "@/lib/hooks/api";
 import { toast } from "sonner";
 

@@ -131,7 +131,7 @@ export interface CreateVideoRequest {
   duration?: string;
 }
 
-export interface UpdateVideoRequest extends Partial<CreateVideoRequest> {}
+export type UpdateVideoRequest = Partial<CreateVideoRequest>;
 
 export interface CreateVocabularyRequest {
   maori: string;
@@ -139,8 +139,7 @@ export interface CreateVocabularyRequest {
   description?: string;
 }
 
-export interface UpdateVocabularyRequest
-  extends Partial<CreateVocabularyRequest> {}
+export type UpdateVocabularyRequest = Partial<CreateVocabularyRequest>;
 
 export interface CreatePlaylistRequest {
   name: string;
@@ -149,7 +148,7 @@ export interface CreatePlaylistRequest {
   is_public?: boolean;
 }
 
-export interface UpdatePlaylistRequest extends Partial<CreatePlaylistRequest> {}
+export type UpdatePlaylistRequest = Partial<CreatePlaylistRequest>;
 
 export interface CreateWatchHistoryRequest {
   video_id: string;
