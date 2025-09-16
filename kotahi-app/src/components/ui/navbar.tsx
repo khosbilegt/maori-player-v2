@@ -8,6 +8,14 @@ import { Button } from "@/components/ui/button";
 import { ThemeToggleDropdown } from "@/components/theme/theme_toggle_dropdown";
 import { cn } from "@/lib/utils";
 import type { User } from "@/lib/types";
+import {
+  User as UserIcon,
+  LogOut,
+  Library,
+  BookOpen,
+  List,
+  Settings,
+} from "lucide-react";
 
 interface NavbarProps {
   className?: string;
@@ -15,6 +23,7 @@ interface NavbarProps {
 
 export function Navbar({ className }: NavbarProps) {
   const [user, setUser] = useState<User | null>(null);
+  const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -41,6 +50,21 @@ export function Navbar({ className }: NavbarProps) {
     router.push("/");
   };
 
+  // Close user dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (isUserDropdownOpen) {
+        const target = event.target as Element;
+        if (!target.closest(".user-dropdown")) {
+          setIsUserDropdownOpen(false);
+        }
+      }
+    };
+
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, [isUserDropdownOpen]);
+
   return (
     <nav
       className={cn(
@@ -66,28 +90,79 @@ export function Navbar({ className }: NavbarProps) {
           <div className="flex items-center space-x-4">
             <ThemeToggleDropdown />
             {user ? (
-              <>
-                <Link href="/library" className="text-sm text-primary">
-                  My library
-                </Link>
-                <Link href="/watch-list" className="text-sm text-primary">
-                  Watch List
-                </Link>
-                <Link href="/learning-list" className="text-sm text-primary">
-                  Learning List
-                </Link>
-                {user.role === "admin" && (
-                  <Link href="/admin" className="text-sm text-primary">
-                    Admin Panel
-                  </Link>
-                )}
-                <span className="text-sm text-gray-600 dark:text-gray-400">
-                  {user.username}
-                </span>
-                <Button size="sm" onClick={handleSignOut}>
-                  Sign Out
+              <div className="relative user-dropdown">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="flex items-center gap-2"
+                  onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
+                >
+                  <UserIcon className="h-4 w-4" />
+                  <span className="hidden sm:inline text-sm">
+                    {user.username}
+                  </span>
                 </Button>
-              </>
+
+                {/* User Dropdown Menu */}
+                <div
+                  className={`absolute right-0 mt-2 w-48 bg-popover border border-border rounded-md shadow-lg transition-all duration-200 z-50 ${
+                    isUserDropdownOpen
+                      ? "opacity-100 visible"
+                      : "opacity-0 invisible"
+                  }`}
+                >
+                  <div className="py-1">
+                    <div className="px-3 py-2 text-sm font-medium text-muted-foreground border-b border-border">
+                      {user.username}
+                    </div>
+                    <Link
+                      href="/library"
+                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-left hover:bg-accent hover:text-accent-foreground"
+                      onClick={() => setIsUserDropdownOpen(false)}
+                    >
+                      <Library className="h-4 w-4" />
+                      Library
+                    </Link>
+                    <Link
+                      href="/watch-list"
+                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-left hover:bg-accent hover:text-accent-foreground"
+                      onClick={() => setIsUserDropdownOpen(false)}
+                    >
+                      <List className="h-4 w-4" />
+                      History
+                    </Link>
+                    <Link
+                      href="/word-list"
+                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-left hover:bg-accent hover:text-accent-foreground"
+                      onClick={() => setIsUserDropdownOpen(false)}
+                    >
+                      <BookOpen className="h-4 w-4" />
+                      Word List
+                    </Link>
+                    {user.role === "admin" && (
+                      <Link
+                        href="/admin"
+                        className="flex items-center gap-2 w-full px-3 py-2 text-sm text-left hover:bg-accent hover:text-accent-foreground"
+                        onClick={() => setIsUserDropdownOpen(false)}
+                      >
+                        <Settings className="h-4 w-4" />
+                        Admin Panel
+                      </Link>
+                    )}
+                    <div className="border-t border-border my-1"></div>
+                    <button
+                      onClick={() => {
+                        handleSignOut();
+                        setIsUserDropdownOpen(false);
+                      }}
+                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-left hover:bg-accent hover:text-accent-foreground text-red-600 dark:text-red-400"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      Sign Out
+                    </button>
+                  </div>
+                </div>
+              </div>
             ) : (
               <>
                 <Button asChild size="sm" variant="outline">
