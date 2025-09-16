@@ -6,7 +6,7 @@ import {
   useWatchHistoryByVideo,
   useWatchHistoryMutations,
 } from "@/lib/hooks/api";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import React, { useEffect, useState, useRef } from "react";
 import { environment } from "@/lib/config";
 import type { TranscriptItem } from "@/lib/types";
@@ -20,6 +20,7 @@ import { toast } from "sonner";
 
 function WatchPage() {
   const { videoId } = useParams();
+  const searchParams = useSearchParams();
   const { data: video } = useVideo(videoId as string);
   const { vocabularies } = useVocabularies();
   const [currentTime, setCurrentTime] = useState(0);
@@ -30,6 +31,7 @@ function WatchPage() {
   const [currentTranscriptIndex, setCurrentTranscriptIndex] = useState(-1);
   const [lastUpdateTime, setLastUpdateTime] = useState(0);
   const [videoDuration, setVideoDuration] = useState(0);
+  const [initialTime, setInitialTime] = useState(0);
   const videoPlayerRef = useRef<VideoPlayerRef>(null);
 
   const { data: watchHistoryData } = useWatchHistoryByVideo(
@@ -97,6 +99,22 @@ function WatchPage() {
     setCurrentTranscriptIndex(-1);
     setLastUpdateTime(0);
   }, [videoId]);
+
+  // Read initial time from query parameter
+  useEffect(() => {
+    const timeParam = searchParams.get("t");
+    if (timeParam) {
+      const time = parseFloat(timeParam);
+      if (!isNaN(time) && time >= 0) {
+        setInitialTime(time);
+        setCurrentTime(time);
+        // Also seek the video player if it's already loaded
+        if (videoPlayerRef.current) {
+          videoPlayerRef.current.seekTo(time);
+        }
+      }
+    }
+  }, [searchParams]);
 
   // Helper function to find the current transcript index based on time
   const findCurrentTranscriptIndex = (time: number): number => {
@@ -197,6 +215,16 @@ function WatchPage() {
         </div>
         <p className="text-muted-foreground">{video?.description}</p>
 
+        {/* Resume indicator */}
+        {initialTime > 0 && (
+          <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3">
+            <p className="text-sm text-green-600 dark:text-green-400 font-medium">
+              📍 Resuming from {Math.floor(initialTime / 60)}:
+              {(initialTime % 60).toFixed(0).padStart(2, "0")}
+            </p>
+          </div>
+        )}
+
         {/* Current transcript segment indicator */}
         {transcript.length > 0 && currentTranscriptIndex >= 0 && (
           <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
@@ -219,6 +247,7 @@ function WatchPage() {
             onDurationChange={handleDurationChange}
             transcript={transcript}
             currentTime={currentTime}
+            initialTime={initialTime}
           />
 
           <VideoTranscription

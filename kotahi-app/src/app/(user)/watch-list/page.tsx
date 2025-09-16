@@ -340,7 +340,11 @@ export default function WatchListPage() {
                       <TableCell className="text-right">
                         <div className="flex gap-2 justify-end">
                           <Button asChild size="sm" variant="outline">
-                            <Link href={`/watch/${item.video_id}`}>
+                            <Link
+                              href={`/watch/${item.video_id}?t=${Math.round(
+                                item.current_time
+                              )}`}
+                            >
                               <Play className="w-4 h-4 mr-1" />
                               {item.completed ? "Rewatch" : "Continue"}
                             </Link>
