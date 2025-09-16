@@ -1,32 +1,34 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { VideoData } from "@/lib/types";
-import { Check, Bookmark, BookmarkCheck } from "lucide-react";
+import { VideoData, WatchHistory } from "@/lib/types";
+import { Check, Bookmark, BookmarkCheck, CheckCircle } from "lucide-react";
 import { Button } from "../ui/button";
 import { Progress } from "../ui/progress";
 import { useRouter } from "next/navigation";
-import {
-  useWatchHistoryByVideo,
-  useWatchHistoryMutations,
-} from "@/lib/hooks/api";
+import { useWatchHistoryMutations } from "@/lib/hooks/api";
 import { toast } from "sonner";
 
-function VideoCard({ video }: { video: VideoData }) {
+function VideoCard({
+  video,
+  watchHistory,
+}: {
+  video: VideoData;
+  watchHistory?: WatchHistory;
+}) {
   const router = useRouter();
   const [token] = useState(() => localStorage.getItem("token"));
   const [isInWatchList, setIsInWatchList] = useState(false);
 
-  const { data: watchHistoryData } = useWatchHistoryByVideo(token, video.id);
   const { createOrUpdate } = useWatchHistoryMutations();
 
   useEffect(() => {
-    if (watchHistoryData?.data) {
+    if (watchHistory) {
       setIsInWatchList(true);
     } else {
       setIsInWatchList(false);
     }
-  }, [watchHistoryData]);
+  }, [watchHistory]);
 
   const handleAddToWatchList = async () => {
     if (!token) {
@@ -70,18 +72,57 @@ function VideoCard({ video }: { video: VideoData }) {
                 <Check className="w-4 h-4 text-gray-500" />
                 <p className="text-gray-500">Transcript</p>
               </div>
+              {watchHistory?.completed && (
+                <div className="flex gap-1 items-center">
+                  <CheckCircle className="w-4 h-4 text-green-500" />
+                  <p className="text-green-500 text-sm">Completed</p>
+                </div>
+              )}
             </div>
-            <Progress value={50} className="w-full" />
-            <p className="text-gray-500">Familiarity: 50%</p>
+            <Progress
+              value={watchHistory ? Math.round(watchHistory.progress * 100) : 0}
+              className="w-full"
+            />
+            <p className="text-gray-500">
+              Progress:{" "}
+              {watchHistory ? Math.round(watchHistory.progress * 100) : 0}%
+            </p>
+            {watchHistory && (
+              <p className="text-xs text-gray-400">
+                Watched: {Math.floor(watchHistory.current_time / 60)}:
+                {(watchHistory.current_time % 60).toFixed(0).padStart(2, "0")} /{" "}
+                {Math.floor(watchHistory.duration / 60)}:
+                {(watchHistory.duration % 60).toFixed(0).padStart(2, "0")}
+              </p>
+            )}
           </div>
           <div className="flex gap-2">
             <Button
               className="w-3/4"
               onClick={() => {
-                router.push(`/watch/${video.id}`);
+                const hasWatchHistory = watchHistory;
+                const currentTime = hasWatchHistory
+                  ? watchHistory.current_time
+                  : 0;
+                const isCompleted = hasWatchHistory
+                  ? watchHistory.completed
+                  : false;
+
+                // If there's watch history and it's not completed, resume from current time
+                if (hasWatchHistory && !isCompleted && currentTime > 0) {
+                  router.push(
+                    `/watch/${video.id}?t=${Math.round(currentTime)}`
+                  );
+                } else {
+                  router.push(`/watch/${video.id}`);
+                }
               }}
             >
-              Play
+              {watchHistory
+                ? watchHistory.completed
+                  ? "Rewatch"
+                  : "Continue"
+                : "Play"}
             </Button>
             <Button
               className="w-1/4"

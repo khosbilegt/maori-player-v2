@@ -5,13 +5,19 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { ChevronRight, Funnel, ListVideo } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useVideos, usePlaylists, usePlaylist } from "@/lib/hooks/api";
+import {
+  useVideos,
+  usePlaylists,
+  usePlaylist,
+  useWatchHistory,
+} from "@/lib/hooks/api";
 import VideoCard from "@/components/video/video_card";
 import StreakBar from "@/components/user/streak_bar";
 import type { Playlist } from "@/lib/types";
 
 function LibraryPage() {
   const [selectedPlaylist, setSelectedPlaylist] = useState<string | null>(null);
+  const [token] = useState(() => localStorage.getItem("token"));
 
   const { videos, isLoading: videosLoading, error: videosError } = useVideos();
   const {
@@ -23,6 +29,15 @@ function LibraryPage() {
     usePlaylist(selectedPlaylist || "", {
       skip: !selectedPlaylist,
     });
+  const { data: watchHistoryData } = useWatchHistory(token);
+
+  // Create a map of video IDs to watch history data for efficient lookup
+  const watchHistoryMap = new Map();
+  if (watchHistoryData?.data) {
+    watchHistoryData.data.forEach((history) => {
+      watchHistoryMap.set(history.video_id, history);
+    });
+  }
 
   return (
     <div className="container mx-auto px-4 py-8 flex flex-col gap-4">
@@ -118,7 +133,11 @@ function LibraryPage() {
               ) : (
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 px-4 lg:px-0">
                   {selectedPlaylistData?.videos?.map((video) => (
-                    <VideoCard key={video.id} video={video} />
+                    <VideoCard
+                      key={video.id}
+                      video={video}
+                      watchHistory={watchHistoryMap.get(video.id)}
+                    />
                   ))}
                 </div>
               )}
@@ -144,7 +163,11 @@ function LibraryPage() {
             ) : (
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {videos?.map((video) => (
-                  <VideoCard key={video.id} video={video} />
+                  <VideoCard
+                    key={video.id}
+                    video={video}
+                    watchHistory={watchHistoryMap.get(video.id)}
+                  />
                 ))}
               </div>
             )}
