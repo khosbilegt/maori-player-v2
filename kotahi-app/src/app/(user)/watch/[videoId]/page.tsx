@@ -194,24 +194,6 @@ function WatchPage() {
             </Link>
             <h1 className="text-2xl font-bold">{video?.title}</h1>
           </div>
-          <Button
-            variant={isInWatchList ? "default" : "outline"}
-            onClick={handleAddToWatchList}
-            disabled={isInWatchList}
-            className="flex items-center gap-2"
-          >
-            {isInWatchList ? (
-              <>
-                <BookmarkCheck className="w-4 h-4" />
-                In Watch List
-              </>
-            ) : (
-              <>
-                <Bookmark className="w-4 h-4" />
-                Add to Watch List
-              </>
-            )}
-          </Button>
         </div>
         <p className="text-muted-foreground">{video?.description}</p>
 
@@ -238,25 +220,29 @@ function WatchPage() {
           </div>
         )}
 
-        <div className="flex gap-4 h-[500px]">
-          <VideoPlayer
-            ref={videoPlayerRef}
-            src={video?.video}
-            subtitleSrc={video?.subtitle}
-            onTimeUpdate={handleTimeUpdate}
-            onDurationChange={handleDurationChange}
-            transcript={transcript}
-            currentTime={currentTime}
-            initialTime={initialTime}
-          />
+        <div className="flex flex-col lg:flex-row gap-4">
+          <div className="flex-1 lg:flex-[2]">
+            <VideoPlayer
+              ref={videoPlayerRef}
+              src={video?.video}
+              subtitleSrc={video?.subtitle}
+              onTimeUpdate={handleTimeUpdate}
+              onDurationChange={handleDurationChange}
+              transcript={transcript}
+              currentTime={currentTime}
+              initialTime={initialTime}
+            />
+          </div>
 
-          <VideoTranscription
-            isLoadingTranscript={isLoadingTranscript}
-            transcript={transcript}
-            currentTime={currentTime}
-            onSeek={handleSeek}
-            vocabularies={vocabularies || []}
-          />
+          <div className="flex-1 lg:flex-[1] lg:h-[500px]">
+            <VideoTranscription
+              isLoadingTranscript={isLoadingTranscript}
+              transcript={transcript}
+              currentTime={currentTime}
+              onSeek={handleSeek}
+              vocabularies={vocabularies || []}
+            />
+          </div>
         </div>
       </div>
     </div>
