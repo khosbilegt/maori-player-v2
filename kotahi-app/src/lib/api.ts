@@ -33,8 +33,19 @@ const getAuthHeaders = (token: string) => ({
 
 // Custom base query that handles token expiry
 const baseQueryWithReauth = async (args: any, api: any, extraOptions: any) => {
+  // Get the API base URL dynamically to ensure we get the latest value
+  const apiBaseUrl =
+    process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
+
+  console.log("Environment API Base URL:", environment.apiBaseUrl);
+  console.log(
+    "Process env NEXT_PUBLIC_API_BASE_URL:",
+    process.env.NEXT_PUBLIC_API_BASE_URL
+  );
+  console.log("Dynamic API Base URL:", apiBaseUrl);
+
   const result = await fetchBaseQuery({
-    baseUrl: environment.apiBaseUrl,
+    baseUrl: apiBaseUrl,
     prepareHeaders: (headers, { endpoint }) => {
       // Only set Content-Type for non-file upload endpoints
       if (endpoint !== "uploadVTTFile") {

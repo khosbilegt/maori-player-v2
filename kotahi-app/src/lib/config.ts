@@ -18,6 +18,13 @@ export const environment: EnvironmentConfig = {
   isProduction: process.env.NODE_ENV === "production",
 };
 
+// Debug logging
+console.log(
+  "Config loaded - NEXT_PUBLIC_API_BASE_URL:",
+  process.env.NEXT_PUBLIC_API_BASE_URL
+);
+console.log("Config loaded - apiBaseUrl:", environment.apiBaseUrl);
+
 // API endpoints
 export const API_ENDPOINTS = {
   // Authentication endpoints
