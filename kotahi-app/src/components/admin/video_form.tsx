@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/select";
 import { useGetVTTFilesQuery } from "@/lib/api";
 import type { VideoData } from "@/lib/types";
+import { Textarea } from "../ui/textarea";
 
 interface VideoFormData {
   title: string;
@@ -42,10 +43,7 @@ export default function VideoForm({
   onCancel,
   isLoading = false,
 }: VideoFormProps) {
-  const token = localStorage.getItem("token");
-  const { data: vttFiles, isLoading: vttLoading } = useGetVTTFilesQuery(
-    token || ""
-  );
+  const { data: vttFiles, isLoading: vttLoading } = useGetVTTFilesQuery();
 
   const [formData, setFormData] = useState<VideoFormData>({
     title: "",
@@ -55,22 +53,6 @@ export default function VideoForm({
     duration: "",
     subtitle: "",
   });
-
-  // Helper functions to convert between seconds and MM:SS format
-  const secondsToMMSS = (seconds: number | string): string => {
-    const totalSeconds =
-      typeof seconds === "string" ? parseInt(seconds) || 0 : seconds;
-    const minutes = Math.floor(totalSeconds / 60);
-    const remainingSeconds = totalSeconds % 60;
-    return `${minutes.toString().padStart(2, "0")}:${remainingSeconds
-      .toString()
-      .padStart(2, "0")}`;
-  };
-
-  // Helper function to check if a string is already in MM:SS format
-  const isMMSSFormat = (value: string): boolean => {
-    return /^([0-5]?[0-9]):([0-5][0-9])$/.test(value);
-  };
 
   useEffect(() => {
     if (video) {
@@ -159,7 +141,7 @@ export default function VideoForm({
             <label className="block text-sm font-medium mb-1">
               Description *
             </label>
-            <textarea
+            <Textarea
               name="description"
               value={formData.description}
               onChange={handleInputChange}
@@ -167,7 +149,6 @@ export default function VideoForm({
               required
               rows={4}
               disabled={isLoading}
-              className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             />
           </div>
 

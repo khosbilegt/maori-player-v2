@@ -33,7 +33,7 @@ const getAuthHeaders = (token: string) => ({
 
 // Custom base query that handles token expiry
 const baseQueryWithReauth = async (args: any, api: any, extraOptions: any) => {
-  let result = await fetchBaseQuery({
+  const result = await fetchBaseQuery({
     baseUrl: environment.apiBaseUrl,
     prepareHeaders: (headers, { endpoint }) => {
       // Only set Content-Type for non-file upload endpoints

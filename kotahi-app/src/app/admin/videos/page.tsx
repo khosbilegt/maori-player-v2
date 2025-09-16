@@ -28,18 +28,12 @@ export default function VideoManagement() {
   const [editingVideo, setEditingVideo] = useState<VideoData | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const token = localStorage.getItem("token");
   const { data: videos, isLoading } = useGetVideosQuery();
   const [createVideo] = useCreateVideoMutation();
   const [updateVideo] = useUpdateVideoMutation();
   const [deleteVideo] = useDeleteVideoMutation();
 
   const handleFormSubmit = async (formData: any) => {
-    if (!token) {
-      toast.error("Authentication required");
-      return;
-    }
-
     setIsSubmitting(true);
 
     try {
@@ -52,7 +46,7 @@ export default function VideoManagement() {
           duration: formData.duration || undefined,
           subtitle: formData.subtitle || undefined,
         };
-        await updateVideo({ token, id: editingVideo.id, data: updateData });
+        await updateVideo({ id: editingVideo.id, data: updateData });
         toast.success("Video updated successfully!");
       } else {
         const createData: CreateVideoRequest = {
@@ -63,7 +57,7 @@ export default function VideoManagement() {
           duration: formData.duration || undefined,
           subtitle: formData.subtitle || undefined,
         };
-        await createVideo({ token, data: createData });
+        await createVideo(createData);
         toast.success("Video created successfully!");
       }
 
@@ -81,17 +75,12 @@ export default function VideoManagement() {
   };
 
   const handleDelete = async (videoId: string) => {
-    if (!token) {
-      toast.error("Authentication required");
-      return;
-    }
-
     if (!confirm("Are you sure you want to delete this video?")) {
       return;
     }
 
     try {
-      await deleteVideo({ token, id: videoId });
+      await deleteVideo(videoId);
       toast.success("Video deleted successfully!");
     } catch (error: any) {
       toast.error(error?.data?.message || "Delete failed");

@@ -65,14 +65,6 @@ export default function SubtitleManagement() {
     }
   };
 
-  const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return "0 Bytes";
-    const k = 1024;
-    const sizes = ["Bytes", "KB", "MB", "GB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
-  };
-
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -116,7 +108,8 @@ export default function SubtitleManagement() {
             />
             <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center">
               <p className="text-gray-600 dark:text-gray-400 mb-2">
-                Click the "Upload VTT File" button to select a subtitle file
+                Click the &quot;Upload VTT File&quot; button to select a
+                subtitle file
               </p>
               <p className="text-sm text-gray-500 dark:text-gray-500">
                 Supported format: .vtt (WebVTT)

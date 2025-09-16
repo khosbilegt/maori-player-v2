@@ -32,16 +32,7 @@ import {
 } from "@/lib/hooks/api";
 import { toast } from "sonner";
 import type { WatchHistory, VideoData } from "@/lib/types";
-import {
-  Plus,
-  Play,
-  Trash2,
-  Clock,
-  CheckCircle,
-  Eye,
-  Calendar,
-  TrendingUp,
-} from "lucide-react";
+import { Play, Trash2, Calendar } from "lucide-react";
 import Link from "next/link";
 import { useVideos } from "@/lib/hooks/api";
 
@@ -124,21 +115,6 @@ export default function WatchListPage() {
     if (progress >= 50) return "bg-yellow-500";
     return "bg-blue-500";
   };
-
-  const getStats = () => {
-    const total = watchHistory.length;
-    const completed = completedVideos.length;
-    const inProgress = watchHistory.filter(
-      (item) => !item.completed && item.progress > 0
-    ).length;
-    const notStarted = watchHistory.filter(
-      (item) => item.progress === 0
-    ).length;
-
-    return { total, completed, inProgress, notStarted };
-  };
-
-  const stats = getStats();
 
   if (isLoading) {
     return (

@@ -13,10 +13,8 @@ import type { TranscriptItem } from "@/lib/types";
 import { loadVTTTranscript } from "@/lib/vtt-parser";
 import VideoTranscription from "@/components/video/video_transcription";
 import type { VideoPlayerRef } from "@/components/video/types";
-import { ArrowLeft, Bookmark, BookmarkCheck } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
 
 function WatchPage() {
   const { videoId } = useParams();
@@ -47,27 +45,6 @@ function WatchPage() {
       setIsInWatchList(false);
     }
   }, [watchHistoryData]);
-
-  const handleAddToWatchList = async () => {
-    if (!token) {
-      toast.error("Please log in to add videos to your watch list");
-      return;
-    }
-
-    try {
-      await createOrUpdate(token, {
-        video_id: videoId as string,
-        progress: 0,
-        current_time: 0,
-        duration: 0, // Will be updated when video is actually played
-        completed: false,
-      });
-      setIsInWatchList(true);
-      toast.success("Added to watch list!");
-    } catch (error: any) {
-      toast.error(error?.data?.message || "Failed to add to watch list");
-    }
-  };
 
   useEffect(() => {
     const loadTranscript = async () => {
