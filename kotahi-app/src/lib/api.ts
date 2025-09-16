@@ -35,7 +35,7 @@ const getAuthHeaders = (token: string) => ({
 const baseQueryWithReauth = async (args: any, api: any, extraOptions: any) => {
   // Get the API base URL dynamically to ensure we get the latest value
   const apiBaseUrl =
-    process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
+    process.env.NEXT_PUBLIC_API_BASE_URL || "https://kotahi.app";
 
   console.log("Environment API Base URL:", environment.apiBaseUrl);
   console.log(
