@@ -83,6 +83,8 @@ export async function loadVTTTranscript(
   apiBaseUrl: string
 ): Promise<TranscriptItem[]> {
   try {
+    console.log("VTT Parser - API Base URL:", apiBaseUrl);
+    console.log("VTT Parser - Full URL:", apiBaseUrl + vttUrl);
     const response = await fetch(apiBaseUrl + vttUrl);
     if (!response.ok) {
       throw new Error(`Failed to fetch VTT file: ${response.statusText}`);
