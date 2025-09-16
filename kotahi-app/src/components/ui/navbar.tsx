@@ -70,6 +70,9 @@ export function Navbar({ className }: NavbarProps) {
                 <Link href="/library" className="text-sm text-primary">
                   My library
                 </Link>
+                <Link href="/watch-list" className="text-sm text-primary">
+                  Watch List
+                </Link>
                 <Link href="/learning-list" className="text-sm text-primary">
                   Learning List
                 </Link>
