@@ -27,6 +27,9 @@ function WatchPage() {
   const [isLoadingTranscript, setIsLoadingTranscript] = useState(false);
   const [token] = useState(() => localStorage.getItem("token"));
   const [isInWatchList, setIsInWatchList] = useState(false);
+  const [currentTranscriptIndex, setCurrentTranscriptIndex] = useState(-1);
+  const [lastUpdateTime, setLastUpdateTime] = useState(0);
+  const [videoDuration, setVideoDuration] = useState(0);
   const videoPlayerRef = useRef<VideoPlayerRef>(null);
 
   const { data: watchHistoryData } = useWatchHistoryByVideo(
@@ -89,12 +92,78 @@ function WatchPage() {
     loadTranscript();
   }, [video?.subtitle]);
 
+  // Reset transcript index when video changes
+  useEffect(() => {
+    setCurrentTranscriptIndex(-1);
+    setLastUpdateTime(0);
+  }, [videoId]);
+
+  // Helper function to find the current transcript index based on time
+  const findCurrentTranscriptIndex = (time: number): number => {
+    for (let i = 0; i < transcript.length; i++) {
+      const item = transcript[i];
+      if (time >= item.startTime && time <= item.endTime) {
+        return i;
+      }
+    }
+    return -1;
+  };
+
+  // Helper function to update watch history
+  const updateWatchHistory = async (time: number, duration: number) => {
+    if (!token || !videoId) return;
+
+    try {
+      const progress = duration > 0 ? time / duration : 0;
+      const completed = progress >= 0.95; // Consider 95% as completed
+
+      await createOrUpdate(token, {
+        video_id: videoId as string,
+        progress: progress,
+        current_time: time,
+        duration: duration,
+        completed: completed,
+      });
+
+      // Update the watch list status if this is the first time adding to watch history
+      if (!isInWatchList) {
+        setIsInWatchList(true);
+      }
+    } catch (error) {
+      console.error("Failed to update watch history:", error);
+      // Don't show toast errors for automatic updates to avoid spam
+    }
+  };
+
   const handleTimeUpdate = (time: number) => {
     setCurrentTime(time);
+
+    // Only update watch history if we have transcript data and token
+    if (transcript.length > 0 && token && videoId) {
+      const newTranscriptIndex = findCurrentTranscriptIndex(time);
+
+      // Update watch history when transcript segment changes
+      if (
+        newTranscriptIndex !== currentTranscriptIndex &&
+        newTranscriptIndex !== -1
+      ) {
+        setCurrentTranscriptIndex(newTranscriptIndex);
+
+        // Throttle updates to avoid too many API calls (update every 5 seconds max)
+        if (time - lastUpdateTime >= 5 && videoDuration > 0) {
+          updateWatchHistory(time, videoDuration);
+          setLastUpdateTime(time);
+        }
+      }
+    }
   };
 
   const handleSeek = (time: number) => {
     videoPlayerRef.current?.seekTo(time);
+  };
+
+  const handleDurationChange = (duration: number) => {
+    setVideoDuration(duration);
   };
 
   return (
@@ -128,12 +197,26 @@ function WatchPage() {
         </div>
         <p className="text-muted-foreground">{video?.description}</p>
 
+        {/* Current transcript segment indicator */}
+        {transcript.length > 0 && currentTranscriptIndex >= 0 && (
+          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
+            <p className="text-sm text-blue-600 dark:text-blue-400 font-medium mb-1">
+              Current Segment ({currentTranscriptIndex + 1} of{" "}
+              {transcript.length})
+            </p>
+            <p className="text-sm text-gray-700 dark:text-gray-300">
+              {transcript[currentTranscriptIndex]?.text}
+            </p>
+          </div>
+        )}
+
         <div className="flex gap-4 h-[500px]">
           <VideoPlayer
             ref={videoPlayerRef}
             src={video?.video}
             subtitleSrc={video?.subtitle}
             onTimeUpdate={handleTimeUpdate}
+            onDurationChange={handleDurationChange}
             transcript={transcript}
             currentTime={currentTime}
           />
