@@ -173,6 +173,9 @@ type VocabularyRepository interface {
 	GetAll(ctx context.Context) ([]*models.Vocabulary, error)
 	GetByID(ctx context.Context, id string) (*models.Vocabulary, error)
 	Create(ctx context.Context, vocabulary *models.Vocabulary) error
+	CreateBatch(ctx context.Context, vocabularies []*models.Vocabulary) error
+	CheckExisting(ctx context.Context, maoriText string) (*models.Vocabulary, error)
+	UpsertBatch(ctx context.Context, vocabularies []*models.Vocabulary) ([]*models.Vocabulary, []*models.Vocabulary, error)
 	Update(ctx context.Context, id string, vocabulary *models.Vocabulary) error
 	Delete(ctx context.Context, id string) error
 	Search(ctx context.Context, query string) ([]*models.Vocabulary, error)
@@ -309,10 +312,102 @@ func (r *vocabularyRepository) Create(ctx context.Context, vocabulary *models.Vo
 	return err
 }
 
+// CreateBatch creates multiple vocabulary items in a single operation
+func (r *vocabularyRepository) CreateBatch(ctx context.Context, vocabularies []*models.Vocabulary) error {
+	if len(vocabularies) == 0 {
+		return nil
+	}
+
+	// Generate IDs for all vocabulary items
+	for _, vocab := range vocabularies {
+		vocab.GenerateID()
+	}
+
+	// Convert to interface slice for InsertMany
+	docs := make([]interface{}, len(vocabularies))
+	for i, vocab := range vocabularies {
+		docs[i] = vocab
+	}
+
+	_, err := r.collection.InsertMany(ctx, docs)
+	return err
+}
+
+// CheckExisting checks if a vocabulary item with the given Māori text already exists
+func (r *vocabularyRepository) CheckExisting(ctx context.Context, maoriText string) (*models.Vocabulary, error) {
+	var vocabulary models.Vocabulary
+	err := r.collection.FindOne(ctx, bson.M{"maori": maoriText}).Decode(&vocabulary)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, nil // Not found, but not an error
+		}
+		return nil, err
+	}
+	return &vocabulary, nil
+}
+
+// UpsertBatch handles batch upsert operations, returning created and updated items
+func (r *vocabularyRepository) UpsertBatch(ctx context.Context, vocabularies []*models.Vocabulary) ([]*models.Vocabulary, []*models.Vocabulary, error) {
+	if len(vocabularies) == 0 {
+		return []*models.Vocabulary{}, []*models.Vocabulary{}, nil
+	}
+
+	var created []*models.Vocabulary
+	var updated []*models.Vocabulary
+
+	for _, vocab := range vocabularies {
+		vocab.GenerateID()
+
+		// Check if item already exists
+		existing, err := r.CheckExisting(ctx, vocab.Maori)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		if existing != nil {
+			// Update existing item
+			existing.UpdateFromRequest(&models.VocabularyRequest{
+				Maori:       vocab.Maori,
+				English:     vocab.English,
+				Description: vocab.Description,
+			})
+
+			if err := r.Update(ctx, existing.ID, existing); err != nil {
+				return nil, nil, err
+			}
+			updated = append(updated, existing)
+		} else {
+			// Create new item
+			if err := r.Create(ctx, vocab); err != nil {
+				return nil, nil, err
+			}
+			created = append(created, vocab)
+		}
+	}
+
+	return created, updated, nil
+}
+
 // Update updates an existing vocabulary item
 func (r *vocabularyRepository) Update(ctx context.Context, id string, vocabulary *models.Vocabulary) error {
-	_, err := r.collection.ReplaceOne(ctx, bson.M{"_id": id}, vocabulary)
-	return err
+	update := bson.M{
+		"$set": bson.M{
+			"maori":       vocabulary.Maori,
+			"english":     vocabulary.English,
+			"description": vocabulary.Description,
+		},
+	}
+
+	result, err := r.collection.UpdateOne(ctx, bson.M{"_id": id}, update)
+	if err != nil {
+		return err
+	}
+
+	if result.MatchedCount == 0 {
+		return mongo.ErrNoDocuments
+	}
+
+	return nil
 }
 
 // Delete deletes a vocabulary item by ID

@@ -65,6 +65,7 @@ func SetupRoutes(cfg *config.Config, db *database.MongoDB, videoRepo database.Vi
 	api.HandleFunc("/vocabulary/{id}", vocabularyHandler.GetVocabulary).Methods("GET")
 	api.HandleFunc("/vocabulary/search", vocabularyHandler.SearchVocabularies).Methods("GET")
 	admin.HandleFunc("/vocabulary", vocabularyHandler.CreateVocabulary).Methods("POST")
+	admin.HandleFunc("/vocabulary/batch-upload", vocabularyHandler.BatchVocabularyUpload).Methods("POST")
 	admin.HandleFunc("/vocabulary/{id}", vocabularyHandler.UpdateVocabulary).Methods("PUT")
 	admin.HandleFunc("/vocabulary/{id}", vocabularyHandler.DeleteVocabulary).Methods("DELETE")
 

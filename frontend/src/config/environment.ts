@@ -13,7 +13,7 @@ const getEnvVar = (key: string, fallback: string): string => {
 
 // Environment configuration
 export const environment: EnvironmentConfig = {
-  apiBaseUrl: getEnvVar("VITE_API_BASE_URL", "http://localhost:8080"),
+  apiBaseUrl: getEnvVar("VITE_API_BASE_URL", "https://kotahi.app"),
   isDevelopment: import.meta.env.DEV,
   isProduction: import.meta.env.PROD,
 };
