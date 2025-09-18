@@ -10,24 +10,36 @@ import (
 	"strings"
 	"time"
 
+	"video-player-backend/internal/database"
 	"video-player-backend/internal/errors"
 	"video-player-backend/internal/utils"
 )
 
 // VTTUploadHandler handles VTT file uploads
 type VTTUploadHandler struct {
-	uploadPath string
+	uploadPath     string
+	vocabRepo      database.VocabularyRepository
+	vocabIndexRepo database.VocabularyIndexRepository
+	videoRepo      database.VideoRepository
 }
 
 // NewVTTUploadHandler creates a new VTT upload handler
-func NewVTTUploadHandler(uploadPath string) *VTTUploadHandler {
+func NewVTTUploadHandler(
+	uploadPath string,
+	vocabRepo database.VocabularyRepository,
+	vocabIndexRepo database.VocabularyIndexRepository,
+	videoRepo database.VideoRepository,
+) *VTTUploadHandler {
 	// Ensure upload directory exists
 	if err := os.MkdirAll(uploadPath, 0755); err != nil {
 		log.Printf("Failed to create upload directory: %v", err)
 	}
 
 	return &VTTUploadHandler{
-		uploadPath: uploadPath,
+		uploadPath:     uploadPath,
+		vocabRepo:      vocabRepo,
+		vocabIndexRepo: vocabIndexRepo,
+		videoRepo:      videoRepo,
 	}
 }
 
@@ -84,6 +96,16 @@ func (h *VTTUploadHandler) UploadVTT(w http.ResponseWriter, r *http.Request) {
 		os.Remove(filePath)
 		errors.WriteErrorResponse(w, errors.WrapError(err, errors.ErrDatabase))
 		return
+	}
+
+	// Read VTT content for vocabulary indexing
+	vttContent, err := os.ReadFile(filePath)
+	if err != nil {
+		log.Printf("Failed to read VTT file for indexing: %v", err)
+		// Continue without indexing - file upload was successful
+	} else {
+		// Index vocabulary in the VTT content
+		go h.indexVocabularyInVTT(filename, string(vttContent))
 	}
 
 	// Return success response with file info
@@ -260,5 +282,52 @@ func (h *VTTUploadHandler) DeleteVTTFile(w http.ResponseWriter, r *http.Request)
 	w.Header().Set("Content-Type", "application/json")
 	if err := utils.WriteJSONResponse(w, response); err != nil {
 		log.Printf("Failed to write JSON response: %v", err)
+	}
+}
+
+// indexVocabularyInVTT indexes vocabulary words found in VTT content
+func (h *VTTUploadHandler) indexVocabularyInVTT(filename, vttContent string) {
+	ctx, cancel := utils.ContextWithTimeout()
+	defer cancel()
+
+	// Get all vocabulary
+	vocabularies, err := h.vocabRepo.GetAll(ctx)
+	if err != nil {
+		log.Printf("Failed to get vocabulary for indexing: %v", err)
+		return
+	}
+
+	if len(vocabularies) == 0 {
+		log.Printf("No vocabulary found for indexing")
+		return
+	}
+
+	// Parse VTT content
+	transcriptLines, err := utils.ParseVTTToLines(vttContent)
+	if err != nil {
+		log.Printf("Failed to parse VTT content for indexing: %v", err)
+		return
+	}
+
+	// Create vocabulary indexer
+	indexer := utils.NewVocabularyIndexer(vocabularies)
+
+	// Index vocabulary for this VTT file
+	indexes, err := indexer.IndexTranscript(filename, transcriptLines)
+	if err != nil {
+		log.Printf("Failed to index vocabulary: %v", err)
+		return
+	}
+
+	if len(indexes) > 0 {
+		// Save indexes to database
+		err = h.vocabIndexRepo.CreateBatch(ctx, indexes)
+		if err != nil {
+			log.Printf("Failed to save vocabulary indexes: %v", err)
+			return
+		}
+		log.Printf("Indexed %d vocabulary occurrences in VTT file: %s", len(indexes), filename)
+	} else {
+		log.Printf("No vocabulary found in VTT file: %s", filename)
 	}
 }

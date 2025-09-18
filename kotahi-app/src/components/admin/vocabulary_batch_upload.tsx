@@ -20,7 +20,7 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { useBatchUploadVocabularyMutation } from "@/lib/api";
 import { toast } from "sonner";
-import { Upload, FileText, CheckCircle, AlertCircle } from "lucide-react";
+import { Upload, FileText, CheckCircle } from "lucide-react";
 
 interface BatchUploadResult {
   message: string;
@@ -323,8 +323,8 @@ Aroha,Love,"Love, compassion, and empathy"`;
             <strong>File Size:</strong> Maximum 100MB
           </p>
           <p>
-            <strong>Example:</strong> Kia ora,Hello,"A traditional Māori
-            greeting"
+            <strong>Example:</strong> Kia ora,Hello,&quot;A traditional Māori
+            greeting&quot;
           </p>
         </div>
       </CardContent>

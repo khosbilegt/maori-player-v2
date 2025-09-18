@@ -14,7 +14,7 @@ import (
 )
 
 // SetupRoutes configures all routes for the application
-func SetupRoutes(cfg *config.Config, db *database.MongoDB, videoRepo database.VideoRepository, userRepo database.UserRepository, vocabRepo database.VocabularyRepository, watchHistoryRepo database.WatchHistoryRepository, playlistRepo database.PlaylistRepository) *mux.Router {
+func SetupRoutes(cfg *config.Config, db *database.MongoDB, videoRepo database.VideoRepository, userRepo database.UserRepository, vocabRepo database.VocabularyRepository, vocabIndexRepo database.VocabularyIndexRepository, watchHistoryRepo database.WatchHistoryRepository, playlistRepo database.PlaylistRepository) *mux.Router {
 	r := mux.NewRouter()
 
 	log.Println("Setting up routes")
@@ -29,8 +29,9 @@ func SetupRoutes(cfg *config.Config, db *database.MongoDB, videoRepo database.Vi
 	videoHandler := NewVideoHandler(videoRepo)
 	authHandler := NewAuthHandler(userRepo, jwtManager)
 	vocabularyHandler := NewVocabularyHandler(vocabRepo)
+	vocabularySearchHandler := NewVocabularySearchHandler(vocabRepo, vocabIndexRepo, videoRepo)
 	watchHistoryHandler := NewWatchHistoryHandler(watchHistoryRepo, videoRepo)
-	vttHandler := NewVTTUploadHandler("./uploads/vtt")
+	vttHandler := NewVTTUploadHandler("./uploads/vtt", vocabRepo, vocabIndexRepo, videoRepo)
 	learningListHandler := NewLearningListHandler(db)
 	playlistHandler := NewPlaylistHandler(playlistRepo, videoRepo)
 
@@ -68,6 +69,13 @@ func SetupRoutes(cfg *config.Config, db *database.MongoDB, videoRepo database.Vi
 	admin.HandleFunc("/vocabulary/batch-upload", vocabularyHandler.BatchVocabularyUpload).Methods("POST")
 	admin.HandleFunc("/vocabulary/{id}", vocabularyHandler.UpdateVocabulary).Methods("PUT")
 	admin.HandleFunc("/vocabulary/{id}", vocabularyHandler.DeleteVocabulary).Methods("DELETE")
+
+	// Vocabulary search routes - public read access
+	api.HandleFunc("/vocabulary/search/index", vocabularySearchHandler.SearchVocabulary).Methods("GET")
+	api.HandleFunc("/vocabulary/search/english", vocabularySearchHandler.SearchByEnglish).Methods("GET")
+	api.HandleFunc("/vocabulary/video", vocabularySearchHandler.GetVideoVocabulary).Methods("GET")
+	api.HandleFunc("/vocabulary/stats", vocabularySearchHandler.GetVocabularyStats).Methods("GET")
+	admin.HandleFunc("/vocabulary/reindex", vocabularySearchHandler.ReindexAllVideos).Methods("POST")
 
 	// Watch history routes (authenticated users - no admin required)
 	protected.HandleFunc("/watch-history", watchHistoryHandler.GetWatchHistory).Methods("GET")

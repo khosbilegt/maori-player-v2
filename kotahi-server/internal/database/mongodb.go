@@ -168,19 +168,6 @@ type UserRepository interface {
 	Delete(ctx context.Context, id string) error
 }
 
-// VocabularyRepository interface for vocabulary operations
-type VocabularyRepository interface {
-	GetAll(ctx context.Context) ([]*models.Vocabulary, error)
-	GetByID(ctx context.Context, id string) (*models.Vocabulary, error)
-	Create(ctx context.Context, vocabulary *models.Vocabulary) error
-	CreateBatch(ctx context.Context, vocabularies []*models.Vocabulary) error
-	CheckExisting(ctx context.Context, maoriText string) (*models.Vocabulary, error)
-	UpsertBatch(ctx context.Context, vocabularies []*models.Vocabulary) ([]*models.Vocabulary, []*models.Vocabulary, error)
-	Update(ctx context.Context, id string, vocabulary *models.Vocabulary) error
-	Delete(ctx context.Context, id string) error
-	Search(ctx context.Context, query string) ([]*models.Vocabulary, error)
-}
-
 // userRepository implements UserRepository
 type userRepository struct {
 	collection *mongo.Collection
@@ -264,6 +251,19 @@ func (r *userRepository) Delete(ctx context.Context, id string) error {
 	}
 
 	return nil
+}
+
+// VocabularyRepository interface for vocabulary operations
+type VocabularyRepository interface {
+	GetAll(ctx context.Context) ([]*models.Vocabulary, error)
+	GetByID(ctx context.Context, id string) (*models.Vocabulary, error)
+	Create(ctx context.Context, vocabulary *models.Vocabulary) error
+	CreateBatch(ctx context.Context, vocabularies []*models.Vocabulary) error
+	CheckExisting(ctx context.Context, maoriText string) (*models.Vocabulary, error)
+	UpsertBatch(ctx context.Context, vocabularies []*models.Vocabulary) ([]*models.Vocabulary, []*models.Vocabulary, error)
+	Update(ctx context.Context, id string, vocabulary *models.Vocabulary) error
+	Delete(ctx context.Context, id string) error
+	Search(ctx context.Context, query string) ([]*models.Vocabulary, error)
 }
 
 // vocabularyRepository implements VocabularyRepository
@@ -448,6 +448,187 @@ func (r *vocabularyRepository) Search(ctx context.Context, query string) ([]*mod
 	return vocabularies, nil
 }
 
+// VocabularyIndexRepository interface for vocabulary index operations
+type VocabularyIndexRepository interface {
+	Create(ctx context.Context, index *models.VocabularyIndex) error
+	CreateBatch(ctx context.Context, indexes []*models.VocabularyIndex) error
+	GetByVideoID(ctx context.Context, videoID string) ([]*models.VocabularyIndex, error)
+	SearchByVocabulary(ctx context.Context, vocabulary string) ([]*models.VocabularyIndex, error)
+	SearchByEnglish(ctx context.Context, english string) ([]*models.VocabularyIndex, error)
+	DeleteByVideoID(ctx context.Context, videoID string) error
+	GetAll(ctx context.Context) ([]*models.VocabularyIndex, error)
+	GetStats(ctx context.Context) (map[string]interface{}, error)
+}
+
+type vocabularyIndexRepository struct {
+	collection *mongo.Collection
+}
+
+// NewVocabularyIndexRepository creates a new vocabulary index repository
+func NewVocabularyIndexRepository(db *mongo.Database) VocabularyIndexRepository {
+	return &vocabularyIndexRepository{
+		collection: db.Collection("vocabulary_index"),
+	}
+}
+
+// Create creates a new vocabulary index entry
+func (r *vocabularyIndexRepository) Create(ctx context.Context, index *models.VocabularyIndex) error {
+	index.GenerateID()
+	_, err := r.collection.InsertOne(ctx, index)
+	return err
+}
+
+// CreateBatch creates multiple vocabulary index entries in a single operation
+func (r *vocabularyIndexRepository) CreateBatch(ctx context.Context, indexes []*models.VocabularyIndex) error {
+	if len(indexes) == 0 {
+		return nil
+	}
+
+	for _, index := range indexes {
+		index.GenerateID()
+	}
+
+	docs := make([]interface{}, len(indexes))
+	for i, index := range indexes {
+		docs[i] = index
+	}
+
+	_, err := r.collection.InsertMany(ctx, docs)
+	return err
+}
+
+// GetByVideoID retrieves all vocabulary indexes for a specific video
+func (r *vocabularyIndexRepository) GetByVideoID(ctx context.Context, videoID string) ([]*models.VocabularyIndex, error) {
+	cursor, err := r.collection.Find(ctx, bson.M{"video_id": videoID})
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var indexes []*models.VocabularyIndex
+	if err := cursor.All(ctx, &indexes); err != nil {
+		return nil, err
+	}
+
+	return indexes, nil
+}
+
+// SearchByVocabulary searches for vocabulary indexes by Māori word/phrase
+func (r *vocabularyIndexRepository) SearchByVocabulary(ctx context.Context, vocabulary string) ([]*models.VocabularyIndex, error) {
+	cursor, err := r.collection.Find(ctx, bson.M{"vocabulary": bson.M{"$regex": vocabulary, "$options": "i"}})
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var indexes []*models.VocabularyIndex
+	if err := cursor.All(ctx, &indexes); err != nil {
+		return nil, err
+	}
+
+	return indexes, nil
+}
+
+// SearchByEnglish searches for vocabulary indexes by English translation
+func (r *vocabularyIndexRepository) SearchByEnglish(ctx context.Context, english string) ([]*models.VocabularyIndex, error) {
+	cursor, err := r.collection.Find(ctx, bson.M{"english": bson.M{"$regex": english, "$options": "i"}})
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var indexes []*models.VocabularyIndex
+	if err := cursor.All(ctx, &indexes); err != nil {
+		return nil, err
+	}
+
+	return indexes, nil
+}
+
+// DeleteByVideoID deletes all vocabulary indexes for a specific video
+func (r *vocabularyIndexRepository) DeleteByVideoID(ctx context.Context, videoID string) error {
+	_, err := r.collection.DeleteMany(ctx, bson.M{"video_id": videoID})
+	return err
+}
+
+// GetAll retrieves all vocabulary indexes
+func (r *vocabularyIndexRepository) GetAll(ctx context.Context) ([]*models.VocabularyIndex, error) {
+	cursor, err := r.collection.Find(ctx, bson.M{})
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var indexes []*models.VocabularyIndex
+	if err := cursor.All(ctx, &indexes); err != nil {
+		return nil, err
+	}
+
+	return indexes, nil
+}
+
+// GetStats retrieves statistics about vocabulary indexes
+func (r *vocabularyIndexRepository) GetStats(ctx context.Context) (map[string]interface{}, error) {
+	totalCount, err := r.collection.CountDocuments(ctx, bson.M{})
+	if err != nil {
+		return nil, err
+	}
+
+	// Get unique vocabulary count
+	uniqueVocabPipeline := []bson.M{
+		{"$group": bson.M{"_id": "$vocabulary"}},
+		{"$count": "unique_vocabulary"},
+	}
+
+	var uniqueVocabResult []bson.M
+	cursor, err := r.collection.Aggregate(ctx, uniqueVocabPipeline)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	if err := cursor.All(ctx, &uniqueVocabResult); err != nil {
+		return nil, err
+	}
+
+	uniqueCount := 0
+	if len(uniqueVocabResult) > 0 {
+		if count, ok := uniqueVocabResult[0]["unique_vocabulary"].(int32); ok {
+			uniqueCount = int(count)
+		}
+	}
+
+	// Get unique video count
+	uniqueVideoPipeline := []bson.M{
+		{"$group": bson.M{"_id": "$video_id"}},
+		{"$count": "unique_videos"},
+	}
+
+	var uniqueVideoResult []bson.M
+	cursor, err = r.collection.Aggregate(ctx, uniqueVideoPipeline)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	if err := cursor.All(ctx, &uniqueVideoResult); err != nil {
+		return nil, err
+	}
+
+	uniqueVideoCount := 0
+	if len(uniqueVideoResult) > 0 {
+		if count, ok := uniqueVideoResult[0]["unique_videos"].(int32); ok {
+			uniqueVideoCount = int(count)
+		}
+	}
+
+	return map[string]interface{}{
+		"total_indexes":     totalCount,
+		"unique_vocabulary": uniqueCount,
+		"unique_videos":     uniqueVideoCount,
+	}, nil
+}
+
 // WatchHistoryRepository interface for watch history operations
 type WatchHistoryRepository interface {
 	GetByUserID(ctx context.Context, userID string) ([]*models.WatchHistory, error)
@@ -489,94 +670,6 @@ func (r *watchHistoryRepository) GetByUserID(ctx context.Context, userID string)
 	}
 
 	return watchHistories, nil
-}
-
-// Learning List Repository Methods
-
-// CreateLearningListItem creates a new learning list item
-func (m *MongoDB) CreateLearningListItem(ctx context.Context, item *models.LearningList) error {
-	_, err := m.LearningListCollection.InsertOne(ctx, item)
-	return err
-}
-
-// GetLearningListByUserID retrieves all learning list items for a user
-func (m *MongoDB) GetLearningListByUserID(ctx context.Context, userID primitive.ObjectID) ([]*models.LearningList, error) {
-	cursor, err := m.LearningListCollection.Find(ctx, bson.M{"user_id": userID}, options.Find().SetSort(bson.M{"timestamp": -1}))
-	if err != nil {
-		return nil, err
-	}
-	defer cursor.Close(ctx)
-
-	var items []*models.LearningList
-	if err := cursor.All(ctx, &items); err != nil {
-		return nil, err
-	}
-
-	return items, nil
-}
-
-// GetLearningListItemByID retrieves a specific learning list item by ID
-func (m *MongoDB) GetLearningListItemByID(ctx context.Context, id primitive.ObjectID) (*models.LearningList, error) {
-	var item models.LearningList
-	err := m.LearningListCollection.FindOne(ctx, bson.M{"_id": id}).Decode(&item)
-	if err != nil {
-		return nil, err
-	}
-	return &item, nil
-}
-
-// UpdateLearningListItem updates a learning list item
-func (m *MongoDB) UpdateLearningListItem(ctx context.Context, id primitive.ObjectID, update bson.M) error {
-	_, err := m.LearningListCollection.UpdateOne(ctx, bson.M{"_id": id}, bson.M{"$set": update})
-	return err
-}
-
-// DeleteLearningListItem deletes a learning list item
-func (m *MongoDB) DeleteLearningListItem(ctx context.Context, id primitive.ObjectID) error {
-	_, err := m.LearningListCollection.DeleteOne(ctx, bson.M{"_id": id})
-	return err
-}
-
-// GetLearningListByStatus retrieves learning list items by status for a user
-func (m *MongoDB) GetLearningListByStatus(ctx context.Context, userID primitive.ObjectID, status string) ([]*models.LearningList, error) {
-	filter := bson.M{
-		"user_id": userID,
-		"status":  status,
-	}
-
-	cursor, err := m.LearningListCollection.Find(ctx, filter, options.Find().SetSort(bson.M{"timestamp": -1}))
-	if err != nil {
-		return nil, err
-	}
-	defer cursor.Close(ctx)
-
-	var items []*models.LearningList
-	if err := cursor.All(ctx, &items); err != nil {
-		return nil, err
-	}
-
-	return items, nil
-}
-
-// GetLearningListByVideoID retrieves learning list items for a specific video
-func (m *MongoDB) GetLearningListByVideoID(ctx context.Context, userID primitive.ObjectID, videoID string) ([]*models.LearningList, error) {
-	filter := bson.M{
-		"user_id":  userID,
-		"video_id": videoID,
-	}
-
-	cursor, err := m.LearningListCollection.Find(ctx, filter, options.Find().SetSort(bson.M{"timestamp": -1}))
-	if err != nil {
-		return nil, err
-	}
-	defer cursor.Close(ctx)
-
-	var items []*models.LearningList
-	if err := cursor.All(ctx, &items); err != nil {
-		return nil, err
-	}
-
-	return items, nil
 }
 
 // GetByUserAndVideo retrieves watch history for a specific user and video
@@ -711,6 +804,94 @@ func (r *watchHistoryRepository) GetCompletedVideos(ctx context.Context, userID 
 	}
 
 	return watchHistories, nil
+}
+
+// Learning List Repository Methods
+
+// CreateLearningListItem creates a new learning list item
+func (m *MongoDB) CreateLearningListItem(ctx context.Context, item *models.LearningList) error {
+	_, err := m.LearningListCollection.InsertOne(ctx, item)
+	return err
+}
+
+// GetLearningListByUserID retrieves all learning list items for a user
+func (m *MongoDB) GetLearningListByUserID(ctx context.Context, userID primitive.ObjectID) ([]*models.LearningList, error) {
+	cursor, err := m.LearningListCollection.Find(ctx, bson.M{"user_id": userID}, options.Find().SetSort(bson.M{"timestamp": -1}))
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var items []*models.LearningList
+	if err := cursor.All(ctx, &items); err != nil {
+		return nil, err
+	}
+
+	return items, nil
+}
+
+// GetLearningListItemByID retrieves a specific learning list item by ID
+func (m *MongoDB) GetLearningListItemByID(ctx context.Context, id primitive.ObjectID) (*models.LearningList, error) {
+	var item models.LearningList
+	err := m.LearningListCollection.FindOne(ctx, bson.M{"_id": id}).Decode(&item)
+	if err != nil {
+		return nil, err
+	}
+	return &item, nil
+}
+
+// UpdateLearningListItem updates a learning list item
+func (m *MongoDB) UpdateLearningListItem(ctx context.Context, id primitive.ObjectID, update bson.M) error {
+	_, err := m.LearningListCollection.UpdateOne(ctx, bson.M{"_id": id}, bson.M{"$set": update})
+	return err
+}
+
+// DeleteLearningListItem deletes a learning list item
+func (m *MongoDB) DeleteLearningListItem(ctx context.Context, id primitive.ObjectID) error {
+	_, err := m.LearningListCollection.DeleteOne(ctx, bson.M{"_id": id})
+	return err
+}
+
+// GetLearningListByStatus retrieves learning list items by status for a user
+func (m *MongoDB) GetLearningListByStatus(ctx context.Context, userID primitive.ObjectID, status string) ([]*models.LearningList, error) {
+	filter := bson.M{
+		"user_id": userID,
+		"status":  status,
+	}
+
+	cursor, err := m.LearningListCollection.Find(ctx, filter, options.Find().SetSort(bson.M{"timestamp": -1}))
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var items []*models.LearningList
+	if err := cursor.All(ctx, &items); err != nil {
+		return nil, err
+	}
+
+	return items, nil
+}
+
+// GetLearningListByVideoID retrieves learning list items for a specific video
+func (m *MongoDB) GetLearningListByVideoID(ctx context.Context, userID primitive.ObjectID, videoID string) ([]*models.LearningList, error) {
+	filter := bson.M{
+		"user_id":  userID,
+		"video_id": videoID,
+	}
+
+	cursor, err := m.LearningListCollection.Find(ctx, filter, options.Find().SetSort(bson.M{"timestamp": -1}))
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var items []*models.LearningList
+	if err := cursor.All(ctx, &items); err != nil {
+		return nil, err
+	}
+
+	return items, nil
 }
 
 // PlaylistRepository interface for playlist operations
