@@ -72,6 +72,8 @@ type VideoRepository interface {
 	Create(ctx context.Context, video *models.Video) error
 	Update(ctx context.Context, id string, video *models.Video) error
 	Delete(ctx context.Context, id string) error
+	// FindBySubtitleFilename finds videos whose subtitle path contains the given VTT filename
+	FindBySubtitleFilename(ctx context.Context, filename string) ([]*models.Video, error)
 }
 
 // videoRepository implements VideoRepository
@@ -156,6 +158,23 @@ func (r *videoRepository) Delete(ctx context.Context, id string) error {
 	}
 
 	return nil
+}
+
+// FindBySubtitleFilename finds videos whose subtitle path contains the given VTT filename
+func (r *videoRepository) FindBySubtitleFilename(ctx context.Context, filename string) ([]*models.Video, error) {
+	// Use a case-insensitive regex to match the filename within the subtitle path or URL
+	filter := bson.M{"subtitle": bson.M{"$regex": filename, "$options": "i"}}
+	cursor, err := r.collection.Find(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var videos []*models.Video
+	if err := cursor.All(ctx, &videos); err != nil {
+		return nil, err
+	}
+	return videos, nil
 }
 
 // UserRepository interface for user operations

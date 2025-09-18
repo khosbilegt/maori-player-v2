@@ -81,6 +81,8 @@ export default function LearningListPage() {
 
     const videoMap = new Map();
 
+    console.log(vocabularySearchData.results);
+
     vocabularySearchData.results.forEach((result) => {
       result.occurrences.forEach((occurrence) => {
         if (!videoMap.has(occurrence.video_id)) {
