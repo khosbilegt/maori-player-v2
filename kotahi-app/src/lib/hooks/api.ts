@@ -15,6 +15,7 @@ import {
   useUpdateVocabularyMutation,
   useDeleteVocabularyMutation,
   useSearchVocabulariesQuery,
+  useSearchVocabularyWithVideosQuery,
   useGetWatchHistoryQuery,
   useGetWatchHistoryByVideoQuery,
   useCreateOrUpdateWatchHistoryMutation,
@@ -358,6 +359,12 @@ export const usePlaylistMutations = () => {
 
 export const useSearchVocabularies = (query: string) => {
   return useSearchVocabulariesQuery(query, {
+    skip: !query || query.length < 2,
+  });
+};
+
+export const useSearchVocabularyWithVideos = (query: string) => {
+  return useSearchVocabularyWithVideosQuery(query, {
     skip: !query || query.length < 2,
   });
 };

@@ -207,6 +207,36 @@ export interface DeleteVTTParams {
   filename: string;
 }
 
+// Vocabulary search types
+export interface VocabularyIndex {
+  id: string;
+  video_id: string;
+  vocabulary: string;
+  english: string;
+  description: string;
+  start_time: number;
+  end_time: number;
+  transcript: string;
+  line_number: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface VocabularySearchResult {
+  vocabulary: string;
+  english: string;
+  description: string;
+  occurrences: VocabularyIndex[];
+  total_count: number;
+}
+
+export interface VocabularySearchResponse {
+  message: string;
+  query: string;
+  results: VocabularySearchResult[];
+  total: number;
+}
+
 // Transcript types
 export interface TranscriptItem {
   id: string;

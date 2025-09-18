@@ -26,6 +26,7 @@ import type {
   CreateLearningListItemRequest,
   UpdateLearningListItemRequest,
   LearningListParams,
+  VocabularySearchResponse,
 } from "./types";
 
 // Helper function to get auth headers
@@ -218,6 +219,14 @@ export const apiSlice = createApi({
         `/api/v1/vocabulary/search?q=${encodeURIComponent(query)}`,
       providesTags: ["Vocabulary"],
     }),
+
+    searchVocabularyWithVideos: builder.query<VocabularySearchResponse, string>(
+      {
+        query: (query) =>
+          `/api/v1/vocabulary/search/index?q=${encodeURIComponent(query)}`,
+        providesTags: ["Vocabulary"],
+      }
+    ),
 
     batchUploadVocabulary: builder.mutation<
       BatchVocabularyUploadResponse,
@@ -506,6 +515,7 @@ export const {
   useUpdateVocabularyMutation,
   useDeleteVocabularyMutation,
   useSearchVocabulariesQuery,
+  useSearchVocabularyWithVideosQuery,
   useBatchUploadVocabularyMutation,
 
   // Watch history

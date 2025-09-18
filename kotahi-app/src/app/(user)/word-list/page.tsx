@@ -15,6 +15,8 @@ import {
   useLearningListStats,
   useVocabularies,
   useLearningListMutations,
+  useSearchVocabularyWithVideos,
+  useVideos,
 } from "@/lib/hooks/api";
 import { toast } from "sonner";
 import type { LearningListItem } from "@/lib/types";
@@ -38,6 +40,16 @@ export default function LearningListPage() {
     error: vocabError,
   } = useVocabularies();
   const { updateItem, deleteItem } = useLearningListMutations();
+
+  // Get all videos for display
+  const { videos } = useVideos();
+
+  // Search for videos containing the selected word
+  const {
+    data: vocabularySearchData,
+    isLoading: isLoadingSearch,
+    error: searchError,
+  } = useSearchVocabularyWithVideos(selectedWord?.text || "");
 
   const learningList = learningListData?.data || [];
   const stats = statsData?.data;
@@ -63,20 +75,31 @@ export default function LearningListPage() {
     });
   }, [learningList, vocabularies]);
 
-  const dummyVideos = [
-    {
-      id: "1",
-      title: "Pakihi Māori: kōrero tuatahi",
-      duration: "4:12",
-      thumbnail: "/api/placeholder/200/120",
-    },
-    {
-      id: "2",
-      title: "He kōrero mō te whānau pakihi",
-      duration: "5:10",
-      thumbnail: "/api/placeholder/200/120",
-    },
-  ];
+  // Get unique videos from vocabulary search results
+  const videosWithWord = React.useMemo(() => {
+    if (!vocabularySearchData?.results?.length || !videos?.length) return [];
+
+    const videoMap = new Map();
+
+    vocabularySearchData.results.forEach((result) => {
+      result.occurrences.forEach((occurrence) => {
+        if (!videoMap.has(occurrence.video_id)) {
+          // Find the actual video data
+          const videoData = videos.find((v) => v.id === occurrence.video_id);
+          videoMap.set(occurrence.video_id, {
+            id: occurrence.video_id,
+            title: videoData?.title || `Video ${occurrence.video_id}`,
+            duration: videoData?.duration || "Unknown",
+            thumbnail: videoData?.thumbnail,
+            occurrences: [],
+          });
+        }
+        videoMap.get(occurrence.video_id).occurrences.push(occurrence);
+      });
+    });
+
+    return Array.from(videoMap.values());
+  }, [vocabularySearchData, videos]);
 
   // Handle status change
   const handleStatusChange = async (wordId: string, newStatus: string) => {
@@ -291,35 +314,68 @@ export default function LearningListPage() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {dummyVideos.map((video) => (
-                        <div
-                          key={video.id}
-                          className=" rounded-lg p-4 space-y-3"
-                        >
-                          <div className="aspect-video bg-gray-200 dark:bg-gray-700 rounded flex items-center justify-center">
-                            <Play className="w-8 h-8 text-gray-400" />
-                          </div>
-                          <div>
-                            <h3 className="font-medium text-sm mb-1">
-                              {video.title}
-                            </h3>
-                            <div className="flex items-center justify-between">
-                              <span className="text-xs text-gray-500 dark:text-gray-400">
-                                {video.duration}
-                              </span>
-                              <Button
-                                size="sm"
-                                className="flex items-center gap-1"
-                              >
-                                <Play className="w-3 h-3" />
-                                Watch
-                              </Button>
+                    {isLoadingSearch ? (
+                      <div className="flex items-center justify-center py-8">
+                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                      </div>
+                    ) : searchError ? (
+                      <div className="text-center py-8">
+                        <p className="text-red-600 text-sm">
+                          Failed to load videos
+                        </p>
+                      </div>
+                    ) : videosWithWord.length === 0 ? (
+                      <div className="text-center py-8">
+                        <p className="text-gray-500 dark:text-gray-400 text-sm">
+                          No videos found containing this word
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {videosWithWord.map((video) => (
+                          <div
+                            key={video.id}
+                            className="rounded-lg p-4 space-y-3 border"
+                          >
+                            <div className="aspect-video bg-gray-200 dark:bg-gray-700 rounded flex items-center justify-center">
+                              {video.thumbnail ? (
+                                <img
+                                  src={video.thumbnail}
+                                  alt={video.title}
+                                  className="w-full h-full object-cover rounded"
+                                />
+                              ) : (
+                                <Play className="w-8 h-8 text-gray-400" />
+                              )}
+                            </div>
+                            <div>
+                              <h3 className="font-medium text-sm mb-1">
+                                {video.title}
+                              </h3>
+                              <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                                Found {video.occurrences.length} occurrence
+                                {video.occurrences.length !== 1 ? "s" : ""}
+                              </p>
+                              <div className="flex items-center justify-between">
+                                <span className="text-xs text-gray-500 dark:text-gray-400">
+                                  {video.duration}
+                                </span>
+                                <Button
+                                  size="sm"
+                                  className="flex items-center gap-1"
+                                  asChild
+                                >
+                                  <Link href={`/video/${video.id}`}>
+                                    <Play className="w-3 h-3" />
+                                    Watch
+                                  </Link>
+                                </Button>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      ))}
-                    </div>
+                        ))}
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </>
