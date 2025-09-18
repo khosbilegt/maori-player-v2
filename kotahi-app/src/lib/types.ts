@@ -141,6 +141,21 @@ export interface CreateVocabularyRequest {
 
 export type UpdateVocabularyRequest = Partial<CreateVocabularyRequest>;
 
+// Batch upload types
+export interface BatchVocabularyUploadResponse {
+  message: string;
+  created: number;
+  updated: number;
+  total: number;
+  created_items?: Vocabulary[];
+  updated_items?: Vocabulary[];
+}
+
+export interface BatchVocabularyUploadRequest {
+  file: File;
+  duplicates?: "update" | "skip" | "error";
+}
+
 export interface CreatePlaylistRequest {
   name: string;
   description?: string;

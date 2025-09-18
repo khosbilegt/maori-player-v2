@@ -18,6 +18,8 @@ import type {
   UpdateVideoRequest,
   CreateVocabularyRequest,
   UpdateVocabularyRequest,
+  BatchVocabularyUploadResponse,
+  BatchVocabularyUploadRequest,
   CreatePlaylistRequest,
   UpdatePlaylistRequest,
   CreateWatchHistoryRequest,
@@ -35,7 +37,8 @@ const getAuthHeaders = (token: string) => ({
 const baseQueryWithReauth = async (args: any, api: any, extraOptions: any) => {
   // Get the API base URL dynamically to ensure we get the latest value
   const apiBaseUrl =
-    process.env.NEXT_PUBLIC_API_BASE_URL || "https://kotahi.app";
+    process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
+  // process.env.NEXT_PUBLIC_API_BASE_URL || "https://kotahi.app";
 
   console.log("Environment API Base URL:", environment.apiBaseUrl);
   console.log(
@@ -48,7 +51,10 @@ const baseQueryWithReauth = async (args: any, api: any, extraOptions: any) => {
     baseUrl: apiBaseUrl,
     prepareHeaders: (headers, { endpoint }) => {
       // Only set Content-Type for non-file upload endpoints
-      if (endpoint !== "uploadVTTFile") {
+      if (
+        endpoint !== "uploadVTTFile" &&
+        endpoint !== "batchUploadVocabulary"
+      ) {
         headers.set("Content-Type", "application/json");
       }
 
@@ -211,6 +217,22 @@ export const apiSlice = createApi({
       query: (query) =>
         `/api/v1/vocabulary/search?q=${encodeURIComponent(query)}`,
       providesTags: ["Vocabulary"],
+    }),
+
+    batchUploadVocabulary: builder.mutation<
+      BatchVocabularyUploadResponse,
+      BatchVocabularyUploadRequest
+    >({
+      query: ({ file, duplicates = "update" }) => {
+        const formData = new FormData();
+        formData.append("csv", file);
+        return {
+          url: `/api/v1/vocabulary/batch-upload?duplicates=${duplicates}`,
+          method: "POST",
+          body: formData,
+        };
+      },
+      invalidatesTags: ["Vocabulary"],
     }),
 
     // Watch history endpoints
@@ -484,6 +506,7 @@ export const {
   useUpdateVocabularyMutation,
   useDeleteVocabularyMutation,
   useSearchVocabulariesQuery,
+  useBatchUploadVocabularyMutation,
 
   // Watch history
   useGetWatchHistoryQuery,
