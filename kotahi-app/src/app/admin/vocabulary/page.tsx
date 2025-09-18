@@ -25,6 +25,7 @@ import {
   useDeleteVocabularyMutation,
 } from "@/lib/api";
 import { toast } from "sonner";
+import VocabularyBatchUpload from "@/components/admin/vocabulary_batch_upload";
 import type {
   Vocabulary,
   CreateVocabularyRequest,
@@ -33,6 +34,7 @@ import type {
 
 export default function VocabularyManagement() {
   const [isCreating, setIsCreating] = useState(false);
+  const [showBatchUpload, setShowBatchUpload] = useState(false);
   const [editingVocabulary, setEditingVocabulary] = useState<Vocabulary | null>(
     null
   );
@@ -106,6 +108,7 @@ export default function VocabularyManagement() {
     });
     setEditingVocabulary(null);
     setIsCreating(false);
+    setShowBatchUpload(false);
   };
 
   if (isLoading) {
@@ -127,8 +130,21 @@ export default function VocabularyManagement() {
             Manage Maori vocabulary database
           </p>
         </div>
-        <Button onClick={() => setIsCreating(true)}>Add New Vocabulary</Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setShowBatchUpload(!showBatchUpload)}
+          >
+            {showBatchUpload ? "Hide Batch Upload" : "Batch Upload"}
+          </Button>
+          <Button onClick={() => setIsCreating(true)}>
+            Add New Vocabulary
+          </Button>
+        </div>
       </div>
+
+      {/* Batch Upload */}
+      {showBatchUpload && <VocabularyBatchUpload />}
 
       {/* Create/Edit Form */}
       {isCreating && (
