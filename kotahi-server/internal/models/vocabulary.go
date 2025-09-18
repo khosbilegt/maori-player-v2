@@ -1,38 +1,30 @@
 package models
 
 import (
-	"time"
-
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // Vocabulary represents a Māori vocabulary word/phrase
 type Vocabulary struct {
-	ID          string    `json:"id" bson:"_id,omitempty"`
-	Maori       string    `json:"maori" bson:"maori"`
-	English     string    `json:"english" bson:"english"`
-	Description string    `json:"description" bson:"description"`
-	CreatedAt   time.Time `json:"created_at" bson:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at" bson:"updated_at"`
+	ID          string `json:"id" bson:"_id,omitempty"`
+	Maori       string `json:"maori" bson:"maori"`
+	English     string `json:"english" bson:"english"`
+	Description string `json:"description" bson:"description"`
 }
 
 // VocabularyRequest represents the request payload for creating/updating vocabulary
 type VocabularyRequest struct {
-	Maori         string `json:"maori" validate:"required,min=1,max=200"`
-	English       string `json:"english" validate:"required,min=1,max=200"`
-	Pronunciation string `json:"pronunciation" validate:"required,min=1,max=200"`
-	Description   string `json:"description" validate:"required,min=1,max=1000"`
+	Maori       string `json:"maori" validate:"required,min=1,max=200"`
+	English     string `json:"english" validate:"required,min=1,max=200"`
+	Description string `json:"description" validate:"required,min=1,max=1000"`
 }
 
 // ToVocabulary converts a VocabularyRequest to a Vocabulary model
 func (vr *VocabularyRequest) ToVocabulary() *Vocabulary {
-	now := time.Now()
 	return &Vocabulary{
 		Maori:       vr.Maori,
 		English:     vr.English,
 		Description: vr.Description,
-		CreatedAt:   now,
-		UpdatedAt:   now,
 	}
 }
 
@@ -71,5 +63,4 @@ func (v *Vocabulary) UpdateFromRequest(vr *VocabularyRequest) {
 	v.Maori = vr.Maori
 	v.English = vr.English
 	v.Description = vr.Description
-	v.UpdatedAt = time.Now()
 }
