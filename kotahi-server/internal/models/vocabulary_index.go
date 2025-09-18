@@ -33,11 +33,12 @@ type VocabularyIndexRequest struct {
 
 // VocabularySearchResult represents the result of a vocabulary search
 type VocabularySearchResult struct {
-	Vocabulary  string            `json:"vocabulary"`
-	English     string            `json:"english"`
-	Description string            `json:"description"`
-	Occurrences []VocabularyIndex `json:"occurrences"`
-	TotalCount  int               `json:"total_count"`
+	Vocabulary   string            `json:"vocabulary"`
+	English      string            `json:"english"`
+	Description  string            `json:"description"`
+	Occurrences  []VocabularyIndex `json:"occurrences"`
+	TotalCount   int               `json:"total_count"`
+	FirstVideoID string            `json:"first_video_id" bson:"-"`
 }
 
 // GenerateID generates a unique ID for the vocabulary index

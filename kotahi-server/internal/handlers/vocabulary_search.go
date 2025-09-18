@@ -53,6 +53,8 @@ func (h *VocabularySearchHandler) SearchVocabulary(w http.ResponseWriter, r *htt
 
 	// Group results by vocabulary word
 	vocabMap := make(map[string]*models.VocabularySearchResult)
+	// Track unique VTT filenames (stored in VideoID field during indexing)
+	uniqueFilenames := make(map[string]struct{})
 
 	for _, index := range indexes {
 		if result, exists := vocabMap[index.Vocabulary]; exists {
@@ -67,19 +69,69 @@ func (h *VocabularySearchHandler) SearchVocabulary(w http.ResponseWriter, r *htt
 				TotalCount:  1,
 			}
 		}
+		// Collect the underlying VTT filename used as VideoID in the index
+		if index.VideoID != "" {
+			uniqueFilenames[index.VideoID] = struct{}{}
+		}
 	}
 
-	// Convert map to slice
+	// Resolve filenames to actual videos by matching subtitle path/URL containing the filename
+	videoMap := make(map[string]*models.Video)
+	filenameToVideoID := make(map[string]string)
+	for filename := range uniqueFilenames {
+		videos, err := h.videoRepo.FindBySubtitleFilename(ctx, filename)
+		if err != nil {
+			continue
+		}
+		for _, v := range videos {
+			if v != nil && v.ID != "" {
+				videoMap[v.ID] = v
+				filenameToVideoID[filename] = v.ID
+			}
+		}
+	}
+
+	// Convert map to slice and fill first video id per vocabulary group
 	var results []*models.VocabularySearchResult
 	for _, result := range vocabMap {
+		// Determine first video id for this vocab by checking the first occurrence's VideoID
+		if len(result.Occurrences) > 0 {
+			candidate := result.Occurrences[0].VideoID
+			if vid, ok := filenameToVideoID[candidate]; ok {
+				result.FirstVideoID = vid
+			} else if _, ok := videoMap[candidate]; ok {
+				// In case indexes already used actual video IDs
+				result.FirstVideoID = candidate
+			} else {
+				// Try any occurrence that resolves
+				for _, occ := range result.Occurrences {
+					if vid, ok := filenameToVideoID[occ.VideoID]; ok {
+						result.FirstVideoID = vid
+						break
+					}
+					if _, ok := videoMap[occ.VideoID]; ok {
+						result.FirstVideoID = occ.VideoID
+						break
+					}
+				}
+			}
+		}
 		results = append(results, result)
 	}
 
+	// Convert video map to slice
+	var videos []*models.Video
+	for _, v := range videoMap {
+		videos = append(videos, v)
+	}
+
 	response := map[string]interface{}{
-		"message": "Vocabulary search completed",
-		"query":   query,
-		"results": results,
-		"total":   len(results),
+		"message":     "Vocabulary search completed",
+		"query":       query,
+		"results":     results,
+		"total":       len(results),
+		"videos":      videos,
+		"video_count": len(videos),
 	}
 
 	w.Header().Set("Content-Type", "application/json")
