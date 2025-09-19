@@ -211,6 +211,7 @@ export interface DeleteVTTParams {
 export interface VocabularyIndex {
   id: string;
   video_id: string;
+  video: VideoData;
   vocabulary: string;
   english: string;
   description: string;
@@ -234,6 +235,7 @@ export interface VocabularySearchResponse {
   message: string;
   query: string;
   results: VocabularySearchResult[];
+  videos: VideoData[];
   total: number;
 }
 

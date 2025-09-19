@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"video-player-backend/internal/database"
@@ -61,6 +60,13 @@ func (h *VocabularySearchHandler) SearchVocabulary(w http.ResponseWriter, r *htt
 			result.Occurrences = append(result.Occurrences, *index)
 			result.TotalCount++
 		} else {
+			if index.VttFileID != "" {
+				videos, err := h.videoRepo.FindBySubtitleFilename(ctx, index.VttFileID)
+				if err != nil {
+					continue
+				}
+				index.Video = *videos[0]
+			}
 			vocabMap[index.Vocabulary] = &models.VocabularySearchResult{
 				Vocabulary:  index.Vocabulary,
 				English:     index.English,
@@ -69,13 +75,8 @@ func (h *VocabularySearchHandler) SearchVocabulary(w http.ResponseWriter, r *htt
 				TotalCount:  1,
 			}
 		}
-		// Collect the underlying VTT filename used as VideoID in the index
-		if index.VideoID != "" {
-			uniqueFilenames[index.VideoID] = struct{}{}
-		}
-	}
 
-	fmt.Print("HERE", uniqueFilenames)
+	}
 
 	// Resolve filenames to actual videos by matching subtitle path/URL containing the filename
 	videoMap := make(map[string]*models.Video)
@@ -93,27 +94,17 @@ func (h *VocabularySearchHandler) SearchVocabulary(w http.ResponseWriter, r *htt
 		}
 	}
 
-	fmt.Println(videoMap)
-
 	// Convert map to slice and fill first video id per vocabulary group
 	var results []*models.VocabularySearchResult
 	for _, result := range vocabMap {
 		results = append(results, result)
 	}
 
-	// Convert video map to slice
-	var videos []*models.Video
-	for _, v := range videoMap {
-		videos = append(videos, v)
-	}
-
 	response := map[string]interface{}{
-		"message":     "Vocabulary search completed",
-		"query":       query,
-		"results":     results,
-		"total":       len(results),
-		"videos":      videos,
-		"video_count": len(videos),
+		"message": "Vocabulary search completed",
+		"query":   query,
+		"results": results,
+		"total":   len(results),
 	}
 
 	w.Header().Set("Content-Type", "application/json")
