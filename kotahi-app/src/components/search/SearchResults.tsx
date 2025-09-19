@@ -53,26 +53,16 @@ const SearchResults: React.FC<SearchResultsProps> = ({
     }
   };
 
-  const getTypeIcon = (type: string) => {
-    if (type === "video") {
-      return <Play className="w-4 h-4" />;
-    }
-    return null;
-  };
-
-  const getTypeColor = (type: string) => {
-    if (type === "video") {
-      return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
-    }
-    return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200";
-  };
-
   const renderVideoResult = (result: SearchResult) => {
     const video = result.data as VideoData;
     return (
       <div className="flex gap-4">
         <div className="w-24 h-16 bg-gray-200 dark:bg-gray-700 rounded flex items-center justify-center">
-          <Play className="w-6 h-6 text-gray-500" />
+          <img
+            className="w-full aspect-video text-gray-500"
+            src={video.thumbnail}
+            alt="Video"
+          />
         </div>
         <div className="flex-1">
           <h3 className="font-semibold text-lg">{result.title}</h3>
@@ -120,12 +110,6 @@ const SearchResults: React.FC<SearchResultsProps> = ({
             <div className="flex items-start justify-between">
               <div className="flex-1">{renderResult(result)}</div>
               <div className="flex items-center gap-2">
-                <Badge className={getTypeColor(result.type)}>
-                  <div className="flex items-center gap-1">
-                    {getTypeIcon(result.type)}
-                    <span className="capitalize">{result.type}</span>
-                  </div>
-                </Badge>
                 <Button variant="ghost" size="sm">
                   View
                 </Button>

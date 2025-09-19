@@ -10,7 +10,7 @@ import {
   usePlaylists,
   usePlaylist,
   useWatchHistory,
-  useGeneralSearch,
+  useThrottledGeneralSearch,
 } from "@/lib/hooks/api";
 import VideoCard from "@/components/video/video_card";
 import StreakBar from "@/components/user/streak_bar";
@@ -37,7 +37,7 @@ function LibraryPage() {
     data: searchData,
     isLoading: searchLoading,
     error: searchError,
-  } = useGeneralSearch(searchQuery);
+  } = useThrottledGeneralSearch(searchQuery);
 
   // Create a map of video IDs to watch history data for efficient lookup
   const watchHistoryMap = new Map();
@@ -51,12 +51,19 @@ function LibraryPage() {
     <div className="container mx-auto px-4 py-8 flex flex-col gap-4">
       <StreakBar />
       <div className="flex w-full justify-between">
-        <Input
-          className="w-1/2"
-          placeholder="Search titles or kupu (e.g, 'pakihi', 'hauora')"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
+        <div className="w-1/2 relative">
+          <Input
+            className="w-full"
+            placeholder="Search titles or kupu (e.g, 'pakihi', 'hauora')"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          {searchQuery.length >= 2 && searchLoading && (
+            <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+            </div>
+          )}
+        </div>
         <div className="flex gap-4">
           <Button variant="outline">
             <p className="text-sm">Filter</p>
