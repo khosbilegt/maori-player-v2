@@ -57,7 +57,7 @@ function VideoCard({
         <img
           src={video.thumbnail || ""}
           alt={video.title}
-          className="w-full object-cover rounded-t-xl"
+          className="w-full aspect-video object-cover rounded-t-xl"
         />
         <div className="flex flex-col p-4 gap-2 justify-between flex-grow">
           <div className="flex flex-col gap-2 h-full flex-grow">
