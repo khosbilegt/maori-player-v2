@@ -249,17 +249,15 @@ export interface TranscriptItem {
 
 // General search types
 export interface SearchResult {
-  type: "video" | "vocabulary" | "playlist";
+  type: "video";
   id: string;
   title: string;
   description?: string;
-  data: VideoData | Vocabulary | Playlist;
+  data: VideoData;
 }
 
 export interface SearchCounts {
   videos: number;
-  vocabularies: number;
-  playlists: number;
   total: number;
 }
 

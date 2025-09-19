@@ -2,11 +2,11 @@ package models
 
 // SearchResult represents a unified search result
 type SearchResult struct {
-	Type        string      `json:"type"` // "video", "vocabulary", or "playlist"
+	Type        string      `json:"type"` // "video"
 	ID          string      `json:"id"`
 	Title       string      `json:"title"`
 	Description string      `json:"description,omitempty"`
-	Data        interface{} `json:"data"` // The actual object (Video, Vocabulary, or Playlist)
+	Data        interface{} `json:"data"` // The actual Video object
 }
 
 // SearchResponse represents the response for general search
@@ -18,8 +18,6 @@ type SearchResponse struct {
 
 // SearchCounts represents the count of results by type
 type SearchCounts struct {
-	Videos       int `json:"videos"`
-	Vocabularies int `json:"vocabularies"`
-	Playlists    int `json:"playlists"`
-	Total        int `json:"total"`
+	Videos int `json:"videos"`
+	Total  int `json:"total"`
 }
