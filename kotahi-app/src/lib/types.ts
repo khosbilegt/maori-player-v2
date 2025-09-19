@@ -246,3 +246,25 @@ export interface TranscriptItem {
   endTime: number;
   text: string;
 }
+
+// General search types
+export interface SearchResult {
+  type: "video" | "vocabulary" | "playlist";
+  id: string;
+  title: string;
+  description?: string;
+  data: VideoData | Vocabulary | Playlist;
+}
+
+export interface SearchCounts {
+  videos: number;
+  vocabularies: number;
+  playlists: number;
+  total: number;
+}
+
+export interface SearchResponse {
+  query: string;
+  results: SearchResult[];
+  counts: SearchCounts;
+}

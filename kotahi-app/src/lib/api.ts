@@ -26,6 +26,7 @@ import type {
   CreateLearningListItemRequest,
   UpdateLearningListItemRequest,
   LearningListParams,
+  SearchResponse,
   VocabularySearchResponse,
 } from "./types";
 
@@ -94,6 +95,7 @@ export const apiSlice = createApi({
     "LearningList",
     "VTT",
     "Playlist",
+    "Search",
   ],
   endpoints: (builder) => ({
     // Health check
@@ -487,6 +489,14 @@ export const apiSlice = createApi({
       }),
       providesTags: ["LearningList"],
     }),
+
+    // General search
+    generalSearch: builder.query<SearchResponse, string>({
+      query: (query) => ({
+        url: `/api/v1/search?q=${encodeURIComponent(query)}`,
+      }),
+      providesTags: ["Search"],
+    }),
   }),
 });
 
@@ -550,4 +560,7 @@ export const {
   useAddVideoToPlaylistMutation,
   useRemoveVideoFromPlaylistMutation,
   useReorderPlaylistVideosMutation,
+
+  // General search
+  useGeneralSearchQuery,
 } = apiSlice;

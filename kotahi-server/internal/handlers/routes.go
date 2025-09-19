@@ -34,6 +34,7 @@ func SetupRoutes(cfg *config.Config, db *database.MongoDB, videoRepo database.Vi
 	vttHandler := NewVTTUploadHandler("./uploads/vtt", vocabRepo, vocabIndexRepo, videoRepo)
 	learningListHandler := NewLearningListHandler(db)
 	playlistHandler := NewPlaylistHandler(playlistRepo, videoRepo)
+	searchHandler := NewSearchHandler(videoRepo, vocabRepo, playlistRepo)
 
 	// API routes
 	api := r.PathPrefix("/api/v1").Subrouter()
@@ -104,6 +105,9 @@ func SetupRoutes(cfg *config.Config, db *database.MongoDB, videoRepo database.Vi
 	protected.HandleFunc("/playlists/{id}/videos", playlistHandler.AddVideoToPlaylist).Methods("POST")
 	protected.HandleFunc("/playlists/{id}/videos", playlistHandler.RemoveVideoFromPlaylist).Methods("DELETE")
 	protected.HandleFunc("/playlists/{id}/reorder", playlistHandler.ReorderPlaylistVideos).Methods("PUT")
+
+	// General search route (public access)
+	api.HandleFunc("/search", searchHandler.GeneralSearch).Methods("GET")
 
 	// VTT file routes (admin-only)
 	admin.HandleFunc("/vtt/upload", vttHandler.UploadVTT).Methods("POST")

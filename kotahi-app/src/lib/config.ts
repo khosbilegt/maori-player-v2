@@ -73,6 +73,11 @@ export const API_ENDPOINTS = {
     STATS: `${environment.apiBaseUrl}/api/v1/learning-list/stats`,
   },
 
+  // Search endpoints
+  SEARCH: {
+    GENERAL: `${environment.apiBaseUrl}/api/v1/search`,
+  },
+
   // Health check
   HEALTH: `${environment.apiBaseUrl}/health`,
 
