@@ -34,7 +34,7 @@ func SetupRoutes(cfg *config.Config, db *database.MongoDB, videoRepo database.Vi
 	vttHandler := NewVTTUploadHandler("./uploads/vtt", vocabRepo, vocabIndexRepo, videoRepo)
 	learningListHandler := NewLearningListHandler(db)
 	playlistHandler := NewPlaylistHandler(playlistRepo, videoRepo)
-	searchHandler := NewSearchHandler(videoRepo, vocabRepo, playlistRepo)
+	searchHandler := NewSearchHandler(videoRepo, vocabRepo, vocabIndexRepo)
 
 	// API routes
 	api := r.PathPrefix("/api/v1").Subrouter()
