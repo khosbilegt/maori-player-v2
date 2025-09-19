@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import React, { useCallback } from "react";
 import {
   useLoginMutation,
   useRegisterMutation,
@@ -523,4 +523,40 @@ export const useGeneralSearch = (query: string, skip: boolean = false) => {
   return useGeneralSearchQuery(query, {
     skip: skip || query.length < 2,
   });
+};
+
+// Throttled search hook with 1 second delay
+export const useThrottledGeneralSearch = (
+  query: string,
+  skip: boolean = false
+) => {
+  const [throttledQuery, setThrottledQuery] = React.useState(query);
+  const [isThrottling, setIsThrottling] = React.useState(false);
+
+  React.useEffect(() => {
+    if (query.length < 2) {
+      setThrottledQuery(query);
+      return;
+    }
+
+    setIsThrottling(true);
+    const timeoutId = setTimeout(() => {
+      setThrottledQuery(query);
+      setIsThrottling(false);
+    }, 1000); // 1 second throttle
+
+    return () => {
+      clearTimeout(timeoutId);
+      setIsThrottling(false);
+    };
+  }, [query]);
+
+  const searchResult = useGeneralSearchQuery(throttledQuery, {
+    skip: skip || throttledQuery.length < 2,
+  });
+
+  return {
+    ...searchResult,
+    isLoading: searchResult.isLoading || isThrottling,
+  };
 };
