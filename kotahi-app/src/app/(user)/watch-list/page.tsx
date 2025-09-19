@@ -143,8 +143,6 @@ export default function WatchListPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Videos</SelectItem>
-                  <SelectItem value="recent">Recently Watched</SelectItem>
-                  <SelectItem value="completed">Completed</SelectItem>
                   <SelectItem value="in-progress">In Progress</SelectItem>
                   <SelectItem value="not-started">Not Started</SelectItem>
                 </SelectContent>

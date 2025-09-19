@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { ChevronRight, Funnel, ListVideo } from "lucide-react";
+import { ChevronRight, ListVideo } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   useVideos,
@@ -16,6 +16,7 @@ import VideoCard from "@/components/video/video_card";
 import StreakBar from "@/components/user/streak_bar";
 import SearchResults from "@/components/search/SearchResults";
 import type { Playlist } from "@/lib/types";
+import Link from "next/link";
 
 function LibraryPage() {
   const [selectedPlaylist, setSelectedPlaylist] = useState<string | null>(null);
@@ -38,6 +39,13 @@ function LibraryPage() {
     isLoading: searchLoading,
     error: searchError,
   } = useThrottledGeneralSearch(searchQuery);
+
+  // Auto-select the first playlist when playlists are loaded
+  React.useEffect(() => {
+    if (playlists && playlists.length > 0 && !selectedPlaylist) {
+      setSelectedPlaylist(playlists[0].id);
+    }
+  }, [playlists, selectedPlaylist]);
 
   // Create a map of video IDs to watch history data for efficient lookup
   const watchHistoryMap = new Map();
@@ -66,11 +74,9 @@ function LibraryPage() {
         </div>
         <div className="flex gap-4">
           <Button variant="outline">
-            <p className="text-sm">Filter</p>
-            <Funnel />
-          </Button>
-          <Button variant="outline">
-            <p className="text-sm">My library</p>
+            <Link href="/watch-list" className="text-sm">
+              History
+            </Link>
             <ListVideo />
           </Button>
         </div>

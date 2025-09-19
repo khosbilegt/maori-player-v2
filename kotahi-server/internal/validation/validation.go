@@ -214,11 +214,6 @@ func ValidateWatchHistoryRequest(req *models.WatchHistoryRequest) *errors.Valida
 		ve.Add("current_time", "Current time must be non-negative")
 	}
 
-	// Validate duration (must be positive)
-	if req.Duration <= 0 {
-		ve.Add("duration", "Duration must be positive")
-	}
-
 	// Validate that current time doesn't exceed duration
 	if req.CurrentTime > req.Duration {
 		ve.Add("current_time", "Current time cannot exceed duration")
