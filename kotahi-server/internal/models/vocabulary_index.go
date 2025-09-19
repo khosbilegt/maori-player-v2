@@ -8,6 +8,7 @@ import (
 type VocabularyIndex struct {
 	ID          string    `json:"id" bson:"_id,omitempty"`
 	VideoID     string    `json:"video_id" bson:"video_id"`
+	Video       Video     `json:"video" bson:"video"`           // The video object
 	Vocabulary  string    `json:"vocabulary" bson:"vocabulary"` // The Māori word/phrase
 	English     string    `json:"english" bson:"english"`       // English translation
 	Description string    `json:"description" bson:"description"`
@@ -33,12 +34,11 @@ type VocabularyIndexRequest struct {
 
 // VocabularySearchResult represents the result of a vocabulary search
 type VocabularySearchResult struct {
-	Vocabulary   string            `json:"vocabulary"`
-	English      string            `json:"english"`
-	Description  string            `json:"description"`
-	Occurrences  []VocabularyIndex `json:"occurrences"`
-	TotalCount   int               `json:"total_count"`
-	FirstVideoID string            `json:"first_video_id" bson:"-"`
+	Vocabulary  string            `json:"vocabulary"`
+	English     string            `json:"english"`
+	Description string            `json:"description"`
+	Occurrences []VocabularyIndex `json:"occurrences"`
+	TotalCount  int               `json:"total_count"`
 }
 
 // GenerateID generates a unique ID for the vocabulary index

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"video-player-backend/internal/database"
@@ -53,7 +54,6 @@ func (h *VocabularySearchHandler) SearchVocabulary(w http.ResponseWriter, r *htt
 
 	// Group results by vocabulary word
 	vocabMap := make(map[string]*models.VocabularySearchResult)
-	// Track unique VTT filenames (stored in VideoID field during indexing)
 	uniqueFilenames := make(map[string]struct{})
 
 	for _, index := range indexes {
@@ -75,6 +75,8 @@ func (h *VocabularySearchHandler) SearchVocabulary(w http.ResponseWriter, r *htt
 		}
 	}
 
+	fmt.Print("HERE", uniqueFilenames)
+
 	// Resolve filenames to actual videos by matching subtitle path/URL containing the filename
 	videoMap := make(map[string]*models.Video)
 	filenameToVideoID := make(map[string]string)
@@ -91,31 +93,11 @@ func (h *VocabularySearchHandler) SearchVocabulary(w http.ResponseWriter, r *htt
 		}
 	}
 
+	fmt.Println(videoMap)
+
 	// Convert map to slice and fill first video id per vocabulary group
 	var results []*models.VocabularySearchResult
 	for _, result := range vocabMap {
-		// Determine first video id for this vocab by checking the first occurrence's VideoID
-		if len(result.Occurrences) > 0 {
-			candidate := result.Occurrences[0].VideoID
-			if vid, ok := filenameToVideoID[candidate]; ok {
-				result.FirstVideoID = vid
-			} else if _, ok := videoMap[candidate]; ok {
-				// In case indexes already used actual video IDs
-				result.FirstVideoID = candidate
-			} else {
-				// Try any occurrence that resolves
-				for _, occ := range result.Occurrences {
-					if vid, ok := filenameToVideoID[occ.VideoID]; ok {
-						result.FirstVideoID = vid
-						break
-					}
-					if _, ok := videoMap[occ.VideoID]; ok {
-						result.FirstVideoID = occ.VideoID
-						break
-					}
-				}
-			}
-		}
 		results = append(results, result)
 	}
 
