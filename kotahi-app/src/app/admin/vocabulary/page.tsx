@@ -24,6 +24,7 @@ import {
   useUpdateVocabularyMutation,
   useDeleteVocabularyMutation,
 } from "@/lib/api";
+import { useReindexAllVideos } from "@/lib/hooks/api";
 import { toast } from "sonner";
 import VocabularyBatchUpload from "@/components/admin/vocabulary_batch_upload";
 import type {
@@ -48,6 +49,7 @@ export default function VocabularyManagement() {
   const [createVocabulary] = useCreateVocabularyMutation();
   const [updateVocabulary] = useUpdateVocabularyMutation();
   const [deleteVocabulary] = useDeleteVocabularyMutation();
+  const { reindexAllVideos, isLoading: isReindexing } = useReindexAllVideos();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -100,6 +102,25 @@ export default function VocabularyManagement() {
     }
   };
 
+  const handleReindex = async () => {
+    if (
+      !confirm(
+        "Are you sure you want to reindex all videos? This may take a while."
+      )
+    ) {
+      return;
+    }
+
+    try {
+      const result = await reindexAllVideos();
+      toast.success(
+        `Reindexing completed! Processed ${result.processed_videos} videos and indexed ${result.total_indexed} vocabulary entries.`
+      );
+    } catch (error: any) {
+      toast.error(error?.data?.message || "Failed to reindex videos");
+    }
+  };
+
   const resetForm = () => {
     setFormData({
       maori: "",
@@ -136,6 +157,13 @@ export default function VocabularyManagement() {
             onClick={() => setShowBatchUpload(!showBatchUpload)}
           >
             {showBatchUpload ? "Hide Batch Upload" : "Batch Upload"}
+          </Button>
+          <Button
+            variant="outline"
+            onClick={handleReindex}
+            disabled={isReindexing}
+          >
+            {isReindexing ? "Reindexing..." : "Reindex All Videos"}
           </Button>
           <Button onClick={() => setIsCreating(true)}>
             Add New Vocabulary

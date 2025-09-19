@@ -2,7 +2,11 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"os"
+	"path/filepath"
+	"strings"
 
 	"video-player-backend/internal/database"
 	"video-player-backend/internal/errors"
@@ -60,12 +64,12 @@ func (h *VocabularySearchHandler) SearchVocabulary(w http.ResponseWriter, r *htt
 			result.Occurrences = append(result.Occurrences, *index)
 			result.TotalCount++
 		} else {
-			if index.VttFileID != "" {
-				videos, err := h.videoRepo.FindBySubtitleFilename(ctx, index.VttFileID)
+			if index.VideoID != "" {
+				video, err := h.videoRepo.GetByID(ctx, index.VideoID)
 				if err != nil {
 					continue
 				}
-				index.Video = *videos[0]
+				index.Video = *video
 			}
 			vocabMap[index.Vocabulary] = &models.VocabularySearchResult{
 				Vocabulary:  index.Vocabulary,
@@ -82,15 +86,13 @@ func (h *VocabularySearchHandler) SearchVocabulary(w http.ResponseWriter, r *htt
 	videoMap := make(map[string]*models.Video)
 	filenameToVideoID := make(map[string]string)
 	for filename := range uniqueFilenames {
-		videos, err := h.videoRepo.FindBySubtitleFilename(ctx, filename)
+		video, err := h.videoRepo.GetByID(ctx, filename)
 		if err != nil {
 			continue
 		}
-		for _, v := range videos {
-			if v != nil && v.ID != "" {
-				videoMap[v.ID] = v
-				filenameToVideoID[filename] = v.ID
-			}
+		if video != nil && video.ID != "" {
+			videoMap[video.ID] = video
+			filenameToVideoID[filename] = video.ID
 		}
 	}
 
@@ -252,7 +254,7 @@ func (h *VocabularySearchHandler) ReindexAllVideos(w http.ResponseWriter, r *htt
 	}
 
 	// Clear existing indexes
-	_, err = h.vocabIndexRepo.GetAll(ctx)
+	err = h.vocabIndexRepo.DeleteAll(ctx)
 	if err != nil {
 		errors.WriteErrorResponse(w, errors.WrapError(err, errors.ErrDatabase))
 		return
@@ -270,15 +272,46 @@ func (h *VocabularySearchHandler) ReindexAllVideos(w http.ResponseWriter, r *htt
 			continue // Skip videos without subtitles
 		}
 
-		// Parse VTT content
-		transcriptLines, err := utils.ParseVTTToLines(video.Subtitle)
+		// Extract filename from subtitle URL/path
+		var vttFilename string
+		if strings.HasPrefix(video.Subtitle, "/api/v1/uploads/vtt/") {
+			// Extract filename from URL
+			vttFilename = strings.TrimPrefix(video.Subtitle, "/api/v1/uploads/vtt/")
+		} else if strings.Contains(video.Subtitle, "/") {
+			// Extract filename from path
+			vttFilename = filepath.Base(video.Subtitle)
+		} else {
+			// Assume it's already a filename
+			vttFilename = video.Subtitle
+		}
+
+		// Construct full path to VTT file
+		vttFilePath := filepath.Join("./uploads/vtt", vttFilename)
+
+		// Check if file exists
+		if _, err := os.Stat(vttFilePath); os.IsNotExist(err) {
+			fmt.Printf("VTT file not found: %s\n", vttFilePath)
+			continue // Skip videos with missing VTT files
+		}
+
+		// Read VTT file content
+		vttContent, err := os.ReadFile(vttFilePath)
 		if err != nil {
+			fmt.Printf("Error reading VTT file %s: %v\n", vttFilePath, err)
+			continue // Skip videos with unreadable VTT files
+		}
+
+		// Parse VTT content
+		transcriptLines, err := utils.ParseVTTToLines(string(vttContent))
+		if err != nil {
+			fmt.Printf("Error parsing VTT content for video %s: %v\n", video.ID, err)
 			continue // Skip videos with invalid VTT
 		}
 
 		// Index vocabulary for this video
 		indexes, err := indexer.IndexTranscript(video.ID, transcriptLines)
 		if err != nil {
+			fmt.Println("Error indexing vocabulary:", err)
 			continue // Skip videos that fail indexing
 		}
 
@@ -286,6 +319,7 @@ func (h *VocabularySearchHandler) ReindexAllVideos(w http.ResponseWriter, r *htt
 		if len(indexes) > 0 {
 			err = h.vocabIndexRepo.CreateBatch(ctx, indexes)
 			if err != nil {
+				fmt.Println("Error saving indexes:", err)
 				continue // Skip videos that fail to save
 			}
 			totalIndexed += len(indexes)

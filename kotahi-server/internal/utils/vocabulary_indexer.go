@@ -34,14 +34,14 @@ func (vi *VocabularyIndexer) IndexTranscript(videoID string, transcriptLines []T
 }
 
 // findVocabularyInLine finds vocabulary words in a single transcript line
-func (vi *VocabularyIndexer) findVocabularyInLine(vttFileID string, line TranscriptLine, lineNum int) []*models.VocabularyIndex {
+func (vi *VocabularyIndexer) findVocabularyInLine(videoID string, line TranscriptLine, lineNum int) []*models.VocabularyIndex {
 	var indexes []*models.VocabularyIndex
 
 	for _, vocab := range vi.vocabularies {
 		// Check if the Māori word appears in this transcript line
 		if vi.isWordInText(vocab.Maori, line.Text) {
 			index := &models.VocabularyIndex{
-				VttFileID:   vttFileID,
+				VideoID:     videoID,
 				Vocabulary:  vocab.Maori,
 				English:     vocab.English,
 				Description: vocab.Description,

@@ -246,6 +246,23 @@ export const apiSlice = createApi({
       invalidatesTags: ["Vocabulary"],
     }),
 
+    reindexAllVideos: builder.mutation<
+      {
+        message: string;
+        processed_videos: number;
+        total_indexed: number;
+        total_videos: number;
+        total_vocabulary: number;
+      },
+      void
+    >({
+      query: () => ({
+        url: "/api/v1/vocabulary/reindex",
+        method: "POST",
+      }),
+      invalidatesTags: ["Vocabulary"],
+    }),
+
     // Watch history endpoints
     getWatchHistory: builder.query<{ data: WatchHistory[] }, string>({
       query: (token) => ({
@@ -527,6 +544,7 @@ export const {
   useSearchVocabulariesQuery,
   useSearchVocabularyWithVideosQuery,
   useBatchUploadVocabularyMutation,
+  useReindexAllVideosMutation,
 
   // Watch history
   useGetWatchHistoryQuery,

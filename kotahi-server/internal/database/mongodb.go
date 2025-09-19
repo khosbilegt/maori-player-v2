@@ -368,6 +368,7 @@ type VocabularyIndexRepository interface {
 	SearchByVocabulary(ctx context.Context, vocabulary string) ([]*models.VocabularyIndex, error)
 	SearchByEnglish(ctx context.Context, english string) ([]*models.VocabularyIndex, error)
 	DeleteByVideoID(ctx context.Context, videoID string) error
+	DeleteAll(ctx context.Context) error
 	GetAll(ctx context.Context) ([]*models.VocabularyIndex, error)
 	GetStats(ctx context.Context) (map[string]interface{}, error)
 }
@@ -460,6 +461,12 @@ func (r *vocabularyIndexRepository) SearchByEnglish(ctx context.Context, english
 // DeleteByVideoID deletes all vocabulary indexes for a specific video
 func (r *vocabularyIndexRepository) DeleteByVideoID(ctx context.Context, videoID string) error {
 	_, err := r.collection.DeleteMany(ctx, bson.M{"video_id": videoID})
+	return err
+}
+
+// DeleteAll deletes all vocabulary indexes
+func (r *vocabularyIndexRepository) DeleteAll(ctx context.Context) error {
+	_, err := r.collection.DeleteMany(ctx, bson.M{})
 	return err
 }
 
