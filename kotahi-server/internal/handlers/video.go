@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 
 	"video-player-backend/internal/database"
 	"video-player-backend/internal/errors"
@@ -97,6 +98,11 @@ func (h *VideoHandler) CreateVideo(w http.ResponseWriter, r *http.Request) {
 	video := videoReq.ToVideo()
 	video.GenerateID()
 
+	// Replace the last occurrence of dl=0 with raw=1 in the video URL
+	if video.Video != "" {
+		video.Video = replaceLastOccurrence(video.Video, "dl=0", "raw=1")
+	}
+
 	if err := h.repo.Create(ctx, video); err != nil {
 		errors.WriteErrorResponse(w, errors.WrapError(err, errors.ErrDatabase))
 		return
@@ -140,6 +146,11 @@ func (h *VideoHandler) UpdateVideo(w http.ResponseWriter, r *http.Request) {
 	video := videoReq.ToVideo()
 	video.ID = id
 
+	// Replace the last occurrence of dl=0 with raw=1 in the video URL
+	if video.Video != "" {
+		video.Video = replaceLastOccurrence(video.Video, "dl=0", "raw=1")
+	}
+
 	if err := h.repo.Update(ctx, id, video); err != nil {
 		if err == mongo.ErrNoDocuments {
 			errors.WriteErrorResponse(w, errors.ErrVideoNotFound)
@@ -177,4 +188,13 @@ func (h *VideoHandler) DeleteVideo(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+}
+
+// replaceLastOccurrence replaces the last occurrence of a substring in a string
+func replaceLastOccurrence(s, old, new string) string {
+	lastIndex := strings.LastIndex(s, old)
+	if lastIndex == -1 {
+		return s
+	}
+	return s[:lastIndex] + new + s[lastIndex+len(old):]
 }
