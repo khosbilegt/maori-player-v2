@@ -818,6 +818,7 @@ type PlaylistRepository interface {
 	AddVideo(ctx context.Context, id, videoID string) error
 	RemoveVideo(ctx context.Context, id, videoID string) error
 	ReorderVideos(ctx context.Context, id string, videoIDs []string) error
+	Search(ctx context.Context, query string) ([]*models.Playlist, error)
 }
 
 // playlistRepository implements PlaylistRepository
@@ -998,4 +999,27 @@ func (r *playlistRepository) ReorderVideos(ctx context.Context, id string, video
 	}
 
 	return nil
+}
+
+// Search searches playlists by name or description
+func (r *playlistRepository) Search(ctx context.Context, query string) ([]*models.Playlist, error) {
+	filter := bson.M{
+		"$or": []bson.M{
+			{"name": bson.M{"$regex": query, "$options": "i"}},
+			{"description": bson.M{"$regex": query, "$options": "i"}},
+		},
+	}
+
+	cursor, err := r.collection.Find(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var playlists []*models.Playlist
+	if err := cursor.All(ctx, &playlists); err != nil {
+		return nil, err
+	}
+
+	return playlists, nil
 }

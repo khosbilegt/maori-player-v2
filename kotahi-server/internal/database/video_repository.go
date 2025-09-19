@@ -17,6 +17,7 @@ type VideoRepository interface {
 	Update(ctx context.Context, id string, video *models.Video) error
 	Delete(ctx context.Context, id string) error
 	FindBySubtitleFilename(ctx context.Context, filename string) ([]*models.Video, error)
+	Search(ctx context.Context, query string) ([]*models.Video, error)
 }
 
 // NewVideoRepository creates a new video repository
@@ -113,5 +114,28 @@ func (r *videoRepository) FindBySubtitleFilename(ctx context.Context, filename s
 	if err := cursor.All(ctx, &videos); err != nil {
 		return nil, err
 	}
+	return videos, nil
+}
+
+// Search searches videos by title or description
+func (r *videoRepository) Search(ctx context.Context, query string) ([]*models.Video, error) {
+	filter := bson.M{
+		"$or": []bson.M{
+			{"title": bson.M{"$regex": query, "$options": "i"}},
+			{"description": bson.M{"$regex": query, "$options": "i"}},
+		},
+	}
+
+	cursor, err := r.collection.Find(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var videos []*models.Video
+	if err := cursor.All(ctx, &videos); err != nil {
+		return nil, err
+	}
+
 	return videos, nil
 }

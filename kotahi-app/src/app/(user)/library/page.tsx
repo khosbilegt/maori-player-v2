@@ -10,13 +10,16 @@ import {
   usePlaylists,
   usePlaylist,
   useWatchHistory,
+  useGeneralSearch,
 } from "@/lib/hooks/api";
 import VideoCard from "@/components/video/video_card";
 import StreakBar from "@/components/user/streak_bar";
+import SearchResults from "@/components/search/SearchResults";
 import type { Playlist } from "@/lib/types";
 
 function LibraryPage() {
   const [selectedPlaylist, setSelectedPlaylist] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
   const [token] = useState(() => localStorage.getItem("token"));
 
   const { videos, isLoading: videosLoading, error: videosError } = useVideos();
@@ -30,6 +33,11 @@ function LibraryPage() {
       skip: !selectedPlaylist,
     });
   const { data: watchHistoryData } = useWatchHistory(token);
+  const {
+    data: searchData,
+    isLoading: searchLoading,
+    error: searchError,
+  } = useGeneralSearch(searchQuery);
 
   // Create a map of video IDs to watch history data for efficient lookup
   const watchHistoryMap = new Map();
@@ -46,6 +54,8 @@ function LibraryPage() {
         <Input
           className="w-1/2"
           placeholder="Search titles or kupu (e.g, 'pakihi', 'hauora')"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
         />
         <div className="flex gap-4">
           <Button variant="outline">
@@ -58,6 +68,21 @@ function LibraryPage() {
           </Button>
         </div>
       </div>
+
+      {/* Search Results */}
+      {searchQuery.length >= 2 && (
+        <div className="mt-4">
+          <h2 className="text-xl font-semibold mb-4">
+            Search Results for &ldquo;{searchQuery}&rdquo;
+          </h2>
+          <SearchResults
+            results={searchData?.results || []}
+            isLoading={searchLoading}
+            error={searchError}
+          />
+        </div>
+      )}
+
       <Tabs defaultValue="playlists">
         <TabsList>
           <TabsTrigger value="playlists">Playlists</TabsTrigger>

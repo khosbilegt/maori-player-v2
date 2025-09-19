@@ -41,6 +41,7 @@ import {
   useAddVideoToPlaylistMutation,
   useRemoveVideoFromPlaylistMutation,
   useReorderPlaylistVideosMutation,
+  useGeneralSearchQuery,
 } from "../api";
 import type {
   LoginRequest,
@@ -56,6 +57,7 @@ import type {
   CreateLearningListItemRequest,
   UpdateLearningListItemRequest,
   LearningListParams,
+  SearchResponse,
 } from "../types";
 
 // Authentication hooks
@@ -514,4 +516,11 @@ export const useLearningListMutations = () => {
 
 export const useLearningListStats = () => {
   return useGetLearningListStatsQuery();
+};
+
+// General search hook
+export const useGeneralSearch = (query: string, skip: boolean = false) => {
+  return useGeneralSearchQuery(query, {
+    skip: skip || query.length < 2,
+  });
 };
