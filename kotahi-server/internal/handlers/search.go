@@ -165,17 +165,8 @@ func (h *SearchHandler) searchVideosByVocabulary(ctx context.Context, query stri
 	// Get unique video IDs
 	videoIDMap := make(map[string]struct{})
 	for _, index := range allIndexes {
-		if index.VttFileID != "" {
-			// Find videos by subtitle filename
-			videos, err := h.videoRepo.FindBySubtitleFilename(ctx, index.VttFileID)
-			if err != nil {
-				continue
-			}
-			for _, video := range videos {
-				if video != nil && video.ID != "" {
-					videoIDMap[video.ID] = struct{}{}
-				}
-			}
+		if index.VideoID != "" {
+			videoIDMap[index.VideoID] = struct{}{}
 		}
 	}
 
@@ -190,7 +181,7 @@ func (h *SearchHandler) searchVideosByVocabulary(ctx context.Context, query stri
 	for _, videoID := range videoIDs {
 		video, err := h.videoRepo.GetByID(ctx, videoID)
 		if err != nil {
-			continue
+			return nil, err
 		}
 		videos = append(videos, video)
 	}

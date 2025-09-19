@@ -16,6 +16,7 @@ export const environment: EnvironmentConfig = {
   apiBaseUrl:
     process.env.NEXT_PUBLIC_API_BASE_URL ||
     process.env.API_BASE_URL ||
+    // "https://kotahi.app",
     "http://localhost:8080",
   isDevelopment: process.env.NODE_ENV === "development",
   isProduction: process.env.NODE_ENV === "production",

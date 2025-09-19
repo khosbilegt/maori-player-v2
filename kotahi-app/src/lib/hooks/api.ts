@@ -16,6 +16,7 @@ import {
   useDeleteVocabularyMutation,
   useSearchVocabulariesQuery,
   useSearchVocabularyWithVideosQuery,
+  useReindexAllVideosMutation,
   useGetWatchHistoryQuery,
   useGetWatchHistoryByVideoQuery,
   useCreateOrUpdateWatchHistoryMutation,
@@ -558,5 +559,27 @@ export const useThrottledGeneralSearch = (
   return {
     ...searchResult,
     isLoading: searchResult.isLoading || isThrottling,
+  };
+};
+
+// Reindex all videos hook
+export const useReindexAllVideos = () => {
+  const [reindexAllVideos, { isLoading, error, data }] =
+    useReindexAllVideosMutation();
+
+  const handleReindex = useCallback(async () => {
+    try {
+      const result = await reindexAllVideos().unwrap();
+      return result;
+    } catch (err) {
+      throw err;
+    }
+  }, [reindexAllVideos]);
+
+  return {
+    reindexAllVideos: handleReindex,
+    isLoading,
+    error,
+    data,
   };
 };

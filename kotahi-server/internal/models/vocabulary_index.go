@@ -7,7 +7,7 @@ import (
 // VocabularyIndex represents an indexed vocabulary word/phrase in a video transcript
 type VocabularyIndex struct {
 	ID          string    `json:"id" bson:"_id,omitempty"`
-	VttFileID   string    `json:"vtt_file_id" bson:"vtt_file_id"`
+	VideoID     string    `json:"video_id" bson:"video_id"`
 	Video       Video     `json:"video" bson:"video"`
 	Vocabulary  string    `json:"vocabulary" bson:"vocabulary"` // The Māori word/phrase
 	English     string    `json:"english" bson:"english"`       // English translation
@@ -22,7 +22,7 @@ type VocabularyIndex struct {
 
 // VocabularyIndexRequest represents the request payload for vocabulary index operations
 type VocabularyIndexRequest struct {
-	VttFileID   string  `json:"vtt_file_id" validate:"required"`
+	VideoID     string  `json:"video_id" validate:"required"`
 	Video       Video   `json:"video" validate:"required"`
 	Vocabulary  string  `json:"vocabulary" validate:"required"`
 	English     string  `json:"english" validate:"required"`
@@ -45,14 +45,14 @@ type VocabularySearchResult struct {
 // GenerateID generates a unique ID for the vocabulary index
 func (vi *VocabularyIndex) GenerateID() {
 	if vi.ID == "" {
-		vi.ID = sanitizeForID(vi.Vocabulary + "_" + vi.VttFileID)
+		vi.ID = sanitizeForID(vi.Vocabulary + "_" + vi.VideoID)
 	}
 }
 
 // ToVocabularyIndex converts a VocabularyIndexRequest to a VocabularyIndex model
 func (vir *VocabularyIndexRequest) ToVocabularyIndex() *VocabularyIndex {
 	return &VocabularyIndex{
-		VttFileID:   vir.VttFileID,
+		VideoID:     vir.VideoID,
 		Video:       vir.Video,
 		Vocabulary:  vir.Vocabulary,
 		English:     vir.English,
