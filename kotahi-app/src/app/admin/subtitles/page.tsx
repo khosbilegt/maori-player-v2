@@ -19,16 +19,14 @@ import type { VTTFile } from "@/lib/types";
 
 export default function SubtitleManagement() {
   const [isUploading, setIsUploading] = useState(false);
+  const [isDragOver, setIsDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data: vttFiles, isLoading } = useGetVTTFilesQuery();
   const [uploadVTTFile] = useUploadVTTFileMutation();
   const [deleteVTTFile] = useDeleteVTTFileMutation();
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
+  const handleFileUpload = async (file: File) => {
     // Validate file type
     if (!file.name.endsWith(".vtt")) {
       toast.error("Please select a .vtt file");
@@ -49,6 +47,40 @@ export default function SubtitleManagement() {
       toast.error(error?.data?.message || "Upload failed");
     } finally {
       setIsUploading(false);
+    }
+  };
+
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      handleFileUpload(file);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+
+    const files = Array.from(e.dataTransfer.files);
+    const vttFile = files.find((file) => file.name.endsWith(".vtt"));
+
+    if (vttFile) {
+      handleFileUpload(vttFile);
+    } else {
+      toast.error("Please drop a .vtt file");
     }
   };
 
@@ -84,8 +116,11 @@ export default function SubtitleManagement() {
             Manage VTT subtitle files for your videos
           </p>
         </div>
-        <Button onClick={() => fileInputRef.current?.click()}>
-          Upload VTT File
+        <Button
+          onClick={() => fileInputRef.current?.click()}
+          disabled={isUploading}
+        >
+          {isUploading ? "Uploading..." : "Upload VTT File"}
         </Button>
       </div>
 
@@ -103,26 +138,57 @@ export default function SubtitleManagement() {
               ref={fileInputRef}
               type="file"
               accept=".vtt"
-              onChange={handleFileUpload}
+              onChange={handleFileInputChange}
               className="hidden"
             />
-            <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center">
-              <p className="text-gray-600 dark:text-gray-400 mb-2">
-                Click the &quot;Upload VTT File&quot; button to select a
-                subtitle file
-              </p>
-              <p className="text-sm text-gray-500 dark:text-gray-500">
-                Supported format: .vtt (WebVTT)
-              </p>
+            <div
+              className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors duration-200 cursor-pointer ${
+                isDragOver
+                  ? "border-primary bg-primary/5 dark:bg-primary/10"
+                  : "border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500"
+              } ${isUploading ? "pointer-events-none opacity-50" : ""}`}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              {isUploading ? (
+                <div className="space-y-3">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Uploading file...
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <div className="mx-auto w-12 h-12 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
+                    <svg
+                      className="w-6 h-6 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                      />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-gray-600 dark:text-gray-400 mb-1">
+                      {isDragOver
+                        ? "Drop your VTT file here"
+                        : "Drag and drop your VTT file here, or click to browse"}
+                    </p>
+                    <p className="text-sm text-gray-500 dark:text-gray-500">
+                      Supported format: .vtt (WebVTT)
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
-            {isUploading && (
-              <div className="text-center">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto"></div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                  Uploading file...
-                </p>
-              </div>
-            )}
           </div>
         </CardContent>
       </Card>
