@@ -28,6 +28,7 @@ import {
   Trash2,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 function formatTime(seconds: number | undefined | null): string {
   if (seconds == null) return "";
@@ -48,6 +49,7 @@ function formatTime(seconds: number | undefined | null): string {
 }
 
 export default function LearningListPage() {
+  const router = useRouter();
   const [selectedWord, setSelectedWord] = useState<LearningListItem | null>(
     null
   );
@@ -409,7 +411,7 @@ export default function LearningListPage() {
                                     className="p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                                   >
                                     <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
-                                      "{occurrence?.transcript}"
+                                      &quot;{occurrence?.transcript}&quot;
                                     </p>
                                     <div className="flex items-center justify-between">
                                       <Link
@@ -438,9 +440,39 @@ export default function LearningListPage() {
                         )}
                       </div>
 
-                      <Button className="w-full h-12 text-base font-semibold">
+                      <Button
+                        className="w-full h-12 text-base font-semibold"
+                        disabled={
+                          !vocabularySearchData?.results ||
+                          vocabularySearchData?.results?.length === 0 ||
+                          !vocabularySearchData?.results[0]?.occurrences ||
+                          vocabularySearchData?.results[0]?.occurrences
+                            .length === 0
+                        }
+                        onClick={() => {
+                          if (
+                            vocabularySearchData?.results &&
+                            vocabularySearchData.results.length > 0 &&
+                            vocabularySearchData.results[0]?.occurrences &&
+                            vocabularySearchData.results[0].occurrences.length >
+                              0
+                          ) {
+                            const firstOccurrence =
+                              vocabularySearchData.results[0].occurrences[0];
+                            router.push(
+                              `/watch/${firstOccurrence.video.id}?t=${firstOccurrence.start_time}`
+                            );
+                          }
+                        }}
+                      >
                         <BookOpen className="w-5 h-5 mr-2" />
-                        Practice this word
+                        {!vocabularySearchData?.results ||
+                        vocabularySearchData?.results?.length === 0 ||
+                        !vocabularySearchData?.results[0]?.occurrences ||
+                        vocabularySearchData?.results[0]?.occurrences.length ===
+                          0
+                          ? "No examples available"
+                          : "Practice this word"}
                       </Button>
                     </div>
                   </CardContent>
