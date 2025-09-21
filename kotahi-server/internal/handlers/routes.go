@@ -29,7 +29,7 @@ func SetupRoutes(cfg *config.Config, db *database.MongoDB, videoRepo database.Vi
 	videoHandler := NewVideoHandler(videoRepo)
 	authHandler := NewAuthHandler(userRepo, jwtManager)
 	vocabularyHandler := NewVocabularyHandler(vocabRepo)
-	vocabularySearchHandler := NewVocabularySearchHandler(vocabRepo, vocabIndexRepo, videoRepo)
+	vocabularySearchHandler := NewVocabularySearchHandler(vocabRepo, vocabIndexRepo, videoRepo, watchHistoryRepo)
 	watchHistoryHandler := NewWatchHistoryHandler(watchHistoryRepo, videoRepo)
 	vttHandler := NewVTTUploadHandler("./uploads/vtt", vocabRepo, vocabIndexRepo, videoRepo)
 	learningListHandler := NewLearningListHandler(db)
@@ -134,11 +134,6 @@ func healthCheck(w http.ResponseWriter, r *http.Request) {
 		"status":  "healthy",
 		"service": "video-player-backend",
 	})
-}
-
-// handleOptions handles OPTIONS requests for CORS preflight
-func handleOptions(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusOK)
 }
 
 // seedDatabase handles seeding the database with sample data
