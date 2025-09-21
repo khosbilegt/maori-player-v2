@@ -280,12 +280,29 @@ export default function LearningListPage() {
                         </p>
                       </div>
 
-                      {/* Example Sentences */}
                       <div className="space-y-3">
                         <div className="p-3 rounded-lg text-center text-gray-500 dark:text-gray-400">
-                          <p className="text-sm">
-                            No examples available for this word
-                          </p>
+                          <ul className="">
+                            {!vocabularySearchData?.results ||
+                            vocabularySearchData?.results?.length === 0 ? (
+                              <p className="text-sm">
+                                No examples available for this word
+                              </p>
+                            ) : (
+                              <li className="text-left list-none">
+                                {vocabularySearchData?.results?.length &&
+                                  vocabularySearchData?.results[0]?.occurrences
+                                    .length > 0 &&
+                                  vocabularySearchData?.results[0]?.occurrences.map(
+                                    (occurrence) => (
+                                      <p key={occurrence.id}>
+                                        {occurrence.transcript}
+                                      </p>
+                                    )
+                                  )}
+                              </li>
+                            )}
+                          </ul>
                         </div>
                       </div>
 
