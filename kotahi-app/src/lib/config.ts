@@ -16,18 +16,13 @@ export const environment: EnvironmentConfig = {
   apiBaseUrl:
     process.env.NEXT_PUBLIC_API_BASE_URL ||
     process.env.API_BASE_URL ||
-    // "https://kotahi.app",
-    "http://localhost:8080",
+    "https://kotahi.app",
+  // "http://localhost:8080",
   isDevelopment: process.env.NODE_ENV === "development",
   isProduction: process.env.NODE_ENV === "production",
 };
 
 // Debug logging
-console.log(
-  "Config loaded - NEXT_PUBLIC_API_BASE_URL:",
-  process.env.NEXT_PUBLIC_API_BASE_URL
-);
-console.log("Config loaded - apiBaseUrl:", environment.apiBaseUrl);
 
 // API endpoints
 export const API_ENDPOINTS = {
@@ -85,12 +80,3 @@ export const API_ENDPOINTS = {
   // Seed endpoint (development only)
   SEED: `${environment.apiBaseUrl}/seed`,
 } as const;
-
-// Log configuration in development
-if (environment.isDevelopment) {
-  console.log("Environment Configuration:", {
-    apiBaseUrl: environment.apiBaseUrl,
-    isDevelopment: environment.isDevelopment,
-    isProduction: environment.isProduction,
-  });
-}
