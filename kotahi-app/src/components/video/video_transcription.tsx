@@ -40,7 +40,7 @@ function VideoTranscription({
 
     vocabularies.forEach((vocab) => {
       if (!vocab.maori) return;
-      const word = vocab.maori.toLowerCase();
+      const word = " " + vocab.maori.toLowerCase() + " ";
       const textLower = text.toLowerCase();
       let index = textLower.indexOf(word);
 

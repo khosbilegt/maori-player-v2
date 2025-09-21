@@ -312,7 +312,7 @@ export default function LearningListPage() {
                           Failed to load videos
                         </p>
                       </div>
-                    ) : vocabularySearchData?.results.length === 0 ? (
+                    ) : vocabularySearchData?.results?.length === 0 ? (
                       <div className="text-center py-8">
                         <p className="text-gray-500 dark:text-gray-400 text-sm">
                           No videos found containing this word
@@ -320,49 +320,50 @@ export default function LearningListPage() {
                       </div>
                     ) : (
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {vocabularySearchData?.results[0].occurrences.map(
-                          (result: VocabularyIndex) => (
-                            <div
-                              key={result.id}
-                              className="rounded-lg p-4 space-y-3 border"
-                            >
-                              <div className="aspect-video bg-gray-200 dark:bg-gray-700 rounded flex items-center justify-center">
-                                {result?.video.thumbnail ? (
-                                  <img
-                                    src={result?.video.thumbnail}
-                                    alt={result?.video.title}
-                                    className="w-full h-full object-cover rounded"
-                                  />
-                                ) : (
-                                  <Play className="w-8 h-8 text-gray-400" />
-                                )}
-                              </div>
-                              <div>
-                                <h3 className="font-medium text-sm mb-1">
-                                  {result?.video.title}
-                                </h3>
-                                <div className="flex items-center justify-between mt-4">
-                                  <span className="text-xs text-gray-500 dark:text-gray-400">
-                                    {formatTime(result?.start_time)} -{" "}
-                                    {formatTime(result?.end_time)}
-                                  </span>
-                                  <Button
-                                    size="sm"
-                                    className="flex items-center gap-1"
-                                    asChild
-                                  >
-                                    <Link
-                                      href={`/watch/${result?.video.id}?t=${result?.start_time}`}
+                        {vocabularySearchData?.results &&
+                          vocabularySearchData?.results[0]?.occurrences.map(
+                            (result: VocabularyIndex) => (
+                              <div
+                                key={result.id}
+                                className="rounded-lg p-4 space-y-3 border"
+                              >
+                                <div className="aspect-video bg-gray-200 dark:bg-gray-700 rounded flex items-center justify-center">
+                                  {result?.video.thumbnail ? (
+                                    <img
+                                      src={result?.video.thumbnail}
+                                      alt={result?.video.title}
+                                      className="w-full h-full object-cover rounded"
+                                    />
+                                  ) : (
+                                    <Play className="w-8 h-8 text-gray-400" />
+                                  )}
+                                </div>
+                                <div>
+                                  <h3 className="font-medium text-sm mb-1">
+                                    {result?.video.title}
+                                  </h3>
+                                  <div className="flex items-center justify-between mt-4">
+                                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                                      {formatTime(result?.start_time)} -{" "}
+                                      {formatTime(result?.end_time)}
+                                    </span>
+                                    <Button
+                                      size="sm"
+                                      className="flex items-center gap-1"
+                                      asChild
                                     >
-                                      <Play className="w-3 h-3" />
-                                      Watch
-                                    </Link>
-                                  </Button>
+                                      <Link
+                                        href={`/watch/${result?.video.id}?t=${result?.start_time}`}
+                                      >
+                                        <Play className="w-3 h-3" />
+                                        Watch
+                                      </Link>
+                                    </Button>
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                          )
-                        )}
+                            )
+                          )}
                       </div>
                     )}
                   </CardContent>

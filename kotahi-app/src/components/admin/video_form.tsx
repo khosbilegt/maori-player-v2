@@ -85,7 +85,6 @@ export default function VideoForm({
       ...prev,
       [name]: value,
     }));
-    console.log(formData);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

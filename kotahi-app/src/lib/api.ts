@@ -42,13 +42,6 @@ const baseQueryWithReauth = async (args: any, api: any, extraOptions: any) => {
     process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
   // process.env.NEXT_PUBLIC_API_BASE_URL || "https://kotahi.app";
 
-  console.log("Environment API Base URL:", environment.apiBaseUrl);
-  console.log(
-    "Process env NEXT_PUBLIC_API_BASE_URL:",
-    process.env.NEXT_PUBLIC_API_BASE_URL
-  );
-  console.log("Dynamic API Base URL:", apiBaseUrl);
-
   const result = await fetchBaseQuery({
     baseUrl: apiBaseUrl,
     prepareHeaders: (headers, { endpoint }) => {
