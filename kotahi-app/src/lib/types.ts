@@ -237,6 +237,8 @@ export interface VocabularySearchResponse {
   results: VocabularySearchResult[];
   videos: VideoData[];
   total: number;
+  total_exposures: number;
+  recent_exposures: number;
 }
 
 // Transcript types

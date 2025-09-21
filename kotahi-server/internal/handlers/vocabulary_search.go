@@ -64,18 +64,33 @@ func (h *VocabularySearchHandler) SearchVocabulary(w http.ResponseWriter, r *htt
 	vocabMap := make(map[string]*models.VocabularySearchResult)
 	uniqueFilenames := make(map[string]struct{})
 
+	// Create a cache for video objects to avoid fetching the same video multiple times
+	videoCache := make(map[string]*models.Video)
+
 	for _, index := range indexes {
+		// Always populate video object for each occurrence using cache
+		if index.VideoID != "" {
+			var video *models.Video
+			var exists bool
+
+			// Check cache first
+			if video, exists = videoCache[index.VideoID]; !exists {
+				// Fetch from database if not in cache
+				fetchedVideo, err := h.videoRepo.GetByID(ctx, index.VideoID)
+				if err != nil {
+					continue
+				}
+				video = fetchedVideo
+				videoCache[index.VideoID] = video
+			}
+
+			index.Video = *video
+		}
+
 		if result, exists := vocabMap[index.Vocabulary]; exists {
 			result.Occurrences = append(result.Occurrences, *index)
 			result.TotalCount++
 		} else {
-			if index.VideoID != "" {
-				video, err := h.videoRepo.GetByID(ctx, index.VideoID)
-				if err != nil {
-					continue
-				}
-				index.Video = *video
-			}
 			vocabMap[index.Vocabulary] = &models.VocabularySearchResult{
 				Vocabulary:  index.Vocabulary,
 				English:     index.English,
