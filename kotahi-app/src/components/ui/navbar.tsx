@@ -87,10 +87,10 @@ export function Navbar({ className }: NavbarProps) {
           </div>
 
           {/* User Actions */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-4 z-50">
             <ThemeToggleDropdown />
             {user ? (
-              <div className="relative user-dropdown">
+              <div className="relative user-dropdown z-50">
                 <Button
                   variant="ghost"
                   size="sm"

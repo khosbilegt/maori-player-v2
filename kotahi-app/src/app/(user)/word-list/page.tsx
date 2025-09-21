@@ -157,34 +157,57 @@ export default function LearningListPage() {
 
   return (
     <div className="container mx-auto px-4 py-8 space-y-6">
-      {/* Statistics Bar */}
-      <div className=" rounded-lg p-4">
-        <div className="w-full flex gap-4 items-center border-b pb-4 border-t pt-4">
-          <div className="flex items-center gap-2">
-            <span className="font-medium">Saved words:</span>
-            <span className="text-blue-600 dark:text-blue-400 font-bold">
-              {stats?.total || enrichedWords.length}
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="font-medium">Learning:</span>
-            <span className="text-yellow-600 dark:text-yellow-400 font-bold">
-              {stats?.learning || 0}
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="font-medium">Learned:</span>
-            <span className="text-green-600 dark:text-green-400 font-bold">
-              {stats?.learned || 0}
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="font-medium">New:</span>
-            <span className="text-orange-600 dark:text-orange-400 font-bold">
-              {stats?.new || 0}
-            </span>
-          </div>
-        </div>
+      {/* Statistics Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card className="text-center">
+          <CardContent className="p-6">
+            <div className="space-y-2">
+              <p className="text-3xl font-bold text-foreground">
+                {stats?.total || enrichedWords.length}
+              </p>
+              <p className="text-sm text-muted-foreground font-medium">
+                Saved words
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="text-center">
+          <CardContent className="p-6">
+            <div className="space-y-2">
+              <p className="text-3xl font-bold text-foreground">
+                {stats?.learning || 0}
+              </p>
+              <p className="text-sm text-muted-foreground font-medium">
+                Learning
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="text-center">
+          <CardContent className="p-6">
+            <div className="space-y-2">
+              <p className="text-3xl font-bold text-foreground">
+                {stats?.learned || 0}
+              </p>
+              <p className="text-sm text-muted-foreground font-medium">
+                Learned
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="text-center">
+          <CardContent className="p-6">
+            <div className="space-y-2">
+              <p className="text-3xl font-bold text-foreground">
+                {stats?.new || 0}
+              </p>
+              <p className="text-sm text-muted-foreground font-medium">New</p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Main Content - Two Column Layout */}
@@ -278,6 +301,24 @@ export default function LearningListPage() {
                         <p className="text-gray-600 dark:text-gray-400 text-lg">
                           {selectedWord.notes}
                         </p>
+                        <div className="mt-2 flex items-center gap-4">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm text-gray-500 dark:text-gray-400">
+                              Total Exposures:
+                            </span>
+                            <span className="text-sm font-medium text-primary">
+                              10
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm text-gray-500 dark:text-gray-400">
+                              This Week:
+                            </span>
+                            <span className="text-sm font-medium text-primary">
+                              3
+                            </span>
+                          </div>
+                        </div>
                       </div>
 
                       <div className="space-y-3">
