@@ -1,9 +1,12 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strings"
 
 	"video-player-backend/internal/database"
@@ -18,13 +21,17 @@ import (
 
 // VocabularyHandler handles vocabulary-related HTTP requests
 type VocabularyHandler struct {
-	repo database.VocabularyRepository
+	repo           database.VocabularyRepository
+	vocabIndexRepo database.VocabularyIndexRepository
+	videoRepo      database.VideoRepository
 }
 
 // NewVocabularyHandler creates a new vocabulary handler
-func NewVocabularyHandler(repo database.VocabularyRepository) *VocabularyHandler {
+func NewVocabularyHandler(repo database.VocabularyRepository, vocabIndexRepo database.VocabularyIndexRepository, videoRepo database.VideoRepository) *VocabularyHandler {
 	return &VocabularyHandler{
-		repo: repo,
+		repo:           repo,
+		vocabIndexRepo: vocabIndexRepo,
+		videoRepo:      videoRepo,
 	}
 }
 
@@ -283,124 +290,130 @@ func (h *VocabularyHandler) BatchVocabularyUpload(w http.ResponseWriter, r *http
 		return
 	}
 
-	// Check duplicate handling mode from query parameter
-	duplicateMode := r.URL.Query().Get("duplicates")
+	// Delete all existing vocabularies before processing new ones
+	err = h.repo.DeleteAll(ctx)
+	if err != nil {
+		errors.WriteErrorResponse(w, errors.WrapError(err, errors.ErrDatabase))
+		return
+	}
 
-	var response map[string]interface{}
+	// Since we deleted all vocabularies, we can simply create all new ones
+	err = h.repo.CreateBatch(ctx, vocabularies)
+	if err != nil {
+		errors.WriteErrorResponse(w, errors.WrapError(err, errors.ErrDatabase))
+		return
+	}
 
-	switch duplicateMode {
-	case "skip":
-		// Skip duplicates - only create new items
-		var newVocabularies []*models.Vocabulary
-		var skippedCount int
+	// Reindex all videos with the new vocabulary
+	reindexResult, err := h.reindexAllVideos(ctx, vocabularies)
+	if err != nil {
+		// Log the error but don't fail the entire operation
+		fmt.Printf("Warning: Failed to reindex videos after vocabulary upload: %v\n", err)
+	}
 
-		for _, vocab := range vocabularies {
-			existing, err := h.repo.CheckExisting(ctx, vocab.Maori)
-			if err != nil {
-				errors.WriteErrorResponse(w, errors.WrapError(err, errors.ErrDatabase))
-				return
-			}
+	response := map[string]interface{}{
+		"message": fmt.Sprintf("Successfully uploaded %d vocabulary items", len(vocabularies)),
+		"created": len(vocabularies),
+		"total":   len(vocabularies),
+		"items":   vocabularies,
+	}
 
-			if existing != nil {
-				skippedCount++
-			} else {
-				newVocabularies = append(newVocabularies, vocab)
-			}
-		}
-
-		if len(newVocabularies) > 0 {
-			err = h.repo.CreateBatch(ctx, newVocabularies)
-			if err != nil {
-				errors.WriteErrorResponse(w, errors.WrapError(err, errors.ErrDatabase))
-				return
-			}
-		}
-
-		response = map[string]interface{}{
-			"message": fmt.Sprintf("Processed %d vocabulary items: %d created, %d skipped (duplicates)",
-				len(vocabularies), len(newVocabularies), skippedCount),
-			"created": len(newVocabularies),
-			"skipped": skippedCount,
-			"total":   len(vocabularies),
-			"items":   newVocabularies,
-		}
-
-	case "update":
-		// Update duplicates - upsert behavior
-		created, updated, err := h.repo.UpsertBatch(ctx, vocabularies)
-		if err != nil {
-			errors.WriteErrorResponse(w, errors.WrapError(err, errors.ErrDatabase))
-			return
-		}
-
-		response = map[string]interface{}{
-			"message": fmt.Sprintf("Processed %d vocabulary items: %d created, %d updated",
-				len(vocabularies), len(created), len(updated)),
-			"created":       len(created),
-			"updated":       len(updated),
-			"total":         len(vocabularies),
-			"created_items": created,
-			"updated_items": updated,
-		}
-
-	case "error":
-		// Error on duplicates - check for existing items first
-		var existingItems []string
-		for _, vocab := range vocabularies {
-			existing, err := h.repo.CheckExisting(ctx, vocab.Maori)
-			if err != nil {
-				errors.WriteErrorResponse(w, errors.WrapError(err, errors.ErrDatabase))
-				return
-			}
-
-			if existing != nil {
-				existingItems = append(existingItems, vocab.Maori)
-			}
-		}
-
-		if len(existingItems) > 0 {
-			errors.WriteErrorResponse(w, errors.NewAPIErrorWithDetails(
-				errors.ErrInvalidRequest.Code,
-				"Duplicate vocabulary items found",
-				fmt.Sprintf("The following Māori words already exist: %s", strings.Join(existingItems, ", ")),
-			))
-			return
-		}
-
-		// No duplicates found, proceed with normal batch creation
-		err = h.repo.CreateBatch(ctx, vocabularies)
-		if err != nil {
-			errors.WriteErrorResponse(w, errors.WrapError(err, errors.ErrDatabase))
-			return
-		}
-
-		response = map[string]interface{}{
-			"message": fmt.Sprintf("Successfully uploaded %d vocabulary items", len(vocabularies)),
-			"created": len(vocabularies),
-			"total":   len(vocabularies),
-			"items":   vocabularies,
-		}
-
-	default:
-		// Default behavior: update duplicates (same as "update" mode)
-		created, updated, err := h.repo.UpsertBatch(ctx, vocabularies)
-		if err != nil {
-			errors.WriteErrorResponse(w, errors.WrapError(err, errors.ErrDatabase))
-			return
-		}
-
-		response = map[string]interface{}{
-			"message": fmt.Sprintf("Processed %d vocabulary items: %d created, %d updated",
-				len(vocabularies), len(created), len(updated)),
-			"created":       len(created),
-			"updated":       len(updated),
-			"total":         len(vocabularies),
-			"created_items": created,
-			"updated_items": updated,
-		}
+	// Add reindexing results to response
+	if reindexResult != nil {
+		response["reindexing"] = reindexResult
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(response)
+}
+
+// reindexAllVideos reindexes all videos with the given vocabulary
+func (h *VocabularyHandler) reindexAllVideos(ctx context.Context, vocabularies []*models.Vocabulary) (map[string]interface{}, error) {
+	// Get all videos
+	videos, err := h.videoRepo.GetAll(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get videos: %w", err)
+	}
+
+	// Clear existing indexes
+	err = h.vocabIndexRepo.DeleteAll(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to clear existing indexes: %w", err)
+	}
+
+	// Create vocabulary indexer
+	indexer := utils.NewVocabularyIndexer(vocabularies)
+
+	totalIndexed := 0
+	processedVideos := 0
+
+	// Process each video
+	for _, video := range videos {
+		if video.Subtitle == "" {
+			continue // Skip videos without subtitles
+		}
+
+		// Extract filename from subtitle URL/path
+		var vttFilename string
+		if strings.HasPrefix(video.Subtitle, "/api/v1/uploads/vtt/") {
+			// Extract filename from URL
+			vttFilename = strings.TrimPrefix(video.Subtitle, "/api/v1/uploads/vtt/")
+		} else if strings.Contains(video.Subtitle, "/") {
+			// Extract filename from path
+			vttFilename = filepath.Base(video.Subtitle)
+		} else {
+			// Assume it's already a filename
+			vttFilename = video.Subtitle
+		}
+
+		// Construct full path to VTT file
+		vttFilePath := filepath.Join("./uploads/vtt", vttFilename)
+
+		// Check if file exists
+		if _, err := os.Stat(vttFilePath); os.IsNotExist(err) {
+			fmt.Printf("VTT file not found: %s\n", vttFilePath)
+			continue // Skip videos with missing VTT files
+		}
+
+		// Read VTT file content
+		vttContent, err := os.ReadFile(vttFilePath)
+		if err != nil {
+			fmt.Printf("Error reading VTT file %s: %v\n", vttFilePath, err)
+			continue // Skip videos with unreadable VTT files
+		}
+
+		// Parse VTT content
+		transcriptLines, err := utils.ParseVTTToLines(string(vttContent))
+		if err != nil {
+			fmt.Printf("Error parsing VTT content for video %s: %v\n", video.ID, err)
+			continue // Skip videos with invalid VTT
+		}
+
+		// Index vocabulary for this video
+		indexes, err := indexer.IndexTranscript(video.ID, transcriptLines)
+		if err != nil {
+			fmt.Println("Error indexing vocabulary:", err)
+			continue // Skip videos that fail indexing
+		}
+
+		// Save indexes to database
+		if len(indexes) > 0 {
+			err = h.vocabIndexRepo.CreateBatch(ctx, indexes)
+			if err != nil {
+				fmt.Println("Error saving indexes:", err)
+				continue // Skip videos that fail to save
+			}
+			totalIndexed += len(indexes)
+		}
+
+		processedVideos++
+	}
+
+	return map[string]interface{}{
+		"processed_videos": processedVideos,
+		"total_indexed":    totalIndexed,
+		"total_videos":     len(videos),
+		"total_vocabulary": len(vocabularies),
+	}, nil
 }

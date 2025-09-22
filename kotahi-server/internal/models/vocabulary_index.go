@@ -2,6 +2,8 @@ package models
 
 import (
 	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // VocabularyIndex represents an indexed vocabulary word/phrase in a video transcript
@@ -46,7 +48,7 @@ type VocabularySearchResult struct {
 // GenerateID generates a unique ID for the vocabulary index
 func (vi *VocabularyIndex) GenerateID() {
 	if vi.ID == "" {
-		vi.ID = sanitizeForID(vi.Vocabulary + "_" + vi.VideoID)
+		vi.ID = primitive.NewObjectID().Hex()
 	}
 }
 
