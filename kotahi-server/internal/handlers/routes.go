@@ -28,7 +28,7 @@ func SetupRoutes(cfg *config.Config, db *database.MongoDB, videoRepo database.Vi
 	// Create handlers
 	videoHandler := NewVideoHandler(videoRepo)
 	authHandler := NewAuthHandler(userRepo, jwtManager)
-	vocabularyHandler := NewVocabularyHandler(vocabRepo)
+	vocabularyHandler := NewVocabularyHandler(vocabRepo, vocabIndexRepo, videoRepo)
 	vocabularySearchHandler := NewVocabularySearchHandler(vocabRepo, vocabIndexRepo, videoRepo, watchHistoryRepo)
 	watchHistoryHandler := NewWatchHistoryHandler(watchHistoryRepo, videoRepo)
 	vttHandler := NewVTTUploadHandler("./uploads/vtt", vocabRepo, vocabIndexRepo, videoRepo)

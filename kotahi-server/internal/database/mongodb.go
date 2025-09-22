@@ -175,6 +175,7 @@ type VocabularyRepository interface {
 	UpsertBatch(ctx context.Context, vocabularies []*models.Vocabulary) ([]*models.Vocabulary, []*models.Vocabulary, error)
 	Update(ctx context.Context, id string, vocabulary *models.Vocabulary) error
 	Delete(ctx context.Context, id string) error
+	DeleteAll(ctx context.Context) error
 	Search(ctx context.Context, query string) ([]*models.Vocabulary, error)
 }
 
@@ -334,6 +335,12 @@ func (r *vocabularyRepository) Delete(ctx context.Context, id string) error {
 	}
 
 	return nil
+}
+
+// DeleteAll deletes all vocabulary items
+func (r *vocabularyRepository) DeleteAll(ctx context.Context) error {
+	_, err := r.collection.DeleteMany(ctx, bson.M{})
+	return err
 }
 
 // Search searches vocabulary items by Māori or English text
