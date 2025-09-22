@@ -47,22 +47,6 @@ export function Footer({ className }: FooterProps) {
                   Vocabulary
                 </Link>
               </li>
-              <li>
-                <Link
-                  href="/lessons"
-                  className="text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Lessons
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/progress"
-                  className="text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Progress
-                </Link>
-              </li>
             </ul>
           </div>
 
