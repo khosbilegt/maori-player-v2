@@ -40,18 +40,34 @@ function VideoTranscription({
 
     vocabularies.forEach((vocab) => {
       if (!vocab.maori) return;
-      const word = " " + vocab.maori.toLowerCase() + " ";
-      const textLower = text.toLowerCase();
-      let index = textLower.indexOf(word);
 
-      while (index !== -1) {
+      // Escape special regex characters in the Māori word
+      const escapedWord = vocab.maori.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+      // Create regex pattern for word boundary matching
+      // This matches the word as a complete word
+      const wordPattern = new RegExp(`\\b${escapedWord}\\b`, "gi");
+
+      let match;
+      while ((match = wordPattern.exec(text)) !== null) {
+        // Find the actual end of the word including any trailing punctuation
+        const wordStart = match.index;
+        let wordEnd = wordStart + vocab.maori.length;
+
+        // Include any trailing punctuation (spaces, commas, periods, etc.)
+        while (
+          wordEnd < text.length &&
+          /[\s.,!?;:()"'`\-\[\]{}]/.test(text[wordEnd])
+        ) {
+          wordEnd++;
+        }
+
         matches.push({
-          start: index,
-          end: index + word.length,
+          start: wordStart,
+          end: wordEnd,
           vocabulary: vocab,
-          length: word.length,
+          length: wordEnd - wordStart,
         });
-        index = textLower.indexOf(word, index + 1);
       }
     });
 
