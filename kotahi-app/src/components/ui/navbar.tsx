@@ -79,10 +79,10 @@ export function Navbar({ className }: NavbarProps) {
             <Link href="/" className="flex items-center space-x-2">
               <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
                 <span className="text-primary-foreground font-bold text-lg">
-                  K
+                  T
                 </span>
               </div>
-              <span className="font-bold text-xl">Kotahi</span>
+              <span className="font-bold text-xl">Tokotoko</span>
             </Link>
           </div>
 

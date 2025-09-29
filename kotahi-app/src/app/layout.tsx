@@ -16,8 +16,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Kotahi - Maori Learning Platform",
-  description: "Kotahi is a platform for learning Maori language and culture.",
+  title: "Tokotoko - Maori Learning Platform",
+  description:
+    "Tokotoko is a platform for learning Maori language and culture.",
 };
 
 export default function RootLayout({

@@ -19,7 +19,7 @@ export function Footer({ className }: FooterProps) {
                   K
                 </span>
               </div>
-              <span className="font-bold text-lg">Kotahi</span>
+              <span className="font-bold text-lg">Tokotoko</span>
             </div>
             <p className="text-sm text-muted-foreground">
               Learn Māori language and culture through interactive videos and
@@ -64,7 +64,7 @@ export function Footer({ className }: FooterProps) {
               </li>
               <li>
                 <Link
-                  href="/contact"
+                  href="/help/contact"
                   className="text-muted-foreground hover:text-foreground transition-colors"
                 >
                   Contact Us
@@ -72,7 +72,7 @@ export function Footer({ className }: FooterProps) {
               </li>
               <li>
                 <Link
-                  href="/faq"
+                  href="/help/faq"
                   className="text-muted-foreground hover:text-foreground transition-colors"
                 >
                   FAQ
@@ -80,7 +80,7 @@ export function Footer({ className }: FooterProps) {
               </li>
               <li>
                 <Link
-                  href="/feedback"
+                  href="/help/feedback"
                   className="text-muted-foreground hover:text-foreground transition-colors"
                 >
                   Feedback
@@ -95,7 +95,7 @@ export function Footer({ className }: FooterProps) {
             <ul className="space-y-2 text-sm">
               <li>
                 <Link
-                  href="/privacy"
+                  href="/help/privacy"
                   className="text-muted-foreground hover:text-foreground transition-colors"
                 >
                   Privacy Policy
@@ -103,7 +103,7 @@ export function Footer({ className }: FooterProps) {
               </li>
               <li>
                 <Link
-                  href="/terms"
+                  href="/help/terms"
                   className="text-muted-foreground hover:text-foreground transition-colors"
                 >
                   Terms of Service
@@ -111,7 +111,7 @@ export function Footer({ className }: FooterProps) {
               </li>
               <li>
                 <Link
-                  href="/cookies"
+                  href="/help/cookies"
                   className="text-muted-foreground hover:text-foreground transition-colors"
                 >
                   Cookie Policy
@@ -125,7 +125,7 @@ export function Footer({ className }: FooterProps) {
         <div className="mt-8 pt-8 border-t">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <p className="text-sm text-muted-foreground">
-              © 2024 Kotahi. All rights reserved.
+              © 2025 Tokotoko. All rights reserved.
             </p>
             <div className="flex items-center space-x-4 text-sm text-muted-foreground">
               <span>Made with ❤️ for Māori language learning</span>
