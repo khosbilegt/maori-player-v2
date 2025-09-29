@@ -96,6 +96,7 @@ func SetupRoutes(cfg *config.Config, db *database.MongoDB, videoRepo database.Vi
 	protected.HandleFunc("/learning-list", learningListHandler.GetLearningList).Methods("GET")
 	protected.HandleFunc("/learning-list", learningListHandler.CreateLearningListItem).Methods("POST")
 	protected.HandleFunc("/learning-list/stats", learningListHandler.GetLearningListStats).Methods("GET")
+	protected.HandleFunc("/learning-list/export", learningListHandler.ExportLearningList).Methods("GET")
 	protected.HandleFunc("/learning-list/{id}", learningListHandler.GetLearningListItem).Methods("GET")
 	protected.HandleFunc("/learning-list/{id}", learningListHandler.UpdateLearningListItem).Methods("PUT")
 	protected.HandleFunc("/learning-list/{id}", learningListHandler.DeleteLearningListItem).Methods("DELETE")

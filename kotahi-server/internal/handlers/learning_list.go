@@ -2,7 +2,9 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"video-player-backend/internal/database"
@@ -369,6 +371,82 @@ func (h *LearningListHandler) GetLearningListStats(w http.ResponseWriter, r *htt
 	utils.WriteJSONResponse(w, map[string]interface{}{
 		"data": stats,
 	})
+}
+
+// ExportLearningList returns the user's learning list as a downloadable
+// tab-separated file with the requested header format.
+// Format:
+// #separator:tab
+// #html:true
+// Word<TAB>Explanation
+// ...
+func (h *LearningListHandler) ExportLearningList(w http.ResponseWriter, r *http.Request) {
+	// Get user ID from JWT token
+	userID, err := h.getUserIDFromToken(r)
+	if err != nil {
+		errors.WriteErrorResponse(w, err)
+		return
+	}
+
+	// Convert user ID to ObjectID
+	userObjectID, err := primitive.ObjectIDFromHex(userID)
+	if err != nil {
+		errors.WriteErrorResponse(w, errors.ErrInvalidID)
+		return
+	}
+
+	// Fetch all learning list items for the user
+	ctx := r.Context()
+	items, err := h.db.GetLearningListByUserID(ctx, userObjectID)
+	if err != nil {
+		errors.WriteErrorResponse(w, errors.ErrInternalServer)
+		return
+	}
+
+	// Set headers for file download
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	w.Header().Set("Content-Disposition", "attachment; filename=learning_list.txt")
+
+	// Write header lines
+	fmt.Fprintln(w, "#separator:tab")
+	fmt.Fprintln(w, "#html:true")
+
+	// Prepare vocabulary repository to enrich with actual descriptions
+	vocabRepo := database.NewVocabularyRepository(h.db)
+
+	// Helper to sanitize fields for TSV
+	sanitize := func(s string) string {
+		// Replace tabs and newlines with spaces to keep one record per line
+		s = strings.ReplaceAll(s, "\t", " ")
+		s = strings.ReplaceAll(s, "\n", " ")
+		s = strings.ReplaceAll(s, "\r", " ")
+		return s
+	}
+
+	// Write rows: Word<TAB>Explanation where Explanation prefers vocabulary description
+	for _, item := range items {
+		word := sanitize(strings.ToLower(item.Text))
+		explanation := ""
+
+		// Try to get vocabulary description by Māori text
+		if word != "" {
+			if vocab, err := vocabRepo.CheckExisting(ctx, item.Text); err == nil && vocab != nil {
+				fmt.Println("vocab", vocab)
+				explanation = vocab.English
+			}
+		}
+
+		fmt.Println(item.Text)
+		fmt.Println(explanation)
+
+		// Fallback to notes if no vocabulary description is found
+		if explanation == "" {
+			explanation = item.Notes
+		}
+
+		explanation = sanitize(explanation)
+		fmt.Fprintf(w, "%s\t%s\n", word, explanation)
+	}
 }
 
 // getUserIDFromToken extracts user ID from request context populated by AuthMiddleware
