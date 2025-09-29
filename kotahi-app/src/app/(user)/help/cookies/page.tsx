@@ -18,8 +18,8 @@ function CookiePolicyPage() {
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
               We use cookies (small bits of data stored in your browser) to keep
-              you logged in and make Tokotoko work smoothly. We don't track you
-              across other websites.
+              you logged in and make Tokotoko work smoothly. We don&rsquo;t
+              track you across other websites.
             </p>
           </div>
 
@@ -56,10 +56,11 @@ function CookiePolicyPage() {
                   <Eye className="w-6 h-6 text-foreground mt-1 mr-3" />
                   <div>
                     <h3 className="text-lg font-semibold text-card-foreground mb-2">
-                      What We Don't Do
+                      What We Don&rsquo;t Do
                     </h3>
                     <p className="text-muted-foreground mb-4">
-                      We're committed to your privacy and don't use cookies for:
+                      We&rsquo;re committed to your privacy and don&rsquo;t use
+                      cookies for:
                     </p>
                     <ul className="text-muted-foreground space-y-2 text-sm">
                       <li>• Tracking you across other websites</li>
@@ -181,8 +182,8 @@ function CookiePolicyPage() {
               <div className="bg-muted border border-border rounded-lg p-6">
                 <p className="text-muted-foreground">
                   As Tokotoko grows and we add new features, we may update this
-                  cookie policy. We'll notify users of any significant changes
-                  and update the date below.
+                  cookie policy. We&rsquo;ll notify users of any significant
+                  changes and update the date below.
                 </p>
               </div>
             </section>

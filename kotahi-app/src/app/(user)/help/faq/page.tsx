@@ -17,8 +17,8 @@ function FAQPage() {
               Quick Answers
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              We're still collecting questions from our first group of users —
-              check back soon as we grow this page!
+              We&rsquo;re still collecting questions from our first group of
+              users — check back soon as we grow this page!
             </p>
           </div>
 
@@ -30,14 +30,14 @@ function FAQPage() {
                 No FAQs Yet
               </h3>
               <p className="text-muted-foreground mb-6">
-                We're still in early testing and learning from our first users.
-                As we gather more questions and feedback, we'll add helpful
-                answers here to make your experience smoother.
+                We&rsquo;re still in early testing and learning from our first
+                users. As we gather more questions and feedback, we&rsquo;ll add
+                helpful answers here to make your experience smoother.
               </p>
               <div className="space-y-4">
                 <p className="text-sm text-muted-foreground">
-                  In the meantime: if something's unclear, send us a note on our
-                  Contact Us page.
+                  In the meantime: if something&rsquo;s unclear, send us a note
+                  on our Contact Us page.
                 </p>
                 <Button asChild>
                   <Link

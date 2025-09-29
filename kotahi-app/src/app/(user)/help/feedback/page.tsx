@@ -60,9 +60,9 @@ function FeedbackPage() {
               Help Shape Tokotoko
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              We're just getting started, and your thoughts will help us
-              improve. Tell us what's working, what's confusing, or what you'd
-              love to see next.
+              We&rsquo;re just getting started, and your thoughts will help us
+              improve. Tell us what&rsquo;s working, what&rsquo;s confusing, or
+              what you&rsquo;d love to see next.
             </p>
           </div>
 
@@ -212,7 +212,7 @@ function FeedbackPage() {
                   onChange={handleInputChange}
                   required
                   className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
-                  placeholder="Tell us what's working, what's not, or what you'd love to see next..."
+                  placeholder="Tell us what&rsquo;s working, what&rsquo;s not, or what you&rsquo;d love to see next..."
                 ></textarea>
               </div>
 
@@ -262,14 +262,14 @@ function FeedbackPage() {
             {/* Feedback Categories */}
             <div className="mt-12 pt-8 border-t border-border">
               <h3 className="text-lg font-semibold text-card-foreground mb-4 text-center">
-                What We're Looking For
+                What We&rsquo;re Looking For
               </h3>
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="bg-muted border border-border rounded-lg p-4">
                   <div className="flex items-center mb-2">
                     <ThumbsUp className="w-5 h-5 text-foreground mr-2" />
                     <h4 className="font-medium text-card-foreground">
-                      What's Working
+                      What&rsquo;s Working
                     </h4>
                   </div>
                   <p className="text-sm text-muted-foreground">
@@ -281,12 +281,12 @@ function FeedbackPage() {
                   <div className="flex items-center mb-2">
                     <Lightbulb className="w-5 h-5 text-foreground mr-2" />
                     <h4 className="font-medium text-card-foreground">
-                      Ideas & Improvements
+                      Ideas &amp; Improvements
                     </h4>
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    New features you'd like to see, ways to make things easier,
-                    or creative suggestions.
+                    New features you&rsquo;d like to see, ways to make things
+                    easier, or creative suggestions.
                   </p>
                 </div>
               </div>

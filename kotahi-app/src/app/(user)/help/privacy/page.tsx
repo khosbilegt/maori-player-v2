@@ -17,8 +17,8 @@ function PrivacyPolicyPage() {
               Your Privacy Matters
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              We're committed to protecting your personal information and being
-              transparent about our practices.
+              We&rsquo;re committed to protecting your personal information and
+              being transparent about our practices.
             </p>
           </div>
 
@@ -67,8 +67,8 @@ function PrivacyPolicyPage() {
                   </h3>
                 </div>
                 <p className="text-muted-foreground">
-                  As we grow, we'll expand this policy and be transparent about
-                  any changes.
+                  As we grow, we&rsquo;ll expand this policy and be transparent
+                  about any changes.
                 </p>
               </div>
             </div>

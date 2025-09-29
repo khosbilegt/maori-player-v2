@@ -15,21 +15,21 @@ function HelpCenterPage() {
     {
       title: "Contact Us",
       description:
-        "Have a question, idea, or issue? Drop us a message and we'll be in touch soon.",
+        "Have a question, idea, or issue? Drop us a message and we\u2019ll be in touch soon.",
       href: "/help/contact",
       icon: MessageCircle,
     },
     {
       title: "FAQ",
       description:
-        "We're still collecting questions from our first group of users — check back soon!",
+        "We\u2019re still collecting questions from our first group of users — check back soon!",
       href: "/help/faq",
       icon: HelpCircle,
     },
     {
       title: "Feedback",
       description:
-        "Help shape Tokotoko by telling us what's working and what you'd love to see next.",
+        "Help shape Tokotoko by telling us what\u2019s working and what you\u2019d love to see next.",
       href: "/help/feedback",
       icon: FileText,
     },
@@ -68,10 +68,10 @@ function HelpCenterPage() {
               Need a Hand?
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Welcome to the Tokotoko Help Center! We're building this space as
-              we grow, so it's still pretty light. For now, you can reach out
-              any time through our contact page — we'll get back to you as
-              quickly as we can.
+              Welcome to the Tokotoko Help Center! We&rsquo;re building this
+              space as we grow, so it&rsquo;s still pretty light. For now, you
+              can reach out any time through our contact page — we&rsquo;ll get
+              back to you as quickly as we can.
             </p>
           </div>
 
@@ -102,7 +102,7 @@ function HelpCenterPage() {
           {/* Quick Contact CTA */}
           <div className="text-center mt-12 pt-8 border-t border-border">
             <p className="text-muted-foreground mb-4">
-              Can't find what you're looking for?
+              Can&rsquo;t find what you&rsquo;re looking for?
             </p>
             <Button asChild>
               <Link

@@ -56,11 +56,13 @@ function TermsOfServicePage() {
                           environment
                         </li>
                         <li>
-                          • Don't attempt to hack, disrupt, or damage the
+                          • Don&rsquo;t attempt to hack, disrupt, or damage the
                           platform
                         </li>
                         <li>• Follow all applicable laws and regulations</li>
-                        <li>• Don't share inappropriate or harmful content</li>
+                        <li>
+                          • Don&rsquo;t share inappropriate or harmful content
+                        </li>
                       </ul>
                     </div>
                   </div>
@@ -133,9 +135,9 @@ function TermsOfServicePage() {
                     Limitation of Liability
                   </h3>
                   <p className="text-muted-foreground text-sm">
-                    As an early testing platform, Tokotoko is provided "as is"
-                    without warranties. We are not liable for any issues, data
-                    loss, or interruptions that may occur.
+                    As an early testing platform, Tokotoko is provided &quot;as
+                    is&quot; without warranties. We are not liable for any
+                    issues, data loss, or interruptions that may occur.
                   </p>
                 </div>
 

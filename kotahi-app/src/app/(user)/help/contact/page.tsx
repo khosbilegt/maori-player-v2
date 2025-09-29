@@ -54,11 +54,11 @@ function ContactUsPage() {
               <MessageCircle className="w-8 h-8 text-foreground" />
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-card-foreground mb-4">
-              Let's Talk
+              Let&rsquo;s Talk
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Have a question, idea, or issue? Drop us a message and we'll be in
-              touch soon.
+              Have a question, idea, or issue? Drop us a message and we&rsquo;ll
+              be in touch soon.
             </p>
           </div>
 
@@ -87,7 +87,7 @@ function ContactUsPage() {
                       Message Sent!
                     </h3>
                     <p className="text-green-700 dark:text-green-300">
-                      We'll get back to you as soon as possible.
+                      We&rsquo;ll get back to you as soon as possible.
                     </p>
                   </div>
                 </div>
