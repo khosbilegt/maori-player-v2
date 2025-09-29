@@ -4,6 +4,34 @@ export interface ApiResponse<T> {
   message?: string;
 }
 
+// Contact and feedback types
+export interface ContactRequest {
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+}
+
+export interface ContactResponse {
+  success: boolean;
+  message: string;
+  id?: string;
+}
+
+export interface FeedbackRequest {
+  email: string;
+  feedback_type: string;
+  title: string;
+  message: string;
+  rating: string;
+}
+
+export interface FeedbackResponse {
+  success: boolean;
+  message: string;
+  id?: string;
+}
+
 // User types
 export interface User {
   id: string;

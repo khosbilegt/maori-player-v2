@@ -1,9 +1,52 @@
-import React from "react";
+"use client";
+import React, { useState } from "react";
 import { MessageSquare, Send, ThumbsUp, Lightbulb } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { useSubmitFeedbackMutation } from "@/lib/api";
+import type { FeedbackRequest } from "@/lib/types";
 
 function FeedbackPage() {
+  const [submitFeedback, { isLoading, isSuccess, error }] =
+    useSubmitFeedbackMutation();
+  const [formData, setFormData] = useState<FeedbackRequest>({
+    email: "",
+    feedback_type: "",
+    title: "",
+    message: "",
+    rating: "",
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await submitFeedback(formData).unwrap();
+      // Reset form on success
+      setFormData({
+        email: "",
+        feedback_type: "",
+        title: "",
+        message: "",
+        rating: "",
+      });
+    } catch (err) {
+      // Error is handled by the error state
+      console.error("Failed to submit feedback:", err);
+    }
+  };
+
+  const handleInputChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
   return (
     <div className="min-h-screen bg-background py-12">
       <div className="container mx-auto px-4 max-w-4xl">
@@ -23,9 +66,76 @@ function FeedbackPage() {
             </p>
           </div>
 
+          {/* Success Message */}
+          {isSuccess && (
+            <div className="max-w-2xl mx-auto mb-8">
+              <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-6">
+                <div className="flex items-center">
+                  <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center mr-3">
+                    <svg
+                      className="w-4 h-4 text-white"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-green-800 dark:text-green-200">
+                      Feedback Sent!
+                    </h3>
+                    <p className="text-green-700 dark:text-green-300">
+                      Thank you for helping us improve Tokotoko!
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Error Message */}
+          {error && (
+            <div className="max-w-2xl mx-auto mb-8">
+              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6">
+                <div className="flex items-center">
+                  <div className="w-6 h-6 bg-red-500 rounded-full flex items-center justify-center mr-3">
+                    <svg
+                      className="w-4 h-4 text-white"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-red-800 dark:text-red-200">
+                      Error Sending Feedback
+                    </h3>
+                    <p className="text-red-700 dark:text-red-300">
+                      There was a problem sending your feedback. Please try
+                      again.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Feedback Form */}
           <div className="max-w-2xl mx-auto">
-            <form className="space-y-6">
+            <form className="space-y-6" onSubmit={handleSubmit}>
               <div>
                 <label
                   htmlFor="feedback-type"
@@ -35,7 +145,9 @@ function FeedbackPage() {
                 </label>
                 <select
                   id="feedback-type"
-                  name="feedback-type"
+                  name="feedback_type"
+                  value={formData.feedback_type}
+                  onChange={handleInputChange}
                   className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
                 >
                   <option value="">Select feedback type</option>
@@ -59,6 +171,8 @@ function FeedbackPage() {
                   type="email"
                   id="email"
                   name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
                   className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
                   placeholder="your@email.com (for follow-up)"
                 />
@@ -74,7 +188,10 @@ function FeedbackPage() {
                 <input
                   type="text"
                   id="feedback-title"
-                  name="feedback-title"
+                  name="title"
+                  value={formData.title}
+                  onChange={handleInputChange}
+                  required
                   className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
                   placeholder="Brief summary of your feedback"
                 />
@@ -89,8 +206,11 @@ function FeedbackPage() {
                 </label>
                 <textarea
                   id="feedback-message"
-                  name="feedback-message"
+                  name="message"
                   rows={6}
+                  value={formData.message}
+                  onChange={handleInputChange}
+                  required
                   className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
                   placeholder="Tell us what's working, what's not, or what you'd love to see next..."
                 ></textarea>
@@ -106,6 +226,8 @@ function FeedbackPage() {
                 <select
                   id="rating"
                   name="rating"
+                  value={formData.rating}
+                  onChange={handleInputChange}
                   className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
                 >
                   <option value="">Select rating</option>
@@ -118,9 +240,18 @@ function FeedbackPage() {
               </div>
 
               <div className="flex flex-col sm:flex-row gap-4">
-                <Button type="submit" className="flex-1">
-                  <Send className="w-4 h-4 mr-2" />
-                  Submit Feedback
+                <Button type="submit" className="flex-1" disabled={isLoading}>
+                  {isLoading ? (
+                    <>
+                      <div className="w-4 h-4 mr-2 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                      Submitting...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-4 h-4 mr-2" />
+                      Submit Feedback
+                    </>
+                  )}
                 </Button>
                 <Button variant="outline" asChild>
                   <Link href="/help">Back to Help Center</Link>

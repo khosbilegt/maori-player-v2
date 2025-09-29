@@ -28,6 +28,10 @@ import type {
   LearningListParams,
   SearchResponse,
   VocabularySearchResponse,
+  ContactRequest,
+  ContactResponse,
+  FeedbackRequest,
+  FeedbackResponse,
 } from "./types";
 
 // Helper function to get auth headers
@@ -39,8 +43,8 @@ const getAuthHeaders = (token: string) => ({
 const baseQueryWithReauth = async (args: any, api: any, extraOptions: any) => {
   // Get the API base URL dynamically to ensure we get the latest value
   const apiBaseUrl =
-    // process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
-    process.env.NEXT_PUBLIC_API_BASE_URL || "https://kotahi.app";
+    process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
+  // process.env.NEXT_PUBLIC_API_BASE_URL || "https://kotahi.app";
 
   const result = await fetchBaseQuery({
     baseUrl: apiBaseUrl,
@@ -507,6 +511,23 @@ export const apiSlice = createApi({
       }),
       providesTags: ["Search"],
     }),
+
+    // Contact and feedback endpoints
+    submitContact: builder.mutation<ContactResponse, ContactRequest>({
+      query: (data) => ({
+        url: "/api/v1/contact",
+        method: "POST",
+        body: data,
+      }),
+    }),
+
+    submitFeedback: builder.mutation<FeedbackResponse, FeedbackRequest>({
+      query: (data) => ({
+        url: "/api/v1/feedback",
+        method: "POST",
+        body: data,
+      }),
+    }),
   }),
 });
 
@@ -574,4 +595,8 @@ export const {
 
   // General search
   useGeneralSearchQuery,
+
+  // Contact and feedback
+  useSubmitContactMutation,
+  useSubmitFeedbackMutation,
 } = apiSlice;

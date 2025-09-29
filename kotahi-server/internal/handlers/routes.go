@@ -8,6 +8,7 @@ import (
 	"video-player-backend/internal/config"
 	"video-player-backend/internal/database"
 	"video-player-backend/internal/middleware"
+	"video-player-backend/internal/services"
 	jwtutils "video-player-backend/internal/utils"
 
 	"github.com/gorilla/mux"
@@ -25,6 +26,9 @@ func SetupRoutes(cfg *config.Config, db *database.MongoDB, videoRepo database.Vi
 	// Create JWT manager
 	jwtManager := jwtutils.NewJWTManager(&cfg.JWT)
 
+	// Create email service
+	emailService := services.NewEmailService(&cfg.Email)
+
 	// Create handlers
 	videoHandler := NewVideoHandler(videoRepo)
 	authHandler := NewAuthHandler(userRepo, jwtManager)
@@ -35,6 +39,8 @@ func SetupRoutes(cfg *config.Config, db *database.MongoDB, videoRepo database.Vi
 	learningListHandler := NewLearningListHandler(db)
 	playlistHandler := NewPlaylistHandler(playlistRepo, videoRepo)
 	searchHandler := NewSearchHandler(videoRepo, vocabRepo, vocabIndexRepo)
+	feedbackHandler := NewFeedbackHandler(emailService)
+	contactHandler := NewContactHandler(emailService)
 
 	// API routes
 	api := r.PathPrefix("/api/v1").Subrouter()
@@ -109,10 +115,17 @@ func SetupRoutes(cfg *config.Config, db *database.MongoDB, videoRepo database.Vi
 	// General search route (public access)
 	api.HandleFunc("/search", searchHandler.GeneralSearch).Methods("GET")
 
+	// Contact and feedback routes (public access)
+	api.HandleFunc("/contact", contactHandler.SubmitContact).Methods("POST")
+	api.HandleFunc("/feedback", feedbackHandler.SubmitFeedback).Methods("POST")
+
 	// VTT file routes (admin-only)
 	admin.HandleFunc("/vtt/upload", vttHandler.UploadVTT).Methods("POST")
 	admin.HandleFunc("/vtt/list", vttHandler.ListVTTFiles).Methods("GET")
 	admin.HandleFunc("/vtt/delete", vttHandler.DeleteVTTFile).Methods("DELETE")
+
+	// Admin email test route
+	admin.HandleFunc("/email/test", feedbackHandler.TestEmail).Methods("POST")
 
 	// Static file serving for uploaded VTT files
 	api.PathPrefix("/uploads/vtt/").Handler(http.StripPrefix("/api/v1/uploads/vtt/", http.FileServer(http.Dir("./uploads/vtt/"))))
