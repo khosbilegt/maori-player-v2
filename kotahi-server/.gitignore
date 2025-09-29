@@ -50,6 +50,7 @@ logs/
 # Air temp files
 tmp/
 build-errors.log
+internal/config/config.go
 
 # Docker
 .dockerignore
