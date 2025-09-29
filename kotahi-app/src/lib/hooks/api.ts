@@ -519,6 +519,33 @@ export const useLearningListStats = () => {
   return useGetLearningListStatsQuery();
 };
 
+export const useExportLearningList = () => {
+  const exportFile = React.useCallback(async () => {
+    try {
+      const apiBaseUrl =
+        process.env.NEXT_PUBLIC_API_BASE_URL || "https://tokotoko.app";
+      // process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
+      const url = `${apiBaseUrl}/api/v1/learning-list/export`;
+      const token = localStorage.getItem("token");
+      const res = await fetch(url, {
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+      if (!res.ok) throw new Error("Failed to export learning list");
+      const blob = await res.blob();
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "learning_list.txt";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (err) {
+      throw err;
+    }
+  }, []);
+
+  return { exportFile };
+};
+
 // General search hook
 export const useGeneralSearch = (query: string, skip: boolean = false) => {
   return useGeneralSearchQuery(query, {

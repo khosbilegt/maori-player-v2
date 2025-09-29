@@ -16,6 +16,7 @@ import {
   useVocabularies,
   useLearningListMutations,
   useSearchVocabularyWithVideos,
+  useExportLearningList,
 } from "@/lib/hooks/api";
 import { toast } from "sonner";
 import type { LearningListItem, VocabularyIndex } from "@/lib/types";
@@ -66,6 +67,7 @@ export default function LearningListPage() {
     error: vocabError,
   } = useVocabularies();
   const { updateItem, deleteItem } = useLearningListMutations();
+  const { exportFile } = useExportLearningList();
 
   // Search for videos containing the selected word
   const {
@@ -263,6 +265,12 @@ export default function LearningListPage() {
             </div>
           </CardContent>
         </Card>
+      </div>
+
+      <div className="flex justify-end">
+        <Button variant="outline" onClick={exportFile}>
+          Export learning list
+        </Button>
       </div>
 
       {/* Main Content - Two Column Layout */}

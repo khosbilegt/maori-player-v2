@@ -68,6 +68,7 @@ export const API_ENDPOINTS = {
     BY_ID: (id: string) =>
       `${environment.apiBaseUrl}/api/v1/learning-list/${id}`,
     STATS: `${environment.apiBaseUrl}/api/v1/learning-list/stats`,
+    EXPORT: `${environment.apiBaseUrl}/api/v1/learning-list/export`,
   },
 
   // Search endpoints
