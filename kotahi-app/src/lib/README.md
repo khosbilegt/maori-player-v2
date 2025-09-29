@@ -1,6 +1,6 @@
 # Redux API Integration
 
-This directory contains the Redux Toolkit Query (RTK Query) API integration for the Kotahi app, translated from the original frontend API client.
+This directory contains the Redux Toolkit Query (RTK Query) API integration for the Tokotoko app, translated from the original frontend API client.
 
 ## Files
 

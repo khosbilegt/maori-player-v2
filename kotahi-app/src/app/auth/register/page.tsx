@@ -70,7 +70,7 @@ export default function RegisterPage() {
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            Kotahi
+            Tokotoko
           </h1>
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
             Maori Learning Platform
@@ -81,7 +81,7 @@ export default function RegisterPage() {
           <CardHeader>
             <CardTitle>Create your account</CardTitle>
             <CardDescription>
-              Join Kotahi and start your Maori learning journey today
+              Join Tokotoko and start your Maori learning journey today
             </CardDescription>
           </CardHeader>
           <CardContent>
