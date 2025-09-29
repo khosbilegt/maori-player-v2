@@ -19,6 +19,23 @@ export const metadata: Metadata = {
   title: "Tokotoko - Maori Learning Platform",
   description:
     "Tokotoko is a platform for learning Maori language and culture.",
+  keywords: ["Maori", "Language", "Culture", "Learning", "Platform"],
+  robots: "index, follow",
+  openGraph: {
+    type: "website",
+    url: "https://tokotoko.app",
+    title: "Tokotoko - Maori Learning Platform",
+    description:
+      "Tokotoko is a platform for learning Maori language and culture.",
+    images: ["https://tokotoko.app/home.png"],
+  },
+  twitter: {
+    title: "Tokotoko - Maori Learning Platform",
+    description:
+      "Tokotoko is a platform for learning Maori language and culture.",
+    card: "summary_large_image",
+    images: ["https://tokotoko.app/home.png"],
+  },
 };
 
 export default function RootLayout({
