@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/popover";
 import { Button } from "../ui/button";
 import { Notebook } from "lucide-react";
-import { useLearningListMutations } from "@/lib/hooks/api";
+import { useLearningList, useLearningListMutations } from "@/lib/hooks/api";
 import { toast } from "sonner";
 
 function VideoTranscription({
@@ -28,6 +28,13 @@ function VideoTranscription({
   const containerRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<Map<number, HTMLDivElement>>(new Map());
   const { createItem } = useLearningListMutations();
+  const { data: learningListData } = useLearningList();
+  const learningTexts = React.useMemo(() => {
+    const items = (learningListData as any)?.data || learningListData || [];
+    return new Set<string>(
+      items.map((i: any) => (i.text ? String(i.text).toLowerCase() : ""))
+    );
+  }, [learningListData]);
 
   // Find vocabulary matches in text
   const findVocabularyMatches = (text: string, vocabularies: Vocabulary[]) => {
@@ -111,14 +118,21 @@ function VideoTranscription({
       }
 
       // Add the vocabulary button
+      const vocabText = text.slice(match.start, match.end);
+      const isInLearningList = learningTexts.has(
+        match.vocabulary.maori?.toLowerCase?.() || vocabText.toLowerCase()
+      );
+
       parts.push(
         <Popover key={`vocab-${index}`}>
           <PopoverTrigger asChild>
             <span
-              className="inline-block px-2 py-1 mx-1 text-xs font-medium text-primary border border-primary rounded-md hover:bg-primary hover:text-white transition-colors cursor-pointer"
+              className={`inline-block px-1 text-primary rounded-md hover:decoration-yellow-400 transition-colors cursor-pointer underline underline-offset-2 decoration-2 focus:outline-none focus-visible:outline-none focus:ring-0 ${
+                isInLearningList ? "decoration-yellow-400" : "decoration-white"
+              }`}
               onClick={(e) => e.stopPropagation()}
             >
-              {text.slice(match.start, match.end)}
+              {vocabText}
             </span>
           </PopoverTrigger>
           <PopoverContent side="top">
