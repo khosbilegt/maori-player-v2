@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"syscall"
 	"time"
 
@@ -14,11 +15,53 @@ import (
 	"video-player-backend/internal/database"
 	"video-player-backend/internal/handlers"
 	"video-player-backend/internal/middleware"
+
+	"github.com/joho/godotenv"
 )
 
+// loadEnv attempts to load .env files from likely locations and logs what it finds
+func loadEnv() {
+	loaded := []string{}
+
+	// Try current working directory
+	for _, name := range []string{".env.local", ".env"} {
+		if err := godotenv.Overload(name); err == nil {
+			loaded = append(loaded, name)
+		}
+	}
+
+	// Try executable directory
+	if exePath, err := os.Executable(); err == nil {
+		exeDir := filepath.Dir(exePath)
+		for _, name := range []string{".env.local", ".env"} {
+			path := filepath.Join(exeDir, name)
+			if err := godotenv.Overload(path); err == nil {
+				loaded = append(loaded, path)
+			}
+		}
+	}
+
+	if len(loaded) == 0 {
+		log.Println("No .env files loaded (proceeding with OS environment and defaults)")
+		return
+	}
+	log.Printf("Loaded env files: %v", loaded)
+}
+
 func main() {
+	// Load environment variables from .env files for local development
+	loadEnv()
+
 	// Load configuration
 	cfg := config.LoadConfig()
+
+	// Log a brief summary of effective configuration (non-sensitive)
+	log.Printf("Config: host=%s port=%s db=%s email_domain_set=%t",
+		cfg.Server.Host,
+		cfg.Server.Port,
+		cfg.Database.Database,
+		cfg.Email.Domain != "",
+	)
 
 	// Connect to MongoDB
 	db, err := database.NewMongoDB(cfg)

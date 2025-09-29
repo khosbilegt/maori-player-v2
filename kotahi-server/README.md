@@ -9,9 +9,11 @@ A scalable CRUD backend API built with Go and MongoDB for managing video objects
 - **Read** single video with GET `/api/v1/videos/{id}`
 - **Update** video with PUT `/api/v1/videos/{id}`
 - **Delete** video with DELETE `/api/v1/videos/{id}`
+- **Contact and Feedback** forms with email integration
 - Health check endpoint at `/health`
 - CORS enabled for frontend integration
 - MongoDB integration with automatic ID generation
+- Email functionality via Mailgun
 - Graceful shutdown
 - Request logging
 - Docker support
@@ -70,6 +72,39 @@ docker-compose up --build
 ```
 
 The server will start on port 8080 and MongoDB on port 27017.
+
+## Email Configuration
+
+The server includes email functionality for contact forms and feedback. To enable this feature:
+
+### Quick Setup
+
+**For Linux/macOS:**
+
+```bash
+./setup-env.sh
+```
+
+**For Windows:**
+
+```cmd
+setup-env.bat
+```
+
+### Manual Setup
+
+Create a `.env` file in the `kotahi-server` directory:
+
+```bash
+# Email Configuration (Mailgun)
+MAILGUN_DOMAIN=your-domain.mailgun.org
+MAILGUN_API_KEY=your-api-key
+EMAIL_FROM=noreply@your-domain.com
+EMAIL_TO=your-email@example.com
+EMAIL_FROM_NAME=Tokotoko Support
+```
+
+See [EMAIL_CONFIG.md](EMAIL_CONFIG.md) for detailed setup instructions.
 
 ### Manual Setup
 

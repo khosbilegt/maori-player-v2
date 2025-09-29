@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"fmt"
+	"log"
 	"time"
 
 	"video-player-backend/internal/config"
@@ -18,6 +19,17 @@ type EmailService struct {
 
 // NewEmailService creates a new email service
 func NewEmailService(cfg *config.EmailConfig) *EmailService {
+	// Validate required configuration
+	config.LoadConfig()
+	if cfg.Domain == "" || cfg.APIKey == "" || cfg.FromEmail == "" || cfg.ToEmail == "" {
+		log.Printf("WARNING: Email configuration is incomplete. Email functionality will not work.")
+		log.Printf("Missing configuration: Domain=%s, APIKey=%s, FromEmail=%s, ToEmail=%s",
+			cfg.Domain,
+			cfg.APIKey,
+			cfg.FromEmail,
+			cfg.ToEmail)
+	}
+
 	mg := mailgun.NewMailgun(cfg.Domain, cfg.APIKey)
 
 	return &EmailService{
@@ -28,6 +40,12 @@ func NewEmailService(cfg *config.EmailConfig) *EmailService {
 
 // SendContactEmail sends a contact form email
 func (es *EmailService) SendContactEmail(name, email, subject, message string) (string, error) {
+	// Check if email configuration is valid
+	if es.config.Domain == "" || es.config.APIKey == "" || es.config.FromEmail == "" || es.config.ToEmail == "" {
+		return "", fmt.Errorf("email configuration is incomplete: domain=%s, from=%s, to=%s",
+			es.config.Domain, es.config.FromEmail, es.config.ToEmail)
+	}
+
 	subjectLine := fmt.Sprintf("Contact Form: %s", subject)
 
 	body := fmt.Sprintf(`
@@ -49,6 +67,12 @@ This message was sent from the Tokotoko contact form.
 
 // SendFeedbackEmail sends a feedback form email
 func (es *EmailService) SendFeedbackEmail(email, feedbackType, title, message, rating string) (string, error) {
+	// Check if email configuration is valid
+	if es.config.Domain == "" || es.config.APIKey == "" || es.config.FromEmail == "" || es.config.ToEmail == "" {
+		return "", fmt.Errorf("email configuration is incomplete: domain=%s, from=%s, to=%s",
+			es.config.Domain, es.config.FromEmail, es.config.ToEmail)
+	}
+
 	subjectLine := fmt.Sprintf("Feedback: %s", title)
 
 	body := fmt.Sprintf(`
@@ -99,6 +123,12 @@ func (es *EmailService) sendEmail(subject, body, userEmail string) (string, erro
 
 // SendTestEmail sends a test email to verify configuration
 func (es *EmailService) SendTestEmail() (string, error) {
+	// Check if email configuration is valid
+	if es.config.Domain == "" || es.config.APIKey == "" || es.config.FromEmail == "" || es.config.ToEmail == "" {
+		return "", fmt.Errorf("email configuration is incomplete: domain=%s, from=%s, to=%s",
+			es.config.Domain, es.config.FromEmail, es.config.ToEmail)
+	}
+
 	subject := "Test Email from Tokotoko"
 	body := `
 This is a test email from the Tokotoko server.
