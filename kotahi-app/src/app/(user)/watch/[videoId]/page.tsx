@@ -57,8 +57,8 @@ function WatchPage() {
       try {
         const transcriptData = await loadVTTTranscript(
           video.subtitle,
-          // process.env.NEXT_PUBLIC_API_BASE_URL || "https://kotahi.app"
-          process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080"
+          process.env.NEXT_PUBLIC_API_BASE_URL || "https://tokotoko.app"
+          // process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080"
         );
         setTranscript(transcriptData);
       } catch (error) {
