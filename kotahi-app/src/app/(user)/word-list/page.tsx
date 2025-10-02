@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -135,12 +135,28 @@ export default function LearningListPage() {
     }
   };
 
-  // Set default selected word
-  React.useEffect(() => {
-    if (enrichedWords.length > 0 && !selectedWord) {
+  // Restore last selected word from localStorage or default to first
+  useEffect(() => {
+    if (!enrichedWords || enrichedWords.length === 0) return;
+    const storedId = localStorage.getItem("lastSelectedWordId");
+    if (!selectedWord) {
+      if (storedId) {
+        const found = enrichedWords.find((w) => w.id === storedId);
+        if (found) {
+          setSelectedWord(found);
+          return;
+        }
+      }
       setSelectedWord(enrichedWords[0]);
     }
   }, [enrichedWords, selectedWord]);
+
+  // Persist selected word id to localStorage
+  useEffect(() => {
+    if (selectedWord?.id) {
+      localStorage.setItem("lastSelectedWordId", selectedWord.id);
+    }
+  }, [selectedWord?.id]);
 
   if (isLoading) {
     return (

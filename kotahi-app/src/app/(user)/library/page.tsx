@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -40,12 +40,25 @@ function LibraryPage() {
     error: searchError,
   } = useThrottledGeneralSearch(searchQuery);
 
-  // Auto-select the first playlist when playlists are loaded
-  React.useEffect(() => {
-    if (playlists && playlists.length > 0 && !selectedPlaylist) {
+  // Load last selected playlist from localStorage once playlists are available
+  useEffect(() => {
+    if (!playlists || playlists.length === 0) return;
+    const stored = localStorage.getItem("lastSelectedPlaylistId");
+    if (stored && playlists.some((p) => p.id === stored)) {
+      setSelectedPlaylist(stored);
+      return;
+    }
+    if (!selectedPlaylist) {
       setSelectedPlaylist(playlists[0].id);
     }
-  }, [playlists, selectedPlaylist]);
+  }, [playlists]);
+
+  // Persist selected playlist to localStorage
+  useEffect(() => {
+    if (selectedPlaylist) {
+      localStorage.setItem("lastSelectedPlaylistId", selectedPlaylist);
+    }
+  }, [selectedPlaylist]);
 
   // Create a map of video IDs to watch history data for efficient lookup
   const watchHistoryMap = new Map();
