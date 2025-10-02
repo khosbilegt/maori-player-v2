@@ -59,24 +59,36 @@ func (vi *VocabularyIndexer) findVocabularyInLine(videoID string, line Transcrip
 
 // isWordInText checks if a vocabulary word appears in the given text
 func (vi *VocabularyIndexer) isWordInText(word, text string) bool {
-	// Convert both to lowercase for case-insensitive matching
+	// Normalize case
 	wordLower := strings.ToLower(strings.TrimSpace(word))
 	textLower := strings.ToLower(text)
 
-	// Handle multi-word phrases
-	if strings.Contains(wordLower, " ") {
-		return strings.Contains(textLower, wordLower)
+	if wordLower == "" || textLower == "" {
+		return false
 	}
 
-	// For single words, use word boundary matching to avoid partial matches
-	// Create a regex pattern that matches the word as a whole word
-	pattern := fmt.Sprintf(`\b%s\b`, regexp.QuoteMeta(wordLower))
-	matched, err := regexp.MatchString(pattern, textLower)
-	if err != nil {
-		// If regex fails, fall back to simple contains check
-		return strings.Contains(textLower, wordLower)
+	// Build a Unicode-aware boundary regex that avoids partial matches.
+	// For multi-word phrases, allow one or more non-letter separators between words.
+	parts := strings.Fields(wordLower)
+	quoted := make([]string, 0, len(parts))
+	for _, p := range parts {
+		if p == "" {
+			continue
+		}
+		quoted = append(quoted, regexp.QuoteMeta(p))
+	}
+	if len(quoted) == 0 {
+		return false
 	}
 
+	inner := quoted[0]
+	if len(quoted) > 1 {
+		inner = strings.Join(quoted, `\\P{L}+`)
+	}
+
+	// (^|\P{L}) ensures a non-letter (or start) before, (\P{L}|$) after.
+	pattern := fmt.Sprintf(`(?i)(^|\\P{L})%s(\\P{L}|$)`, inner)
+	matched, _ := regexp.MatchString(pattern, textLower)
 	return matched
 }
 

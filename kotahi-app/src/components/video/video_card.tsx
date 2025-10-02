@@ -72,21 +72,29 @@ function VideoCard({
                 <Check className="w-4 h-4 text-gray-500" />
                 <p className="text-gray-500">Transcript</p>
               </div>
-              {watchHistory?.completed && (
-                <div className="flex gap-1 items-center">
-                  <CheckCircle className="w-4 h-4 text-green-500" />
-                  <p className="text-green-500 text-sm">Completed</p>
-                </div>
-              )}
+              {/* Removed inline completed badge; show completed status below instead */}
             </div>
             <Progress
-              value={watchHistory ? Math.round(watchHistory.progress * 100) : 0}
+              value={
+                watchHistory
+                  ? watchHistory.completed
+                    ? 100
+                    : Math.round(watchHistory.progress * 100)
+                  : 0
+              }
               className="w-full"
             />
-            <p className="text-gray-500">
-              Progress:{" "}
-              {watchHistory ? Math.round(watchHistory.progress * 100) : 0}%
-            </p>
+            {watchHistory?.completed ? (
+              <div className="flex items-center gap-1 text-green-600">
+                <CheckCircle className="w-4 h-4" />
+                <p className="text-sm">Completed</p>
+              </div>
+            ) : (
+              <p className="text-gray-500">
+                Progress:{" "}
+                {watchHistory ? Math.round(watchHistory.progress * 100) : 0}%
+              </p>
+            )}
             {watchHistory && (
               <p className="text-xs text-gray-400">
                 Watched: {Math.floor(watchHistory.current_time / 60)}:
