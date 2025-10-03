@@ -51,23 +51,17 @@ function VideoTranscription({
       // Escape special regex characters in the Māori word
       const escapedWord = vocab.maori.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-      // Create regex pattern for word boundary matching
-      // This matches the word as a complete word
-      const wordPattern = new RegExp(`\\b${escapedWord}\\b`, "gi");
+      // Unicode-aware whole-word match using letter boundaries.
+      // Use lookarounds to avoid partial matches inside other words.
+      const pattern = new RegExp(
+        `(?<!\\\p{L})${escapedWord}(?!\\\p{L})`,
+        "giu"
+      );
 
-      let match;
-      while ((match = wordPattern.exec(text)) !== null) {
-        // Find the actual end of the word including any trailing punctuation
+      let match: RegExpExecArray | null;
+      while ((match = pattern.exec(text)) !== null) {
         const wordStart = match.index;
-        let wordEnd = wordStart + vocab.maori.length;
-
-        // Include any trailing punctuation (spaces, commas, periods, etc.)
-        while (
-          wordEnd < text.length &&
-          /[\s.,!?;:()"'`\-\[\]{}]/.test(text[wordEnd])
-        ) {
-          wordEnd++;
-        }
+        const wordEnd = wordStart + match[0].length;
 
         matches.push({
           start: wordStart,
