@@ -67,29 +67,22 @@ func (vi *VocabularyIndexer) isWordInText(word, text string) bool {
 		return false
 	}
 
-	// Build a Unicode-aware boundary regex that avoids partial matches.
-	// For multi-word phrases, allow one or more non-letter separators between words.
-	parts := strings.Fields(wordLower)
-	quoted := make([]string, 0, len(parts))
-	for _, p := range parts {
-		if p == "" {
-			continue
+	// Handle multi-word phrases with simple contains check
+	if strings.Contains(wordLower, " ") {
+		return strings.Contains(textLower, wordLower)
+	}
+
+	// For single words, use a more flexible approach that works better with Māori language
+	// Split text into words and check each one
+	words := regexp.MustCompile(`\s+`).Split(textLower, -1)
+	for _, w := range words {
+		// Remove punctuation from both sides for comparison
+		w = strings.Trim(w, ".,!?;:\"'-()[]{}")
+		if w == wordLower {
+			return true
 		}
-		quoted = append(quoted, regexp.QuoteMeta(p))
 	}
-	if len(quoted) == 0 {
-		return false
-	}
-
-	inner := quoted[0]
-	if len(quoted) > 1 {
-		inner = strings.Join(quoted, `\\P{L}+`)
-	}
-
-	// (^|\P{L}) ensures a non-letter (or start) before, (\P{L}|$) after.
-	pattern := fmt.Sprintf(`(?i)(^|\\P{L})%s(\\P{L}|$)`, inner)
-	matched, _ := regexp.MatchString(pattern, textLower)
-	return matched
+	return false
 }
 
 // TranscriptLine represents a single line in a transcript
