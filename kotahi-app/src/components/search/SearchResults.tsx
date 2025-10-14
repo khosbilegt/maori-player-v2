@@ -109,7 +109,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
                     </span>
                   </div>
                   <p className="text-xs text-gray-700 dark:text-gray-300 italic">
-                    "{occurrence.transcript}"
+                    &ldquo;{occurrence.transcript}&rdquo;
                   </p>
                 </div>
               ))}
