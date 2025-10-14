@@ -277,6 +277,16 @@ export interface TranscriptItem {
   text: string;
 }
 
+// Vocabulary occurrence types
+export interface VocabularyOccurrence {
+  vocabulary: string;
+  english: string;
+  description: string;
+  start_time: number;
+  end_time: number;
+  transcript: string;
+}
+
 // General search types
 export interface SearchResult {
   type: "video";
@@ -284,6 +294,7 @@ export interface SearchResult {
   title: string;
   description?: string;
   data: VideoData;
+  vocabulary_occurrences?: VocabularyOccurrence[];
 }
 
 export interface SearchCounts {

@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -59,6 +60,7 @@ func (h *SearchHandler) GeneralSearch(w http.ResponseWriter, r *http.Request) {
 	// Search across all types concurrently
 	videoChan := make(chan []*models.Video, 1)
 	vocabVideoChan := make(chan []*models.Video, 1)
+	vocabOccurrenceChan := make(chan map[string][]models.VocabularyOccurrence, 1)
 	errorChan := make(chan error, 2)
 
 	// Search videos by title/description
@@ -73,24 +75,29 @@ func (h *SearchHandler) GeneralSearch(w http.ResponseWriter, r *http.Request) {
 
 	// Search videos by vocabulary (using vocabulary index)
 	go func() {
-		vocabVideos, err := h.searchVideosByVocabulary(ctx, query)
+		vocabVideos, vocabOccurrences, err := h.searchVideosByVocabulary(ctx, query)
+		fmt.Println("vocabVideos", vocabVideos)
 		if err != nil {
 			errorChan <- err
 			return
 		}
 		vocabVideoChan <- vocabVideos
+		// Store vocabulary occurrences for later use
+		vocabOccurrenceChan <- vocabOccurrences
 	}()
 
 	// Collect results
 	var videos []*models.Video
 	var vocabVideos []*models.Video
+	var vocabOccurrences map[string][]models.VocabularyOccurrence
 	var searchErrors []error
 
 	// Wait for all searches to complete
-	for i := 0; i < 2; i++ {
+	for i := 0; i < 3; i++ {
 		select {
 		case videos = <-videoChan:
 		case vocabVideos = <-vocabVideoChan:
+		case vocabOccurrences = <-vocabOccurrenceChan:
 		case err := <-errorChan:
 			searchErrors = append(searchErrors, err)
 		}
@@ -122,13 +129,22 @@ func (h *SearchHandler) GeneralSearch(w http.ResponseWriter, r *http.Request) {
 
 	// Add video results
 	for _, video := range videoMap {
-		results = append(results, models.SearchResult{
+		result := models.SearchResult{
 			Type:        "video",
 			ID:          video.ID,
 			Title:       video.Title,
 			Description: video.Description,
 			Data:        video,
-		})
+		}
+
+		// Add vocabulary occurrences if this video has any
+		if vocabOccurrences != nil {
+			if occurrences, exists := vocabOccurrences[video.ID]; exists {
+				result.VocabularyOccurrences = occurrences
+			}
+		}
+
+		results = append(results, result)
 	}
 
 	// Create response
@@ -146,27 +162,41 @@ func (h *SearchHandler) GeneralSearch(w http.ResponseWriter, r *http.Request) {
 }
 
 // searchVideosByVocabulary searches for videos that contain the given vocabulary
-func (h *SearchHandler) searchVideosByVocabulary(ctx context.Context, query string) ([]*models.Video, error) {
+func (h *SearchHandler) searchVideosByVocabulary(ctx context.Context, query string) ([]*models.Video, map[string][]models.VocabularyOccurrence, error) {
 	// Search in vocabulary index
 	indexes, err := h.vocabIndexRepo.SearchByVocabulary(ctx, query)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	// Also search by English translation
 	englishIndexes, err := h.vocabIndexRepo.SearchByEnglish(ctx, query)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	// Combine both results
 	allIndexes := append(indexes, englishIndexes...)
 
-	// Get unique video IDs
+	// Group vocabulary occurrences by video ID
+	vocabOccurrences := make(map[string][]models.VocabularyOccurrence)
 	videoIDMap := make(map[string]struct{})
+
 	for _, index := range allIndexes {
 		if index.VideoID != "" {
 			videoIDMap[index.VideoID] = struct{}{}
+
+			// Convert VocabularyIndex to VocabularyOccurrence
+			occurrence := models.VocabularyOccurrence{
+				Vocabulary:  index.Vocabulary,
+				English:     index.English,
+				Description: index.Description,
+				StartTime:   index.StartTime,
+				EndTime:     index.EndTime,
+				Transcript:  index.Transcript,
+			}
+
+			vocabOccurrences[index.VideoID] = append(vocabOccurrences[index.VideoID], occurrence)
 		}
 	}
 
@@ -181,10 +211,10 @@ func (h *SearchHandler) searchVideosByVocabulary(ctx context.Context, query stri
 	for _, videoID := range videoIDs {
 		video, err := h.videoRepo.GetByID(ctx, videoID)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		videos = append(videos, video)
 	}
 
-	return videos, nil
+	return videos, vocabOccurrences, nil
 }
