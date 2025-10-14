@@ -17,6 +17,7 @@ import {
   useLearningListMutations,
   useSearchVocabularyWithVideos,
   useExportLearningList,
+  useThrottledGeneralSearch,
 } from "@/lib/hooks/api";
 import { toast } from "sonner";
 import type { LearningListItem, VocabularyIndex } from "@/lib/types";
@@ -27,9 +28,12 @@ import {
   Clock,
   Play,
   Trash2,
+  Search,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Input } from "@/components/ui/input";
+import SearchResults from "@/components/search/SearchResults";
 
 function formatTime(seconds: number | undefined | null): string {
   if (seconds == null) return "";
@@ -54,6 +58,7 @@ export default function LearningListPage() {
   const [selectedWord, setSelectedWord] = useState<LearningListItem | null>(
     null
   );
+  const [searchQuery, setSearchQuery] = useState("");
 
   const {
     data: learningListData,
@@ -75,6 +80,13 @@ export default function LearningListPage() {
     isLoading: isLoadingSearch,
     error: searchError,
   } = useSearchVocabularyWithVideos(selectedWord?.text || "");
+
+  // General search for vocabulary
+  const {
+    data: searchData,
+    isLoading: searchLoading,
+    error: generalSearchError,
+  } = useThrottledGeneralSearch(searchQuery);
 
   const learningList = learningListData?.data || [];
   const stats = statsData?.data;
@@ -289,9 +301,41 @@ export default function LearningListPage() {
         </Button>
       </div>
 
-      {/* Main Content - Two Column Layout */}
+      {/* Search Bar */}
+      <div className="flex w-full justify-start">
+        <div className="w-full max-w-md relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+          <Input
+            className="w-full pl-10 pr-4"
+            placeholder="Search vocabulary (e.g., 'tup', 'hauora')"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          {searchQuery.length >= 2 && searchLoading && (
+            <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Search Results */}
+      {searchQuery.length >= 2 && (
+        <div className="mt-4">
+          <h2 className="text-xl font-semibold mb-4">
+            Search Results for &ldquo;{searchQuery}&rdquo;
+          </h2>
+          <SearchResults
+            results={searchData?.results || []}
+            isLoading={searchLoading}
+            error={generalSearchError}
+          />
+        </div>
+      )}
+
+      {/* Main Content - Learning List */}
       {learningList.length > 0 ? (
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mt-6">
           {/* Left Column - Your Words */}
           <Card className="h-fit">
             <CardHeader className="flex flex-row items-center justify-between pb-4">
