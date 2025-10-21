@@ -15,6 +15,8 @@ import VideoTranscription from "@/components/video/video_transcription";
 import type { VideoPlayerRef } from "@/components/video/types";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { trackVideoPageView } from "@/lib/custom-pageview-tracker";
+import { useLearningAnalytics } from "@/lib/analytics-hook";
 
 function WatchPage() {
   const { videoId } = useParams();
@@ -37,6 +39,15 @@ function WatchPage() {
     videoId as string
   );
   const { createOrUpdate } = useWatchHistoryMutations();
+  const { trackVideoStart, trackVideoComplete } = useLearningAnalytics();
+
+  // Track video page view
+  useEffect(() => {
+    if (video) {
+      trackVideoPageView(video.id, video.title);
+      trackVideoStart(video.id, video.title);
+    }
+  }, [video, trackVideoStart]);
 
   useEffect(() => {
     if (watchHistoryData?.data) {
@@ -120,6 +131,11 @@ function WatchPage() {
         duration: duration,
         completed: completed,
       });
+
+      // Track video completion in analytics
+      if (completed && video) {
+        trackVideoComplete(video.id, video.title, duration);
+      }
 
       // Update the watch list status if this is the first time adding to watch history
       if (!isInWatchList) {
@@ -209,6 +225,7 @@ function WatchPage() {
               transcript={transcript}
               currentTime={currentTime}
               initialTime={initialTime}
+              videoId={videoId as string}
             />
           </div>
 
@@ -219,6 +236,7 @@ function WatchPage() {
               currentTime={currentTime}
               onSeek={handleSeek}
               vocabularies={vocabularies || []}
+              videoId={videoId as string}
             />
           </div>
         </div>

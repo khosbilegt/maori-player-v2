@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/components/theme/theme_provider";
 import { Toaster } from "@/components/ui/sonner";
 import PostHogProvider from "@/components/posthog-provider";
 import { UserProvider } from "@/lib/user-context";
+import { AnalyticsErrorBoundary } from "@/components/analytics-error-boundary";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -59,8 +60,10 @@ export default function RootLayout({
           <StoreProvider>
             <UserProvider>
               <PostHogProvider>
-                {children}
-                <Toaster position="top-center" />
+                <AnalyticsErrorBoundary>
+                  {children}
+                  <Toaster position="top-center" />
+                </AnalyticsErrorBoundary>
               </PostHogProvider>
             </UserProvider>
           </StoreProvider>

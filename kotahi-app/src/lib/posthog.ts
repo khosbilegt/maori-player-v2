@@ -9,8 +9,22 @@ export const initPostHog = () => {
       posthog.init(posthogKey, {
         api_host: posthogHost,
         person_profiles: "identified_only",
-        capture_pageview: false, // Disable automatic pageview capture
+        capture_pageview: true, // Enable automatic pageview capture
         capture_pageleave: true,
+        autocapture: true, // Enable automatic event capture
+        capture_performance: true, // Track performance metrics
+        capture_heatmaps: true, // Enable heatmaps
+        loaded: (posthog) => {
+          // Track initial pageview
+          posthog.capture("$pageview");
+
+          // Track app initialization
+          posthog.capture("$app_initialized", {
+            app_name: "Kotahi",
+            app_version: "1.0.0",
+            platform: "web",
+          });
+        },
       });
     }
   }

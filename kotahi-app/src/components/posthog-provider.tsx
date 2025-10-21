@@ -3,6 +3,8 @@
 import { useEffect } from "react";
 import { initPostHog } from "@/lib/posthog";
 import { useUser } from "@/lib/user-context";
+import { usePageView } from "@/lib/pageview-tracker";
+import { useAnalytics } from "@/lib/analytics-hook";
 
 export default function PostHogProvider({
   children,
@@ -10,6 +12,12 @@ export default function PostHogProvider({
   children: React.ReactNode;
 }) {
   const { user, isAuthenticated } = useUser();
+
+  // Track pageviews
+  usePageView();
+
+  // Track essential analytics
+  useAnalytics();
 
   useEffect(() => {
     initPostHog();
