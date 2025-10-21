@@ -4,6 +4,8 @@ import "./globals.css";
 import StoreProvider from "./store_provider";
 import { ThemeProvider } from "@/components/theme/theme_provider";
 import { Toaster } from "@/components/ui/sonner";
+import PostHogProvider from "@/components/posthog-provider";
+import { UserProvider } from "@/lib/user-context";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -55,8 +57,12 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <StoreProvider>
-            {children}
-            <Toaster position="top-center" />
+            <UserProvider>
+              <PostHogProvider>
+                {children}
+                <Toaster position="top-center" />
+              </PostHogProvider>
+            </UserProvider>
           </StoreProvider>
         </ThemeProvider>
       </body>

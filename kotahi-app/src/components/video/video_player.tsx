@@ -8,6 +8,12 @@ import React, {
 } from "react";
 import { VideoPlayerProps, VideoPlayerRef } from "./types";
 import { environment } from "@/lib/config";
+import {
+  trackVideoPlay,
+  trackVideoPause,
+  trackVideoSeek,
+  VideoProgressTracker,
+} from "@/lib/analytics";
 
 const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
   (
@@ -19,6 +25,7 @@ const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
       onVideoEnd,
       className = "",
       initialTime = 0,
+      videoId,
     },
     ref
   ) => {
@@ -26,6 +33,9 @@ const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
     const [trackElement, setTrackElement] = useState<HTMLTrackElement | null>(
       null
     );
+    const progressTracker = useRef<VideoProgressTracker | null>(null);
+    const lastSeekTime = useRef<number>(0);
+    const isPlaying = useRef<boolean>(false);
 
     // Handle dynamic subtitle loading
     useEffect(() => {
@@ -72,8 +82,17 @@ const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
       const video = videoRef.current;
       if (!video) return;
 
+      // Initialize progress tracker
+      if (!progressTracker.current) {
+        progressTracker.current = new VideoProgressTracker(videoId);
+      }
+
       const handleTimeUpdate = () => {
         onTimeUpdate?.(video.currentTime);
+        // Track video progress
+        if (progressTracker.current) {
+          progressTracker.current.updateProgress(video.currentTime);
+        }
       };
 
       const handleLoadedMetadata = () => {
@@ -82,22 +101,56 @@ const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
         if (initialTime > 0 && video.currentTime === 0) {
           video.currentTime = initialTime;
         }
+        // Set duration for progress tracker
+        if (progressTracker.current) {
+          progressTracker.current.setDuration(video.duration);
+        }
       };
 
       const handleVideoEnd = () => {
         onVideoEnd?.();
       };
 
+      const handlePlay = () => {
+        isPlaying.current = true;
+        trackVideoPlay(video.currentTime, video.playbackRate, videoId);
+      };
+
+      const handlePause = () => {
+        isPlaying.current = false;
+        trackVideoPause(video.currentTime, videoId);
+      };
+
+      const handleSeeked = () => {
+        const currentTime = video.currentTime;
+        if (Math.abs(currentTime - lastSeekTime.current) > 1) {
+          trackVideoSeek(lastSeekTime.current, currentTime, videoId);
+          lastSeekTime.current = currentTime;
+        }
+      };
+
+      const handleSeeking = () => {
+        lastSeekTime.current = video.currentTime;
+      };
+
       video.addEventListener("timeupdate", handleTimeUpdate);
       video.addEventListener("loadedmetadata", handleLoadedMetadata);
       video.addEventListener("ended", handleVideoEnd);
+      video.addEventListener("play", handlePlay);
+      video.addEventListener("pause", handlePause);
+      video.addEventListener("seeked", handleSeeked);
+      video.addEventListener("seeking", handleSeeking);
 
       return () => {
         video.removeEventListener("timeupdate", handleTimeUpdate);
         video.removeEventListener("loadedmetadata", handleLoadedMetadata);
         video.removeEventListener("ended", handleVideoEnd);
+        video.removeEventListener("play", handlePlay);
+        video.removeEventListener("pause", handlePause);
+        video.removeEventListener("seeked", handleSeeked);
+        video.removeEventListener("seeking", handleSeeking);
       };
-    }, [onTimeUpdate, onDurationChange, onVideoEnd, initialTime]);
+    }, [onTimeUpdate, onDurationChange, onVideoEnd, initialTime, videoId]);
 
     return (
       <div className={`relative w-full max-w-4xl mx-auto ${className}`}>

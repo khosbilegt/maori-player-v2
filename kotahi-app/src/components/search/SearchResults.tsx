@@ -6,19 +6,29 @@ import { Button } from "@/components/ui/button";
 import { Play, Clock, BookOpen } from "lucide-react";
 import { SearchResult, VideoData, VocabularyOccurrence } from "@/lib/types";
 import { useRouter } from "next/navigation";
+import { trackSearchSubmit } from "@/lib/analytics";
 
 interface SearchResultsProps {
   results: SearchResult[];
   isLoading?: boolean;
   error?: any;
+  searchQuery?: string;
 }
 
 const SearchResults: React.FC<SearchResultsProps> = ({
   results,
   isLoading,
   error,
+  searchQuery,
 }) => {
   const router = useRouter();
+
+  // Track search submission when results are loaded
+  React.useEffect(() => {
+    if (searchQuery && results.length > 0) {
+      trackSearchSubmit(searchQuery);
+    }
+  }, [searchQuery, results]);
 
   if (isLoading) {
     return (

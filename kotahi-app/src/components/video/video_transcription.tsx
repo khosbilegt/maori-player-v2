@@ -11,6 +11,13 @@ import { Button } from "../ui/button";
 import { Notebook } from "lucide-react";
 import { useLearningList, useLearningListMutations } from "@/lib/hooks/api";
 import { toast } from "sonner";
+import {
+  trackTranscriptScroll,
+  trackTranscriptClickLine,
+  trackVocabOpen,
+  trackVocabMarkKnown,
+  createThrottledTracker,
+} from "@/lib/analytics";
 
 function VideoTranscription({
   isLoadingTranscript,
@@ -18,17 +25,27 @@ function VideoTranscription({
   currentTime,
   onSeek,
   vocabularies,
+  videoId,
 }: {
   isLoadingTranscript: boolean;
   transcript: TranscriptItem[];
   currentTime: number;
   onSeek: (time: number) => void;
   vocabularies: Vocabulary[];
+  videoId?: string;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<Map<number, HTMLDivElement>>(new Map());
   const { createItem } = useLearningListMutations();
   const { data: learningListData } = useLearningList();
+
+  // Create throttled scroll tracker
+  const throttledScrollTracker = createThrottledTracker(() => {
+    if (containerRef.current) {
+      const scrollTop = containerRef.current.scrollTop;
+      trackTranscriptScroll(scrollTop, videoId);
+    }
+  }, 1000);
   const learningTexts = React.useMemo(() => {
     const items = (learningListData as any)?.data || learningListData || [];
     return new Set<string>(
@@ -137,6 +154,16 @@ function VideoTranscription({
                 className="p-0"
                 onClick={async () => {
                   try {
+                    // Track vocabulary open and mark as known
+                    trackVocabOpen(
+                      match.vocabulary.id || match.vocabulary.maori,
+                      videoId
+                    );
+                    trackVocabMarkKnown(
+                      match.vocabulary.id || match.vocabulary.maori,
+                      videoId
+                    );
+
                     await createItem({
                       text: match.vocabulary.maori,
                       video_id: "",
@@ -208,7 +235,11 @@ function VideoTranscription({
     }
   }, [currentTime, transcript]);
   return (
-    <div ref={containerRef} className="overflow-y-scroll h-[400px] lg:h-full">
+    <div
+      ref={containerRef}
+      className="overflow-y-scroll h-[400px] lg:h-full"
+      onScroll={throttledScrollTracker}
+    >
       <div className="bg-card border rounded-lg p-4 space-y-2">
         {isLoadingTranscript ? (
           <div className="text-center py-8 text-muted-foreground">
@@ -229,6 +260,8 @@ function VideoTranscription({
                 }
               }}
               onClick={() => {
+                // Track transcript line click
+                trackTranscriptClickLine(item.id, videoId);
                 onSeek(item.startTime + 1);
               }}
               key={item.id || index}

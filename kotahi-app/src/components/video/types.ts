@@ -23,6 +23,7 @@ export interface VideoPlayerProps {
   transcript?: TranscriptItem[];
   currentTime?: number;
   initialTime?: number;
+  videoId?: string;
 }
 
 export interface SubtitleOverlayProps {
