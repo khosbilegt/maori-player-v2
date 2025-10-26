@@ -58,7 +58,6 @@ import type {
   CreateLearningListItemRequest,
   UpdateLearningListItemRequest,
   LearningListParams,
-  SearchResponse,
 } from "../types";
 
 // Authentication hooks

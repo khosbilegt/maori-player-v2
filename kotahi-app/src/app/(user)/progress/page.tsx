@@ -106,7 +106,7 @@ function ProgressPage() {
             </div>
             {progressData.currentStreak > 0 && (
               <p className="text-sm text-muted-foreground mt-2">
-                Keep it up! You're on fire 🔥
+                Keep it up! You&apos;re on fire 🔥
               </p>
             )}
             {progressData.currentStreak === 0 && (

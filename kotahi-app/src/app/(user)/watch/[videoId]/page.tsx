@@ -8,7 +8,6 @@ import {
 } from "@/lib/hooks/api";
 import { useParams, useSearchParams } from "next/navigation";
 import React, { useEffect, useState, useRef } from "react";
-import { environment } from "@/lib/config";
 import type { TranscriptItem } from "@/lib/types";
 import { loadVTTTranscript } from "@/lib/vtt-parser";
 import VideoTranscription from "@/components/video/video_transcription";
@@ -142,7 +141,7 @@ function WatchPage() {
       }
     } catch (error) {
       console.error("Failed to update watch history:", error);
-      // Don't show toast errors for automatic updates to avoid spam
+      // Don&apos;t show toast errors for automatic updates to avoid spam
     }
   };
 

@@ -5,12 +5,6 @@ export interface EnvironmentConfig {
   isProduction: boolean;
 }
 
-// Get environment variables with fallbacks for Next.js
-const getEnvVar = (key: string, fallback: string): string => {
-  // In Next.js, environment variables are available via process.env
-  return process.env[key] || fallback;
-};
-
 // Environment configuration
 export const environment: EnvironmentConfig = {
   apiBaseUrl:

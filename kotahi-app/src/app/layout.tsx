@@ -1,12 +1,12 @@
-import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import StoreProvider from "./store_provider";
 import { ThemeProvider } from "@/components/theme/theme_provider";
 import { Toaster } from "@/components/ui/sonner";
-import PostHogProvider from "@/components/posthog-provider";
 import { UserProvider } from "@/lib/user-context";
 import { AnalyticsErrorBoundary } from "@/components/analytics-error-boundary";
+import AnalyticsWrapper from "@/components/analytics-wrapper";
+export { metadata } from "./metadata";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -17,31 +17,6 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
-
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://tokotoko.app";
-
-export const metadata: Metadata = {
-  title: "Tokotoko - Maori Learning Platform",
-  description:
-    "Tokotoko is a platform for learning Maori language and culture.",
-  keywords: ["Maori", "Language", "Culture", "Learning", "Platform"],
-  robots: "index, follow",
-  openGraph: {
-    type: "website",
-    url: siteUrl,
-    title: "Tokotoko - Maori Learning Platform",
-    description:
-      "Tokotoko is a platform for learning Maori language and culture.",
-    images: [`${siteUrl}/home.png`],
-  },
-  twitter: {
-    title: "Tokotoko - Maori Learning Platform",
-    description:
-      "Tokotoko is a platform for learning Maori language and culture.",
-    card: "summary_large_image",
-    images: [`${siteUrl}/home.png`],
-  },
-};
 
 export default function RootLayout({
   children,
@@ -61,12 +36,12 @@ export default function RootLayout({
         >
           <StoreProvider>
             <UserProvider>
-              <PostHogProvider>
+              <AnalyticsWrapper>
                 <AnalyticsErrorBoundary>
                   {children}
                   <Toaster position="top-center" />
                 </AnalyticsErrorBoundary>
-              </PostHogProvider>
+              </AnalyticsWrapper>
             </UserProvider>
           </StoreProvider>
         </ThemeProvider>

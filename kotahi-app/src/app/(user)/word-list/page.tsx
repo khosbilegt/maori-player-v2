@@ -88,9 +88,13 @@ export default function LearningListPage() {
     error: generalSearchError,
   } = useThrottledGeneralSearch(searchQuery);
 
-  const learningList = learningListData?.data || [];
   const stats = statsData?.data;
   const isLoading = isLoadingWords || isLoadingVocab;
+
+  // Memoize learning list to prevent unnecessary re-renders
+  const learningList = React.useMemo(() => {
+    return learningListData?.data || [];
+  }, [learningListData?.data]);
 
   // Enrich learning list with vocabulary data
   const enrichedWords = React.useMemo(() => {
@@ -473,7 +477,7 @@ export default function LearningListPage() {
                             {vocabularySearchData?.results?.length &&
                               vocabularySearchData?.results[0]?.occurrences
                                 .slice(0, 3) // Show only first 3 examples
-                                .map((occurrence, index) => (
+                                .map((occurrence) => (
                                   <div
                                     key={occurrence.id}
                                     className="p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"

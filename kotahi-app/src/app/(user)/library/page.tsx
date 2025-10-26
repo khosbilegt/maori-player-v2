@@ -67,7 +67,7 @@ function LibraryPage() {
     if (!selectedPlaylist) {
       setSelectedPlaylist(playlists[0].id);
     }
-  }, [playlists]);
+  }, [playlists, selectedPlaylist]);
 
   // Persist selected playlist to localStorage
   useEffect(() => {

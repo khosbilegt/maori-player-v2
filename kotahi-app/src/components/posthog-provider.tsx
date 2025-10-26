@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
-import { initPostHog } from "@/lib/posthog";
+import { Suspense, useEffect } from "react";
+import { initPostHog, posthog } from "@/lib/posthog";
 import { useUser } from "@/lib/user-context";
 import { usePageView } from "@/lib/pageview-tracker";
 import { useAnalytics } from "@/lib/analytics-hook";
@@ -26,7 +26,6 @@ export default function PostHogProvider({
   useEffect(() => {
     if (isAuthenticated && user) {
       // Identify user with PostHog when they log in
-      const { posthog } = require("@/lib/posthog");
       posthog.identify(user.id, {
         email: user.email,
         username: user.username,
@@ -35,5 +34,5 @@ export default function PostHogProvider({
     }
   }, [user, isAuthenticated]);
 
-  return <>{children}</>;
+  return <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>;
 }

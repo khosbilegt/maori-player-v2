@@ -77,8 +77,6 @@ export const useAnalytics = () => {
 
 // Hook for learning-specific analytics
 export const useLearningAnalytics = () => {
-  const { user } = useUser();
-
   const trackVideoStart = (videoId: string, videoTitle: string) => {
     trackVideoEvent("video_play", videoId, {
       video_title: videoTitle,

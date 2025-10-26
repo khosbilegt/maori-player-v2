@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Play, Clock, BookOpen } from "lucide-react";
-import { SearchResult, VideoData, VocabularyOccurrence } from "@/lib/types";
+import { SearchResult, VideoData } from "@/lib/types";
 import { useRouter } from "next/navigation";
 import { trackSearchSubmit } from "@/lib/analytics";
 
@@ -74,7 +74,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
       <div className="flex gap-4">
         <div className="w-24 h-16 bg-gray-200 dark:bg-gray-700 rounded flex items-center justify-center">
           <img
-            className="w-full aspect-video text-gray-500"
+            className="w-full h-full object-cover text-gray-500"
             src={video.thumbnail}
             alt="Video"
           />

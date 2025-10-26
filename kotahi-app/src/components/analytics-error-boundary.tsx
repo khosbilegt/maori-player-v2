@@ -40,7 +40,8 @@ export class AnalyticsErrorBoundary extends Component<Props, State> {
                 Something went wrong
               </h2>
               <p className="text-gray-600 mb-4">
-                We've been notified about this error and are working to fix it.
+                We&apos;ve been notified about this error and are working to fix
+                it.
               </p>
               <button
                 onClick={() =>

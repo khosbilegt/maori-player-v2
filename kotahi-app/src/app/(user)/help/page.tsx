@@ -1,4 +1,6 @@
-import React from "react";
+"use client";
+
+import React, { Suspense } from "react";
 import Link from "next/link";
 import {
   MessageCircle,
@@ -56,67 +58,69 @@ function HelpCenterPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-background py-12">
-      <div className="container mx-auto px-4 max-w-4xl">
-        <div className="bg-card rounded-lg border shadow-sm p-8 md:p-12">
-          {/* Header Section */}
-          <div className="text-center mb-12">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-muted rounded-full mb-6">
-              <HelpCircle className="w-8 h-8 text-foreground" />
+    <Suspense fallback={<div>Loading...</div>}>
+      <div className="min-h-screen bg-background py-12">
+        <div className="container mx-auto px-4 max-w-4xl">
+          <div className="bg-card rounded-lg border shadow-sm p-8 md:p-12">
+            {/* Header Section */}
+            <div className="text-center mb-12">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-muted rounded-full mb-6">
+                <HelpCircle className="w-8 h-8 text-foreground" />
+              </div>
+              <h1 className="text-4xl md:text-5xl font-bold text-card-foreground mb-4">
+                Need a Hand?
+              </h1>
+              <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+                Welcome to the Tokotoko Help Center! We&rsquo;re building this
+                space as we grow, so it&rsquo;s still pretty light. For now, you
+                can reach out any time through our contact page — we&rsquo;ll
+                get back to you as quickly as we can.
+              </p>
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold text-card-foreground mb-4">
-              Need a Hand?
-            </h1>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Welcome to the Tokotoko Help Center! We&rsquo;re building this
-              space as we grow, so it&rsquo;s still pretty light. For now, you
-              can reach out any time through our contact page — we&rsquo;ll get
-              back to you as quickly as we can.
-            </p>
-          </div>
 
-          {/* Help Sections Grid */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {helpSections.map((section, index) => {
-              const IconComponent = section.icon;
-              return (
-                <Link key={index} href={section.href} className="group block">
-                  <div className="bg-muted border border-border rounded-lg p-6 h-full hover:border-ring transition-colors duration-200">
-                    <div className="flex items-center mb-4">
-                      <div className="w-10 h-10 bg-background rounded-lg flex items-center justify-center mr-3">
-                        <IconComponent className="w-5 h-5 text-foreground" />
+            {/* Help Sections Grid */}
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {helpSections.map((section, index) => {
+                const IconComponent = section.icon;
+                return (
+                  <Link key={index} href={section.href} className="group block">
+                    <div className="bg-muted border border-border rounded-lg p-6 h-full hover:border-ring transition-colors duration-200">
+                      <div className="flex items-center mb-4">
+                        <div className="w-10 h-10 bg-background rounded-lg flex items-center justify-center mr-3">
+                          <IconComponent className="w-5 h-5 text-foreground" />
+                        </div>
+                        <h3 className="text-lg font-semibold text-card-foreground group-hover:text-ring transition-colors">
+                          {section.title}
+                        </h3>
                       </div>
-                      <h3 className="text-lg font-semibold text-card-foreground group-hover:text-ring transition-colors">
-                        {section.title}
-                      </h3>
+                      <p className="text-muted-foreground text-sm leading-relaxed">
+                        {section.description}
+                      </p>
                     </div>
-                    <p className="text-muted-foreground text-sm leading-relaxed">
-                      {section.description}
-                    </p>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
+                  </Link>
+                );
+              })}
+            </div>
 
-          {/* Quick Contact CTA */}
-          <div className="text-center mt-12 pt-8 border-t border-border">
-            <p className="text-muted-foreground mb-4">
-              Can&rsquo;t find what you&rsquo;re looking for?
-            </p>
-            <Button asChild>
-              <Link
-                href="/help/contact"
-                className="inline-flex items-center gap-2"
-              >
-                <MessageCircle className="w-4 h-4" />
-                Contact Support
-              </Link>
-            </Button>
+            {/* Quick Contact CTA */}
+            <div className="text-center mt-12 pt-8 border-t border-border">
+              <p className="text-muted-foreground mb-4">
+                Can&rsquo;t find what you&rsquo;re looking for?
+              </p>
+              <Button asChild>
+                <Link
+                  href="/help/contact"
+                  className="inline-flex items-center gap-2"
+                >
+                  <MessageCircle className="w-4 h-4" />
+                  Contact Support
+                </Link>
+              </Button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </Suspense>
   );
 }
 

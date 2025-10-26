@@ -30,9 +30,7 @@ const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
     ref
   ) => {
     const videoRef = useRef<HTMLVideoElement>(null);
-    const [trackElement, setTrackElement] = useState<HTMLTrackElement | null>(
-      null
-    );
+    const trackElementRef = useRef<HTMLTrackElement | null>(null);
     const progressTracker = useRef<VideoProgressTracker | null>(null);
     const lastSeekTime = useRef<number>(0);
     const isPlaying = useRef<boolean>(false);
@@ -43,8 +41,8 @@ const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
       if (!video || !subtitleSrc) return;
 
       // Remove existing track if it exists
-      if (trackElement) {
-        video.removeChild(trackElement);
+      if (trackElementRef.current && video.contains(trackElementRef.current)) {
+        video.removeChild(trackElementRef.current);
       }
 
       // Create new track element
@@ -56,12 +54,15 @@ const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
       track.default = true;
 
       video.appendChild(track);
-      setTrackElement(track);
+      trackElementRef.current = track;
 
       // Cleanup function
       return () => {
-        if (trackElement && video.contains(trackElement)) {
-          video.removeChild(trackElement);
+        if (
+          trackElementRef.current &&
+          video.contains(trackElementRef.current)
+        ) {
+          video.removeChild(trackElementRef.current);
         }
       };
     }, [subtitleSrc]);

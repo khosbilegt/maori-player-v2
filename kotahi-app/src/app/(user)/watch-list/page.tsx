@@ -187,7 +187,11 @@ export default function WatchListPage() {
                       <TableCell>
                         <div className="flex items-center space-x-3">
                           <div className="w-16 h-12 bg-gray-200 dark:bg-gray-700 rounded flex items-center justify-center">
-                            <img src={video.thumbnail} alt={video.title} />
+                            <img
+                              src={video.thumbnail}
+                              alt={video.title}
+                              className="w-full h-full object-cover"
+                            />
                           </div>
                           <div>
                             <Link
