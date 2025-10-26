@@ -1,5 +1,47 @@
 import { posthog } from "./posthog";
 
+// Session ID management
+let sessionId: string | null = null;
+let sessionStartTime: number | null = null;
+
+const getOrCreateSessionId = (): string => {
+  if (!sessionId) {
+    sessionId = `session_${Date.now()}_${Math.random()
+      .toString(36)
+      .substr(2, 9)}`;
+    sessionStartTime = Date.now();
+
+    // Store in sessionStorage to persist across page reloads
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("posthog_session_id", sessionId);
+      sessionStorage.setItem(
+        "posthog_session_start",
+        sessionStartTime.toString()
+      );
+    }
+  }
+  return sessionId;
+};
+
+// Restore session ID from sessionStorage on page load
+if (typeof window !== "undefined") {
+  const storedSessionId = sessionStorage.getItem("posthog_session_id");
+  const storedSessionStart = sessionStorage.getItem("posthog_session_start");
+  if (storedSessionId && storedSessionStart) {
+    sessionId = storedSessionId;
+    sessionStartTime = parseInt(storedSessionStart, 10);
+
+    // Check if session is older than 30 minutes (expire it)
+    const sessionAge = Date.now() - sessionStartTime;
+    if (sessionAge > 30 * 60 * 1000) {
+      sessionId = null;
+      sessionStartTime = null;
+      sessionStorage.removeItem("posthog_session_id");
+      sessionStorage.removeItem("posthog_session_start");
+    }
+  }
+}
+
 // Helper to get current user info
 const getCurrentUser = () => {
   if (typeof window !== "undefined") {
@@ -21,38 +63,49 @@ const getCurrentUser = () => {
   return null;
 };
 
-// User engagement metrics
-export const trackUserEngagement = () => {
+// Get standard event properties for all events
+const getStandardProperties = (additionalProperties?: Record<string, any>) => {
   const user = getCurrentUser();
-  posthog.capture("$user_engagement", {
+  const sessionIdValue = getOrCreateSessionId();
+
+  return {
     user_id: user?.user_id,
     user_email: user?.email,
     user_role: user?.role,
+    session_id: sessionIdValue,
     timestamp: new Date().toISOString(),
-  });
+    ...additionalProperties,
+  };
+};
+
+// User engagement metrics
+export const trackUserEngagement = () => {
+  posthog.capture("$user_engagement", getStandardProperties());
 };
 
 // Session tracking
 export const trackSessionStart = () => {
-  const user = getCurrentUser();
-  posthog.capture("$session_start", {
-    user_id: user?.user_id,
-    user_email: user?.email,
-    user_role: user?.role,
+  const props = getStandardProperties({
     session_duration: 0,
-    timestamp: new Date().toISOString(),
   });
+  posthog.capture("$session_start", props);
 };
 
 export const trackSessionEnd = (duration: number) => {
-  const user = getCurrentUser();
-  posthog.capture("$session_end", {
-    user_id: user?.user_id,
-    user_email: user?.email,
-    user_role: user?.role,
-    session_duration: duration,
-    timestamp: new Date().toISOString(),
-  });
+  posthog.capture(
+    "$session_end",
+    getStandardProperties({
+      session_duration: duration,
+    })
+  );
+
+  // Reset session
+  sessionId = null;
+  sessionStartTime = null;
+  if (typeof window !== "undefined") {
+    sessionStorage.removeItem("posthog_session_id");
+    sessionStorage.removeItem("posthog_session_start");
+  }
 };
 
 // Feature usage tracking
@@ -60,29 +113,40 @@ export const trackFeatureUsage = (
   featureName: string,
   additionalProperties?: Record<string, any>
 ) => {
-  const user = getCurrentUser();
-  posthog.capture("$feature_used", {
-    feature_name: featureName,
-    user_id: user?.user_id,
-    user_email: user?.email,
-    user_role: user?.role,
-    timestamp: new Date().toISOString(),
-    ...additionalProperties,
-  });
+  posthog.capture(
+    "$feature_used",
+    getStandardProperties({
+      feature_name: featureName,
+      ...additionalProperties,
+    })
+  );
+};
+
+// Video-specific tracking with required properties
+export const trackVideoEvent = (
+  eventName: string,
+  videoId: string,
+  additionalProperties?: Record<string, any>
+) => {
+  posthog.capture(
+    eventName,
+    getStandardProperties({
+      video_id: videoId,
+      ...additionalProperties,
+    })
+  );
 };
 
 // Error tracking
 export const trackError = (error: Error, context?: string) => {
-  const user = getCurrentUser();
-  posthog.capture("$error", {
-    error_message: error.message,
-    error_stack: error.stack,
-    error_context: context,
-    user_id: user?.user_id,
-    user_email: user?.email,
-    user_role: user?.role,
-    timestamp: new Date().toISOString(),
-  });
+  posthog.capture(
+    "$error",
+    getStandardProperties({
+      error_message: error.message,
+      error_stack: error.stack,
+      error_context: context,
+    })
+  );
 };
 
 // Performance tracking
@@ -91,16 +155,14 @@ export const trackPerformance = (
   value: number,
   unit: string = "ms"
 ) => {
-  const user = getCurrentUser();
-  posthog.capture("$performance_metric", {
-    metric_name: metricName,
-    metric_value: value,
-    metric_unit: unit,
-    user_id: user?.user_id,
-    user_email: user?.email,
-    user_role: user?.role,
-    timestamp: new Date().toISOString(),
-  });
+  posthog.capture(
+    "$performance_metric",
+    getStandardProperties({
+      metric_name: metricName,
+      metric_value: value,
+      metric_unit: unit,
+    })
+  );
 };
 
 // Learning progress tracking
@@ -109,16 +171,14 @@ export const trackLearningProgress = (
   progressValue: number,
   additionalData?: Record<string, any>
 ) => {
-  const user = getCurrentUser();
-  posthog.capture("$learning_progress", {
-    progress_type: progressType,
-    progress_value: progressValue,
-    user_id: user?.user_id,
-    user_email: user?.email,
-    user_role: user?.role,
-    timestamp: new Date().toISOString(),
-    ...additionalData,
-  });
+  posthog.capture(
+    "$learning_progress",
+    getStandardProperties({
+      progress_type: progressType,
+      progress_value: progressValue,
+      ...additionalData,
+    })
+  );
 };
 
 // User behavior patterns
@@ -126,15 +186,13 @@ export const trackUserBehavior = (
   behaviorType: string,
   behaviorData?: Record<string, any>
 ) => {
-  const user = getCurrentUser();
-  posthog.capture("$user_behavior", {
-    behavior_type: behaviorType,
-    user_id: user?.user_id,
-    user_email: user?.email,
-    user_role: user?.role,
-    timestamp: new Date().toISOString(),
-    ...behaviorData,
-  });
+  posthog.capture(
+    "$user_behavior",
+    getStandardProperties({
+      behavior_type: behaviorType,
+      ...behaviorData,
+    })
+  );
 };
 
 // Conversion tracking
@@ -143,16 +201,14 @@ export const trackConversion = (
   conversionValue?: number,
   additionalData?: Record<string, any>
 ) => {
-  const user = getCurrentUser();
-  posthog.capture("$conversion", {
-    conversion_type: conversionType,
-    conversion_value: conversionValue,
-    user_id: user?.user_id,
-    user_email: user?.email,
-    user_role: user?.role,
-    timestamp: new Date().toISOString(),
-    ...additionalData,
-  });
+  posthog.capture(
+    "$conversion",
+    getStandardProperties({
+      conversion_type: conversionType,
+      conversion_value: conversionValue,
+      ...additionalData,
+    })
+  );
 };
 
 // Retention tracking
@@ -160,15 +216,13 @@ export const trackRetention = (
   retentionType: string,
   daysSinceFirstVisit: number
 ) => {
-  const user = getCurrentUser();
-  posthog.capture("$retention", {
-    retention_type: retentionType,
-    days_since_first_visit: daysSinceFirstVisit,
-    user_id: user?.user_id,
-    user_email: user?.email,
-    user_role: user?.role,
-    timestamp: new Date().toISOString(),
-  });
+  posthog.capture(
+    "$retention",
+    getStandardProperties({
+      retention_type: retentionType,
+      days_since_first_visit: daysSinceFirstVisit,
+    })
+  );
 };
 
 // A/B testing support
@@ -177,16 +231,14 @@ export const trackExperiment = (
   variant: string,
   additionalData?: Record<string, any>
 ) => {
-  const user = getCurrentUser();
-  posthog.capture("$experiment", {
-    experiment_name: experimentName,
-    experiment_variant: variant,
-    user_id: user?.user_id,
-    user_email: user?.email,
-    user_role: user?.role,
-    timestamp: new Date().toISOString(),
-    ...additionalData,
-  });
+  posthog.capture(
+    "$experiment",
+    getStandardProperties({
+      experiment_name: experimentName,
+      experiment_variant: variant,
+      ...additionalData,
+    })
+  );
 };
 
 // Custom event tracking with user context
@@ -194,14 +246,7 @@ export const trackCustomEvent = (
   eventName: string,
   properties?: Record<string, any>
 ) => {
-  const user = getCurrentUser();
-  posthog.capture(eventName, {
-    user_id: user?.user_id,
-    user_email: user?.email,
-    user_role: user?.role,
-    timestamp: new Date().toISOString(),
-    ...properties,
-  });
+  posthog.capture(eventName, getStandardProperties(properties));
 };
 
 // Set user properties
@@ -221,14 +266,12 @@ export const trackUserPropertyChange = (
   oldValue: any,
   newValue: any
 ) => {
-  const user = getCurrentUser();
-  posthog.capture("$user_property_changed", {
-    property_name: propertyName,
-    old_value: oldValue,
-    new_value: newValue,
-    user_id: user?.user_id,
-    user_email: user?.email,
-    user_role: user?.role,
-    timestamp: new Date().toISOString(),
-  });
+  posthog.capture(
+    "$user_property_changed",
+    getStandardProperties({
+      property_name: propertyName,
+      old_value: oldValue,
+      new_value: newValue,
+    })
+  );
 };

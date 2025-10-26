@@ -14,8 +14,8 @@ import { toast } from "sonner";
 import {
   trackTranscriptScroll,
   trackTranscriptClickLine,
-  trackVocabOpen,
-  trackVocabMarkKnown,
+  trackVocabClick,
+  trackVocabMarkUnknown,
   createThrottledTracker,
 } from "@/lib/analytics";
 
@@ -141,7 +141,14 @@ function VideoTranscription({
               className={`inline-block px-1 text-primary rounded-md hover:decoration-yellow-400 transition-colors cursor-pointer underline underline-offset-2 decoration-2 focus:outline-none focus-visible:outline-none focus:ring-0 ${
                 isInLearningList ? "decoration-yellow-400" : "decoration-white"
               }`}
-              onClick={(e) => e.stopPropagation()}
+              onClick={(e) => {
+                e.stopPropagation();
+                // Track vocabulary click when the word is clicked
+                trackVocabClick(
+                  match.vocabulary.id || match.vocabulary.maori,
+                  videoId
+                );
+              }}
             >
               {vocabText}
             </span>
@@ -154,12 +161,8 @@ function VideoTranscription({
                 className="p-0"
                 onClick={async () => {
                   try {
-                    // Track vocabulary open and mark as known
-                    trackVocabOpen(
-                      match.vocabulary.id || match.vocabulary.maori,
-                      videoId
-                    );
-                    trackVocabMarkKnown(
+                    // Track vocabulary mark as unknown (adding to learning list)
+                    trackVocabMarkUnknown(
                       match.vocabulary.id || match.vocabulary.maori,
                       videoId
                     );

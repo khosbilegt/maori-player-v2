@@ -114,9 +114,9 @@ export const trackTranscriptClickLine = (lineId: string, videoId?: string) => {
 };
 
 // Vocabulary tracking events
-export const trackVocabOpen = (vocabId: string, videoId?: string) => {
+export const trackVocabClick = (vocabId: string, videoId?: string) => {
   const user = getCurrentUser();
-  posthog.capture("vocab_open", {
+  posthog.capture("vocab_click", {
     vocab_id: vocabId,
     video_id: videoId,
     user_id: user?.user_id,

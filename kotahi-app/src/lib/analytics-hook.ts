@@ -10,6 +10,7 @@ import {
   trackLearningProgress,
   trackUserBehavior,
   setUserProperties,
+  trackVideoEvent,
 } from "./essential-metrics";
 
 // Hook for automatic analytics tracking
@@ -79,9 +80,39 @@ export const useLearningAnalytics = () => {
   const { user } = useUser();
 
   const trackVideoStart = (videoId: string, videoTitle: string) => {
-    trackFeatureUsage("video_start", {
-      video_id: videoId,
+    trackVideoEvent("video_play", videoId, {
       video_title: videoTitle,
+      action: "play",
+    });
+  };
+
+  const trackVideoPause = (videoId: string, videoTitle: string) => {
+    trackVideoEvent("video_pause", videoId, {
+      video_title: videoTitle,
+      action: "pause",
+    });
+  };
+
+  const trackVideoSeek = (
+    videoId: string,
+    fromTime: number,
+    toTime: number
+  ) => {
+    trackVideoEvent("video_seek", videoId, {
+      from_time: fromTime,
+      to_time: toTime,
+    });
+  };
+
+  const trackVideoProgress = (
+    videoId: string,
+    currentTime: number,
+    duration: number
+  ) => {
+    trackVideoEvent("video_progress", videoId, {
+      current_time: currentTime,
+      duration: duration,
+      progress_percent: (currentTime / duration) * 100,
     });
   };
 
@@ -90,20 +121,14 @@ export const useLearningAnalytics = () => {
     videoTitle: string,
     duration: number
   ) => {
-    trackFeatureUsage("video_complete", {
-      video_id: videoId,
+    trackVideoEvent("video_complete", videoId, {
       video_title: videoTitle,
       video_duration: duration,
-    });
-
-    trackLearningProgress("video_completion", 100, {
-      video_id: videoId,
-      video_title: videoTitle,
     });
   };
 
   const trackVocabularyLearned = (vocabId: string, vocabText: string) => {
-    trackFeatureUsage("vocabulary_learned", {
+    trackFeatureUsage("vocab_mark_known", {
       vocab_id: vocabId,
       vocab_text: vocabText,
     });
@@ -114,8 +139,27 @@ export const useLearningAnalytics = () => {
     });
   };
 
+  const trackVocabularyMarkedUnknown = (vocabId: string, vocabText: string) => {
+    trackFeatureUsage("vocab_mark_unknown", {
+      vocab_id: vocabId,
+      vocab_text: vocabText,
+    });
+  };
+
+  const trackVocabularyClick = (
+    vocabId: string,
+    vocabText: string,
+    videoId: string
+  ) => {
+    trackFeatureUsage("vocab_click", {
+      vocab_id: vocabId,
+      vocab_text: vocabText,
+      video_id: videoId,
+    });
+  };
+
   const trackSearchUsage = (query: string, resultsCount: number) => {
-    trackFeatureUsage("search_used", {
+    trackFeatureUsage("search_submit", {
       search_query: query,
       results_count: resultsCount,
     });
@@ -123,18 +167,32 @@ export const useLearningAnalytics = () => {
 
   const trackTranscriptInteraction = (
     interactionType: string,
-    videoId: string
+    videoId: string,
+    lineNumber?: number
   ) => {
-    trackUserBehavior("transcript_interaction", {
-      interaction_type: interactionType,
-      video_id: videoId,
-    });
+    if (interactionType === "scroll") {
+      trackUserBehavior("transcript_scroll", {
+        video_id: videoId,
+        interaction_type: interactionType,
+      });
+    } else if (interactionType === "click_line") {
+      trackUserBehavior("transcript_click_line", {
+        video_id: videoId,
+        line_number: lineNumber,
+        interaction_type: interactionType,
+      });
+    }
   };
 
   return {
     trackVideoStart,
+    trackVideoPause,
+    trackVideoSeek,
+    trackVideoProgress,
     trackVideoComplete,
     trackVocabularyLearned,
+    trackVocabularyMarkedUnknown,
+    trackVocabularyClick,
     trackSearchUsage,
     trackTranscriptInteraction,
   };
