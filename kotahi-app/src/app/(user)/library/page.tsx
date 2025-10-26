@@ -67,7 +67,7 @@ function LibraryPage() {
     if (!selectedPlaylist) {
       setSelectedPlaylist(playlists[0].id);
     }
-  }, [playlists, selectedPlaylist]);
+  }, [playlists]);
 
   // Persist selected playlist to localStorage
   useEffect(() => {
@@ -187,10 +187,6 @@ function LibraryPage() {
                     Select a playlist to view its videos
                   </p>
                 </div>
-              ) : playlistLoading ? (
-                <div className="flex items-center justify-center h-64">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                </div>
               ) : selectedPlaylistData?.videos?.length === 0 ? (
                 <div className="text-center py-8">
                   <p className="text-gray-600 dark:text-gray-400">
@@ -198,7 +194,11 @@ function LibraryPage() {
                   </p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 px-4 lg:px-0">
+                <div
+                  className={`grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 px-4 lg:px-0 ${
+                    playlistLoading ? "opacity-50" : ""
+                  }`}
+                >
                   {selectedPlaylistData?.videos?.map((video) => (
                     <VideoCard
                       key={video.id}

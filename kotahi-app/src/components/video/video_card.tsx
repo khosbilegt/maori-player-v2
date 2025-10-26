@@ -18,17 +18,11 @@ function VideoCard({
 }) {
   const router = useRouter();
   const [token] = useState(() => localStorage.getItem("token"));
-  const [isInWatchList, setIsInWatchList] = useState(false);
 
   const { createOrUpdate } = useWatchHistoryMutations();
 
-  useEffect(() => {
-    if (watchHistory) {
-      setIsInWatchList(true);
-    } else {
-      setIsInWatchList(false);
-    }
-  }, [watchHistory]);
+  // Use watchHistory to determine if video is in watch list
+  const isCurrentlyInWatchList = !!watchHistory;
 
   const handleAddToWatchList = async () => {
     if (!token) {
@@ -44,7 +38,6 @@ function VideoCard({
         duration: 0, // Will be updated when video is actually played
         completed: false,
       });
-      setIsInWatchList(true);
       toast.success("Added to watch list!");
     } catch (error: any) {
       toast.error(error?.data?.message || "Failed to add to watch list");
@@ -134,11 +127,11 @@ function VideoCard({
             </Button>
             <Button
               className="w-1/4"
-              variant={isInWatchList ? "default" : "outline"}
+              variant={isCurrentlyInWatchList ? "default" : "outline"}
               onClick={handleAddToWatchList}
-              disabled={isInWatchList}
+              disabled={isCurrentlyInWatchList}
             >
-              {isInWatchList ? (
+              {isCurrentlyInWatchList ? (
                 <BookmarkCheck className="w-4 h-4" />
               ) : (
                 <Bookmark className="w-4 h-4" />
