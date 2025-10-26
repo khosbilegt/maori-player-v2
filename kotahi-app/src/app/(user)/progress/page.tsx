@@ -233,7 +233,7 @@ function ProgressPage() {
           </Card>
         </div>
 
-        {/* Simple Chart - Daily Activity (Placeholder) */}
+        {/* Simple Chart - Daily Activity */}
         <Card>
           <CardHeader>
             <CardTitle>Weekly Activity</CardTitle>
@@ -248,22 +248,49 @@ function ProgressPage() {
               </div>
               {progressData.last7DaysMinutes > 0 ? (
                 <div className="flex gap-1 h-6">
-                  {[...Array(7)].map((_, i) => {
-                    const value = Math.min(
-                      100,
-                      (progressData.last7DaysMinutes / 7) * 10
+                  {data?.data.daily_activity?.map((minutes, i) => {
+                    // Find max minutes for scaling
+                    const maxMinutes = Math.max(
+                      ...(data?.data.daily_activity || [0]),
+                      1
                     );
+                    const height = (minutes / maxMinutes) * 100;
+
+                    // Get day name
+                    const days = [
+                      "Sun",
+                      "Mon",
+                      "Tue",
+                      "Wed",
+                      "Thu",
+                      "Fri",
+                      "Sat",
+                    ];
+                    const dayIndex = (new Date().getDay() - (6 - i) + 7) % 7;
+
                     return (
                       <div
                         key={i}
-                        className="flex-1 bg-primary rounded"
-                        style={{
-                          opacity: value > 0 ? value / 100 : 0.1,
-                        }}
-                        title={`Day ${i + 1}: ${Math.round(value)}%`}
-                      />
+                        className="flex-1 bg-primary rounded flex items-end"
+                        title={`${days[dayIndex]}: ${Math.round(minutes)} min`}
+                      >
+                        <div
+                          className="w-full bg-primary rounded transition-all"
+                          style={{
+                            height: `${Math.max(height, 5)}%`,
+                            minHeight: minutes > 0 ? "5%" : "0%",
+                          }}
+                        />
+                      </div>
                     );
-                  })}
+                  }) ||
+                    [...Array(7)].map((_, i) => (
+                      <div
+                        key={i}
+                        className="flex-1 bg-muted rounded"
+                        title="No activity"
+                      />
+                    ))}
                 </div>
               ) : (
                 <div className="flex gap-1 h-6">

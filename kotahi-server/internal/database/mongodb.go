@@ -769,6 +769,9 @@ func (r *watchHistoryRepository) GetUserProgress(ctx context.Context, userID str
 	watchedDates := make(map[string]bool)
 	currentDate := time.Now()
 
+	// Track daily minutes for last 7 days
+	dailyMinutes := make(map[string]float64)
+
 	for _, history := range allHistory {
 		// Sum current_time as minutes watched (already in seconds)
 		totalMinutes += history.CurrentTime
@@ -776,6 +779,9 @@ func (r *watchHistoryRepository) GetUserProgress(ctx context.Context, userID str
 		// Check if in last 7 days
 		if history.LastWatched.After(sevenDaysAgo) {
 			last7DaysMinutes += history.CurrentTime
+			// Track daily minutes
+			dateStr := history.LastWatched.Format("2006-01-02")
+			dailyMinutes[dateStr] += history.CurrentTime
 		}
 
 		// Track unique videos
@@ -828,6 +834,18 @@ func (r *watchHistoryRepository) GetUserProgress(ctx context.Context, userID str
 	totalMinutes /= 60.0
 	last7DaysMinutes /= 60.0
 
+	// Convert daily minutes from seconds to minutes and build array
+	dailyActivity := make([]float64, 7)
+	for i := 0; i < 7; i++ {
+		date := now.AddDate(0, 0, -i)
+		dateStr := date.Format("2006-01-02")
+		if minutes, exists := dailyMinutes[dateStr]; exists {
+			dailyActivity[6-i] = minutes / 60.0 // Convert seconds to minutes
+		} else {
+			dailyActivity[6-i] = 0
+		}
+	}
+
 	return map[string]interface{}{
 		"total_minutes":        totalMinutes,
 		"last_7_days_minutes":  last7DaysMinutes,
@@ -835,6 +853,7 @@ func (r *watchHistoryRepository) GetUserProgress(ctx context.Context, userID str
 		"longest_streak":       longestStreak,
 		"total_videos_watched": totalVideosWatched,
 		"completed_videos":     completedVideos,
+		"daily_activity":       dailyActivity,
 	}, nil
 }
 

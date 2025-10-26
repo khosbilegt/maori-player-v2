@@ -88,6 +88,7 @@ export interface UserProgress {
   longest_streak: number;
   total_videos_watched: number;
   completed_videos: number;
+  daily_activity?: number[];
 }
 
 // Learning list types

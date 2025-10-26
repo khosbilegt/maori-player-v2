@@ -124,6 +124,14 @@ export function Navbar({ className }: NavbarProps) {
                       Library
                     </Link>
                     <Link
+                      href="/progress"
+                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-left hover:bg-accent hover:text-accent-foreground"
+                      onClick={() => setIsUserDropdownOpen(false)}
+                    >
+                      <BookOpen className="h-4 w-4" />
+                      Progress
+                    </Link>
+                    <Link
                       href="/watch-list"
                       className="flex items-center gap-2 w-full px-3 py-2 text-sm text-left hover:bg-accent hover:text-accent-foreground"
                       onClick={() => setIsUserDropdownOpen(false)}
