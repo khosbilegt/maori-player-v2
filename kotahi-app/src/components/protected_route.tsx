@@ -15,6 +15,7 @@ export default function ProtectedRoute({
 }: ProtectedRouteProps) {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [user, setUser] = useState<User | null>(null);
+  const [hasRedirected, setHasRedirected] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -45,6 +46,17 @@ export default function ProtectedRoute({
     }
   }, [requireAdmin, router]);
 
+  // Handle redirect separately to prevent infinite loops
+  useEffect(() => {
+    if (isAuthenticated === false && !hasRedirected) {
+      const currentPath = window.location.pathname;
+      if (currentPath !== "/auth/login") {
+        setHasRedirected(true);
+        router.push("/auth/login");
+      }
+    }
+  }, [isAuthenticated, hasRedirected, router]);
+
   // Show loading state while checking authentication
   if (isAuthenticated === null) {
     return (
@@ -59,10 +71,18 @@ export default function ProtectedRoute({
     );
   }
 
-  // If not authenticated, redirect to login
+  // If not authenticated, show loading while redirecting
   if (!isAuthenticated) {
-    router.push("/auth/login");
-    return null;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+            Redirecting to login...
+          </p>
+        </div>
+      </div>
+    );
   }
 
   // If admin required but user is not admin, redirect to library

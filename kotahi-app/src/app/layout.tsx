@@ -18,6 +18,8 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://tokotoko.app";
+
 export const metadata: Metadata = {
   title: "Tokotoko - Maori Learning Platform",
   description:
@@ -26,18 +28,18 @@ export const metadata: Metadata = {
   robots: "index, follow",
   openGraph: {
     type: "website",
-    url: "https://tokotoko.app",
+    url: siteUrl,
     title: "Tokotoko - Maori Learning Platform",
     description:
       "Tokotoko is a platform for learning Maori language and culture.",
-    images: ["https://tokotoko.app/home.png"],
+    images: [`${siteUrl}/home.png`],
   },
   twitter: {
     title: "Tokotoko - Maori Learning Platform",
     description:
       "Tokotoko is a platform for learning Maori language and culture.",
     card: "summary_large_image",
-    images: ["https://tokotoko.app/home.png"],
+    images: [`${siteUrl}/home.png`],
   },
 };
 

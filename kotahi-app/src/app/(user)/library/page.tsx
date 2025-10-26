@@ -21,7 +21,23 @@ import Link from "next/link";
 function LibraryPage() {
   const [selectedPlaylist, setSelectedPlaylist] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [token] = useState(() => localStorage.getItem("token"));
+  const [token, setToken] = useState<string | null>(null);
+
+  // Get token and update when it changes
+  useEffect(() => {
+    const storedToken = localStorage.getItem("token");
+    setToken(storedToken);
+
+    // Poll for token changes on mount (after login redirect)
+    const interval = setInterval(() => {
+      const newToken = localStorage.getItem("token");
+      if (newToken !== token) {
+        setToken(newToken);
+      }
+    }, 200);
+
+    return () => clearInterval(interval);
+  }, [token]);
 
   const { videos, isLoading: videosLoading, error: videosError } = useVideos();
   const {
@@ -33,7 +49,7 @@ function LibraryPage() {
     usePlaylist(selectedPlaylist || "", {
       skip: !selectedPlaylist,
     });
-  const { data: watchHistoryData } = useWatchHistory(token);
+  const { data: watchHistoryData } = useWatchHistory(token || "");
   const {
     data: searchData,
     isLoading: searchLoading,

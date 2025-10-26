@@ -32,6 +32,7 @@ import type {
   ContactResponse,
   FeedbackRequest,
   FeedbackResponse,
+  UserProgress,
 } from "./types";
 
 // Helper function to get auth headers
@@ -43,8 +44,7 @@ const getAuthHeaders = (token: string) => ({
 const baseQueryWithReauth = async (args: any, api: any, extraOptions: any) => {
   // Get the API base URL dynamically to ensure we get the latest value
   const apiBaseUrl =
-    process.env.NEXT_PUBLIC_API_BASE_URL || "https://tokotoko.app";
-  // process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
+    process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
 
   const result = await fetchBaseQuery({
     baseUrl: apiBaseUrl,
@@ -73,8 +73,14 @@ const baseQueryWithReauth = async (args: any, api: any, extraOptions: any) => {
   // If we get a 401, the token is expired - log out the user
   if (result.error && result.error.status === 401) {
     localStorage.removeItem("token");
-    // Redirect to login page
-    window.location.href = "/auth/login";
+    localStorage.removeItem("user");
+    // Only redirect if not already on login/register page to prevent loops
+    if (
+      typeof window !== "undefined" &&
+      !window.location.pathname.includes("/auth/")
+    ) {
+      window.location.href = "/auth/login";
+    }
   }
 
   return result;
@@ -122,6 +128,7 @@ export const apiSlice = createApi({
     getProfile: builder.query<User, void>({
       query: () => "/api/v1/auth/profile",
       providesTags: ["User"],
+      extraOptions: { maxRetries: 0 },
     }),
 
     updateProfile: builder.mutation<User, UpdateProfileRequest>({
@@ -322,6 +329,13 @@ export const apiSlice = createApi({
       query: (token) => ({
         url: "/api/v1/watch-history",
         headers: getAuthHeaders(token),
+      }),
+      providesTags: ["WatchHistory"],
+    }),
+
+    getUserProgress: builder.query<{ data: UserProgress }, void>({
+      query: () => ({
+        url: "/api/v1/watch-history/progress",
       }),
       providesTags: ["WatchHistory"],
     }),
@@ -567,6 +581,7 @@ export const {
   useDeleteWatchHistoryMutation,
   useGetRecentWatchedQuery,
   useGetCompletedVideosQuery,
+  useGetUserProgressQuery,
 
   // VTT files
   useUploadVTTFileMutation,

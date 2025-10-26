@@ -96,7 +96,11 @@ export const useAuth = () => {
 };
 
 export const useProfile = () => {
-  return useGetProfileQuery();
+  const token =
+    typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  return useGetProfileQuery(undefined, {
+    skip: !token,
+  });
 };
 
 // Video hooks
@@ -523,8 +527,7 @@ export const useExportLearningList = () => {
   const exportFile = React.useCallback(async () => {
     try {
       const apiBaseUrl =
-        process.env.NEXT_PUBLIC_API_BASE_URL || "https://tokotoko.app";
-      // process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
+        process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
       const url = `${apiBaseUrl}/api/v1/learning-list/export`;
       const token = localStorage.getItem("token");
       const res = await fetch(url, {

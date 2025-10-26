@@ -81,6 +81,15 @@ export interface WatchHistory {
   updated_at: string;
 }
 
+export interface UserProgress {
+  total_minutes: number;
+  last_7_days_minutes: number;
+  current_streak: number;
+  longest_streak: number;
+  total_videos_watched: number;
+  completed_videos: number;
+}
+
 // Learning list types
 export interface LearningListItem {
   id: string;

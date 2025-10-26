@@ -48,6 +48,16 @@ type AuthResponse struct {
 	Token string       `json:"token"`
 }
 
+// UserProgressResponse represents the response payload for user progress
+type UserProgressResponse struct {
+	TotalMinutes       float64 `json:"total_minutes"`        // Total minutes watched all time
+	Last7DaysMinutes   float64 `json:"last_7_days_minutes"`  // Minutes watched in last 7 days
+	CurrentStreak      int     `json:"current_streak"`       // Current streak in days
+	LongestStreak      int     `json:"longest_streak"`       // Longest streak in days
+	TotalVideosWatched int     `json:"total_videos_watched"` // Total unique videos watched
+	CompletedVideos    int     `json:"completed_videos"`     // Number of completed videos
+}
+
 // ToUser converts UserRequest to User
 func (ur *UserRequest) ToUser() *User {
 	user := &User{

@@ -84,12 +84,17 @@ func (wh *WatchHistory) ToResponse() *WatchHistoryResponse {
 
 // UpdateFromRequest updates WatchHistory from WatchHistoryRequest
 func (wh *WatchHistory) UpdateFromRequest(req *WatchHistoryRequest) error {
+	now := time.Now()
+
+	// Always update LastWatched to track daily activity for streaks
+	// This ensures the streak calculation works properly
+	wh.LastWatched = now
+	wh.UpdatedAt = now
+
 	wh.Progress = req.Progress
 	wh.CurrentTime = req.CurrentTime
 	wh.Duration = req.Duration
 	wh.Completed = req.Completed
-	wh.LastWatched = time.Now()
-	wh.UpdatedAt = time.Now()
 
 	// Auto-calculate completion based on progress
 	if req.Progress >= 0.9 {

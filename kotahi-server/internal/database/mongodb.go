@@ -565,6 +565,7 @@ type WatchHistoryRepository interface {
 	DeleteByUserAndVideo(ctx context.Context, userID, videoID string) error
 	GetRecentWatched(ctx context.Context, userID string, limit int) ([]*models.WatchHistory, error)
 	GetCompletedVideos(ctx context.Context, userID string) ([]*models.WatchHistory, error)
+	GetUserProgress(ctx context.Context, userID string) (map[string]interface{}, error)
 }
 
 // watchHistoryRepository implements WatchHistoryRepository
@@ -730,6 +731,111 @@ func (r *watchHistoryRepository) GetCompletedVideos(ctx context.Context, userID 
 	}
 
 	return watchHistories, nil
+}
+
+// GetUserProgress calculates user progress statistics
+func (r *watchHistoryRepository) GetUserProgress(ctx context.Context, userID string) (map[string]interface{}, error) {
+	// Get all watch history for user
+	allHistory, err := r.GetByUserID(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(allHistory) == 0 {
+		return map[string]interface{}{
+			"total_minutes":        0.0,
+			"last_7_days_minutes":  0.0,
+			"current_streak":       0,
+			"longest_streak":       0,
+			"total_videos_watched": 0,
+			"completed_videos":     0,
+		}, nil
+	}
+
+	// Calculate total minutes (sum of current_time from all entries)
+	totalMinutes := 0.0
+	last7DaysMinutes := 0.0
+	totalVideosWatched := 0
+	completedVideos := 0
+
+	// Track unique video IDs
+	uniqueVideos := make(map[string]bool)
+
+	// Get dates for last 7 days
+	now := time.Now()
+	sevenDaysAgo := now.AddDate(0, 0, -7)
+
+	// Calculate streak
+	watchedDates := make(map[string]bool)
+	currentDate := time.Now()
+
+	for _, history := range allHistory {
+		// Sum current_time as minutes watched (already in seconds)
+		totalMinutes += history.CurrentTime
+
+		// Check if in last 7 days
+		if history.LastWatched.After(sevenDaysAgo) {
+			last7DaysMinutes += history.CurrentTime
+		}
+
+		// Track unique videos
+		if !uniqueVideos[history.VideoID] {
+			uniqueVideos[history.VideoID] = true
+			totalVideosWatched++
+		}
+
+		// Count completed videos
+		if history.Completed {
+			completedVideos++
+		}
+
+		// Track watched dates for streak calculation
+		dateStr := history.LastWatched.Format("2006-01-02")
+		watchedDates[dateStr] = true
+	}
+
+	// Calculate current streak
+	currentStreak := 0
+	testDate := currentDate
+	for i := 0; i < 365; i++ {
+		dateStr := testDate.Format("2006-01-02")
+		if watchedDates[dateStr] {
+			currentStreak++
+		} else {
+			break
+		}
+		testDate = testDate.AddDate(0, 0, -1)
+	}
+
+	// Calculate longest streak
+	longestStreak := 0
+	tempStreak := 0
+	startDate := currentDate
+	for i := 0; i < 365; i++ {
+		dateStr := startDate.Format("2006-01-02")
+		if watchedDates[dateStr] {
+			tempStreak++
+			if tempStreak > longestStreak {
+				longestStreak = tempStreak
+			}
+		} else {
+			tempStreak = 0
+		}
+		startDate = startDate.AddDate(0, 0, -1)
+	}
+
+	// Convert seconds to minutes
+	totalMinutes /= 60.0
+	last7DaysMinutes /= 60.0
+
+	return map[string]interface{}{
+		"total_minutes":        totalMinutes,
+		"last_7_days_minutes":  last7DaysMinutes,
+		"current_streak":       currentStreak,
+		"longest_streak":       longestStreak,
+		"total_videos_watched": totalVideosWatched,
+		"completed_videos":     completedVideos,
+	}, nil
 }
 
 // Learning List Repository Methods

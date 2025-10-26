@@ -91,6 +91,7 @@ func SetupRoutes(cfg *config.Config, db *database.MongoDB, videoRepo database.Vi
 	protected.HandleFunc("/watch-history", watchHistoryHandler.DeleteWatchHistory).Methods("DELETE")
 	protected.HandleFunc("/watch-history/recent", watchHistoryHandler.GetRecentWatched).Methods("GET")
 	protected.HandleFunc("/watch-history/completed", watchHistoryHandler.GetCompletedVideos).Methods("GET")
+	protected.HandleFunc("/watch-history/progress", watchHistoryHandler.GetUserProgress).Methods("GET")
 
 	// Learning list routes (authenticated users - no admin required)
 	protected.HandleFunc("/learning-list", learningListHandler.GetLearningList).Methods("GET")

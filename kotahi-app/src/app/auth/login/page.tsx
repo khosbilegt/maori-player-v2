@@ -41,7 +41,18 @@ export default function LoginPage() {
         localStorage.setItem("user", JSON.stringify(result.data.user));
 
         toast.success("Login successful!");
-        router.push("/library");
+
+        // Wait a moment for localStorage to be available and state to update before redirecting
+        setTimeout(() => {
+          // Double-check token is set before redirecting
+          const token = localStorage.getItem("token");
+          if (token) {
+            router.push("/library");
+          } else {
+            console.error("Token not found after login");
+            toast.error("Login succeeded but token was not saved");
+          }
+        }, 200);
       }
     } catch (error: any) {
       console.error("Login error:", error);

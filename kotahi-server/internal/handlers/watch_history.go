@@ -263,3 +263,27 @@ func (h *WatchHistoryHandler) GetCompletedVideos(w http.ResponseWriter, r *http.
 		"data": responses,
 	})
 }
+
+// GetUserProgress retrieves user progress statistics
+func (h *WatchHistoryHandler) GetUserProgress(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := utils.ContextWithTimeout()
+	defer cancel()
+
+	// Get user ID from context
+	userID, ok := r.Context().Value("user_id").(string)
+	if !ok {
+		errors.WriteErrorResponse(w, errors.ErrUnauthorized)
+		return
+	}
+
+	progress, err := h.watchHistoryRepo.GetUserProgress(ctx, userID)
+	if err != nil {
+		errors.WriteErrorResponse(w, errors.WrapError(err, errors.ErrDatabase))
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"data": progress,
+	})
+}
